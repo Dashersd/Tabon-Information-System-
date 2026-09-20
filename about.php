@@ -99,8 +99,10 @@
 
         </div>
 
-        <!-- Footer Accent -->
-        <footer class="site-footer">
+    </main>
+
+    <!-- Footer Accent -->
+    <footer class="site-footer">
             <div class="footer-container">
                 <div class="footer-brand">
                     <div class="footer-logo">
@@ -130,8 +132,6 @@
                 </div>
             </div>
         </footer>
-
-    </main>
 
     <script src="js/main.js"></script>
 </body>
