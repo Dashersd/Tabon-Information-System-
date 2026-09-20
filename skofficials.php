@@ -4,14 +4,14 @@
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Tabon - Gallery / Officials</title>
+    <title>Barangay Tabon - SK Officials</title>
     
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- External Stylesheets -->
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="css/officials.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/skofficials.css?v=<?php echo time(); ?>">
     
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
@@ -159,7 +159,7 @@
         </section>
 
         <!-- Officials Section Title -->
-        <h2 class="officials-title" style="margin-top: 40px; margin-bottom: 30px;">MEET OUR Barangay OFFICIALS</h2>
+        <h2 id="sk-officials" class="officials-title" style="margin-top: 40px; margin-bottom: 30px;">MEET OUR SK OFFICIALS</h2>
 
         <!-- Officials Org Chart -->
         <div class="org-chart">

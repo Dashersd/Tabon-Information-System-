@@ -37,10 +37,16 @@
                 <i class="fa-solid fa-circle-info"></i>
                 <span>About Us</span>
             </a>
-            <a href="officials.php" class="nav-item ">
-                <i class="fa-regular fa-image"></i>
-                <span>Gallery & Officials</span>
-            </a>
+                        <div class="nav-item dropdown  ">
+                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
+                    <i class="fa-regular fa-image"></i>
+                    <span>Gallery & Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="officials.php" class="dropdown-item">Barangay Officials</a>
+                    <a href="skofficials.php" class="dropdown-item">SK Officials</a>
+                </div>
+            </div>
             <a href="#" class="nav-item ">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>Spot Map</span>
@@ -95,13 +101,9 @@
                         <p>+63 XXX XXX XXXX<br>(Barangay Office)</p>
                     </div>
                 </div>
+            </div> <!-- Closes info-cards-grid -->
 
 
-            <div class="contact-quote">
-                "Tayo ang Bayanihan, Tayo ang Barangay Tabon." 
-                <br>
-                <i class="fa-solid fa-heart" style="font-size: 16px;"></i><i class="fa-solid fa-heart" style="font-size: 12px; margin-left: 5px;"></i>
-            </div>
         </div>
 
         <!-- Right Column: Form -->
@@ -143,6 +145,11 @@
         
     </main>
 
+    <div class="contact-quote" style="margin: 20px auto 60px auto; max-width: 600px; padding: 0 20px;">
+        "Tayo ang Bayanihan, Tayo ang Barangay Tabon." 
+        <br>
+        <i class="fa-solid fa-heart" style="font-size: 16px;"></i><i class="fa-solid fa-heart" style="font-size: 12px; margin-left: 5px;"></i>
+    </div>
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand">
@@ -177,3 +184,5 @@
     <script src="js/main.js"></script>
 </body>
 </html>
+
+

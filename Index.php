@@ -34,10 +34,16 @@
                 <i class="fa-solid fa-circle-info"></i>
                 <span>About Us</span>
             </a>
-            <a href="officials.php" class="nav-item ">
-                <i class="fa-regular fa-image"></i>
-                <span>Gallery & Officials</span>
-            </a>
+                        <div class="nav-item dropdown  ">
+                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
+                    <i class="fa-regular fa-image"></i>
+                    <span>Gallery & Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="officials.php" class="dropdown-item">Barangay Officials</a>
+                    <a href="skofficials.php" class="dropdown-item">SK Officials</a>
+                </div>
+            </div>
             <a href="#" class="nav-item ">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>Spot Map</span>
@@ -95,8 +101,29 @@
         </section>
     </div>
 
+    <!-- Officials Section -->
+    <div class="main-content" style="padding-bottom: 0;">
+        <h2 class="gallery-title" style="margin-top: 40px;">Meet the Officials</h2>
+        <section class="captain-card">
+            <!-- Replace src with your photo path e.g. "images/captain.jpg" -->
+            <img src="Officials/Captain.jpg" alt="Barangay Captain" class="captain-avatar">
+            
+            <div class="captain-content">
+                <h4>Message from the Barangay Captain</h4>
+                <blockquote>
+                    <p>As the Barangay Captain of Tabon, I extend my profound gratitude and pride to our dedicated team for the successful completion of our Barangay Development Plan.</p>
+                    <p>Through the invaluable support of our partner agencies and the unwavering commitment of our local officials, I am highly confident in our ability to realize these proposed programs and projects. Let us remain steadfast in our collaborative efforts to deliver tangible, meaningful results for the continuous progress and betterment of our entire community.</p>
+                </blockquote>
+                <div class="captain-signature">
+                    <div class="captain-name">Hon. Nancy D. Ungos</div>
+                    <div class="captain-title">Punong Barangay, Barangay Tabon</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- 3D Image Carousel Gallery -->
-    <section class="gallery-wrapper">
+    <section class="gallery-wrapper" style="padding-top: 0;">
         <div class="carousel">
             <div class="track">
                 <!-- 8 placeholder images from picsum.photos -->
@@ -114,25 +141,7 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-
-        <!-- Captain Message Box -->
-        <section class="captain-card">
-            <!-- Replace src with your photo path e.g. "images/captain.jpg" -->
-            <img src="Officials/Captain.jpg" alt="Barangay Captain" class="captain-avatar">
-            
-            <div class="captain-content">
-                <h4>Message from the Barangay Captain</h4>
-                <blockquote>
-                    <p>As the Barangay Captain of Tabon, I extend my profound gratitude and pride to our dedicated team for the successful completion of our Barangay Development Plan.</p>
-                    <p>Through the invaluable support of our partner agencies and the unwavering commitment of our local officials, I am highly confident in our ability to realize these proposed programs and projects. Let us remain steadfast in our collaborative efforts to deliver tangible, meaningful results for the continuous progress and betterment of our entire community.</p>
-                </blockquote>
-                <div class="captain-signature">
-                    <div class="captain-name">Hon. Nancy D. Ungos</div>
-                    <div class="captain-title">Punong Barangay, Barangay Tabon</div>
-                </div>
-            </div>
-        </section>
-
+        <h2 class="gallery-title" style="margin-top: 20px;">The Services</h2>
         <!-- Services Quick Access Grid -->
         <section class="services-container">
             <a href="#" class="service-card">
@@ -198,3 +207,4 @@
     <script src="js/main.js"></script>
 </body>
 </html>
+

@@ -30,14 +30,14 @@
 
 .about-text {
     font-size: 14px;
-    color: #2d3748;
+    color: var(--text-muted);
     line-height: 1.7;
     font-weight: 500;
 }
 
 /* Polaroid Photo Component */
 .polaroid-frame {
-    background: #ffffff;
+    background: var(--primary-white);
     padding: 12px 12px 18px 12px;
     border-radius: 4px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
@@ -120,7 +120,7 @@
 
 .mv-quote {
     font-size: 13.5px;
-    color: #2d3748;
+    color: var(--text-muted);
     line-height: 1.65;
     position: relative;
     padding: 0 10px;
@@ -147,3 +147,4 @@
     bottom: -25px;
     opacity: 0.6;
 }
+
