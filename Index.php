@@ -64,14 +64,14 @@
     <div class="hero-wrapper">
         <section class="hero-section">
             <div class="hero-content">
-                <h1 class="hero-title">Building a Stronger<br>and United Community</h1>
-                <p class="hero-subtitle">
+                <h1 class="hero-title fade-in-left">Building a Stronger<br>and United Community</h1>
+                <p class="hero-subtitle fade-in-left delay-1">
                     The Barangay Tabon is committed to<br>providing quality public service, transparent governance,<br>and a better future for every Tabonon.
                 </p>
             </div>
             
             <div class="hero-cutout">
-                <a href="#" class="btn-explore">
+                <a href="#" class="btn-explore fade-in-up delay-2">
                     <i class="fa-solid fa-building"></i>
                     <span>Explore Our Services</span>
                     <i class="fa-solid fa-arrow-right"></i>
@@ -84,18 +84,18 @@
     <div class="about-wrapper">
         <section class="about-section">
             <div class="about-content">
-                <h2 class="about-title">Discover the Heart<br>of Barangay Tabon.</h2>
-                <p class="about-desc">
+                <h2 class="about-title fade-in-left animate-on-scroll">Discover the Heart<br>of Barangay Tabon.</h2>
+                <p class="about-desc fade-in-left animate-on-scroll delay-1">
                     Our barangay is dedicated to providing an inclusive, safe, and dynamic environment for all residents. With a deep commitment to community building, we actively embrace innovation and preserve our cultural heritage.
                 </p>
-                <p class="about-desc">
+                <p class="about-desc fade-in-left animate-on-scroll delay-2">
                     Learn how our programs and services uplift families, empower the youth, and create lasting opportunities for everyone.
                 </p>
-                <div class="about-actions">
+                <div class="about-actions fade-in-left animate-on-scroll delay-3">
                     <a href="about.php" class="btn-read-more">Read More</a>
                 </div>
             </div>
-            <div class="about-image">
+            <div class="about-image fade-in-right animate-on-scroll delay-2">
                 <img src="Images/Barangay Tabon Hall.png" alt="About Barangay Tabon">
             </div>
         </section>

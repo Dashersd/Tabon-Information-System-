@@ -39,7 +39,7 @@ body.officials-page {
 }
 
 .gallery-cursive {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 64px;
     font-style: italic;
     color: #1a4971;
@@ -69,7 +69,7 @@ body.officials-page {
 }
 
 .officials-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 26px;
     letter-spacing: 4px;
     color: #0f2b48;
@@ -78,7 +78,7 @@ body.officials-page {
 }
 
 .officials-subtitle {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 15px;
     color: #1a365d;
     line-height: 1.6;
@@ -179,7 +179,7 @@ body.officials-page {
 .footer-officials {
     text-align: center;
     padding: 20px;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 18px;
     color: #0f2b48;
@@ -264,7 +264,7 @@ body.officials-page {
 }
 
 .modal-details h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 24px;
     color: #0f2b48;
     margin-bottom: 5px;
@@ -272,7 +272,7 @@ body.officials-page {
 }
 
 .modal-details h4 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     color: #3182ce;
     margin-bottom: 15px;
@@ -281,7 +281,7 @@ body.officials-page {
 }
 
 .modal-details p {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     color: var(--text-muted);
     line-height: 1.6;
@@ -342,7 +342,7 @@ body.officials-page {
     right: 15px;
     background: #fff;
     color: #333;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 11px;
     font-weight: 700;
     padding: 6px 14px;
@@ -359,7 +359,7 @@ body.officials-page {
 }
 
 .carousel-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 18px;
     font-weight: 800;
     color: var(--text-muted);
@@ -367,7 +367,7 @@ body.officials-page {
 }
 
 .carousel-desc {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     color: #718096;
     line-height: 1.6;
@@ -380,7 +380,7 @@ body.officials-page {
     background-color: #8b2cf5; /* Vibrant purple from image */
     color: #fff;
     text-decoration: none;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 700;
     padding: 12px 28px;
@@ -417,6 +417,7 @@ body.officials-page {
     background-color: #721fd3;
     transform: scale(1.1);
 }
+
 
 
 

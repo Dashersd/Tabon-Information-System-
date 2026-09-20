@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&display=swap');
 
 :root {
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Montserrat', sans-serif;
     --primary-white: #ffffff;
     --secondary-black: #000000;
     --bg-main: var(--primary-white);
@@ -19,7 +21,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
 }
 
 body {
@@ -69,7 +74,7 @@ header {
 }
 
 .brand-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 28px;
     font-style: italic;
     font-weight: 600;
@@ -78,7 +83,7 @@ header {
 }
 
 .brand-sub {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 13px;
     color: var(--secondary-black);
     font-style: italic;
@@ -288,7 +293,7 @@ nav {
 }
 
 .captain-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-weight: 700;
     font-size: 16px;
@@ -348,7 +353,7 @@ nav {
 footer {
     text-align: center;
     margin-top: 35px;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 18px;
     color: var(--secondary-black);
@@ -377,7 +382,7 @@ footer {
 }
 
 .about-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 42px;
     font-weight: 600;
     line-height: 1.2;
@@ -440,7 +445,7 @@ footer {
 }
 
 .gallery-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 38px;
     font-weight: 700;
     text-align: center;
@@ -699,3 +704,74 @@ footer {
     background-color: var(--bg-alt);
     color: var(--accent-hover);
 }
+
+/* Entrance Animations */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade-in-left {
+    opacity: 0;
+    animation: fadeInLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.3s;
+}
+
+.delay-2 {
+    animation-delay: 0.6s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.delay-3 {
+    animation-delay: 0.9s;
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade-in-right {
+    opacity: 0;
+    animation: fadeInRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Pause animation until scrolled into view */
+.animate-on-scroll {
+    animation-play-state: paused !important;
+}
+
+.animate-on-scroll.is-visible {
+    animation-play-state: running !important;
+}
+

@@ -19,7 +19,7 @@
 }
 
 .about-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 58px;
     font-weight: 600;
@@ -53,7 +53,7 @@
 }
 
 .polaroid-label {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     text-align: center;
     margin-top: 10px;
@@ -111,7 +111,7 @@
 }
 
 .mv-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 32px;
     color: #0f2b48;
@@ -128,7 +128,7 @@
 
 .mv-quote::before {
     content: '“';
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 35px;
     color: #3182ce;
     position: absolute;
@@ -139,7 +139,7 @@
 
 .mv-quote::after {
     content: '”';
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 35px;
     color: #3182ce;
     position: absolute;
@@ -147,4 +147,5 @@
     bottom: -25px;
     opacity: 0.6;
 }
+
 

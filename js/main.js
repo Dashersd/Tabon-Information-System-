@@ -193,11 +193,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => {
-        // Close if clicking the background overlay
         if (e.target === lightbox) {
             closeLightbox();
         }
     });
 
     init();
+});
+
+// ----------------------------------------------------
+// Scroll Animations Trigger
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.2
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    animatedElements.forEach(el => observer.observe(el));
 });

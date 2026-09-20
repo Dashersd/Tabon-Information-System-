@@ -1,13 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
+:root {
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Montserrat', sans-serif;
+    --primary-white: #ffffff;
+    --secondary-black: #000000;
+}
+
 body.login-page {
-    background: url('../Background.jpg') no-repeat center center fixed;
-    background-size: cover;
+    background-color: #f5f5f5;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     height: 100vh;
     margin: 0;
     animation: fadeIn 0.5s ease-in-out;
@@ -69,7 +75,7 @@ button {
     text-transform: uppercase;
     transition: transform 80ms ease-in;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
 }
 
 button:active {
@@ -103,7 +109,7 @@ input {
     margin: 8px 0;
     width: 100%;
     border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     outline: none;
 }
 
@@ -282,4 +288,5 @@ input {
 .container.right-panel-active .overlay-right {
     transform: translateX(20%);
 }
+
 

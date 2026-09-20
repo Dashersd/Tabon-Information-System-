@@ -52,7 +52,7 @@ body.contact-page {
 }
 
 .contact-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-size: 85px;
     font-style: italic;
     color: #1a4971;
@@ -62,7 +62,7 @@ body.contact-page {
 }
 
 .contact-subtitle {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 22px;
     color: #1a4971;
     font-weight: 700;
@@ -70,7 +70,7 @@ body.contact-page {
 }
 
 .contact-desc {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     color: #1a365d;
     line-height: 1.6;
@@ -111,7 +111,7 @@ body.contact-page {
 }
 
 .info-text h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 18px;
     color: #1a4971;
@@ -120,7 +120,7 @@ body.contact-page {
 }
 
 .info-text p {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 11px;
     color: var(--text-muted);
     margin: 0;
@@ -128,7 +128,7 @@ body.contact-page {
 }
 
 .contact-quote {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 26px;
     color: #1a4971;
@@ -167,7 +167,7 @@ body.contact-page {
 }
 
 .form-header h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 32px;
     color: #1a4971;
@@ -176,7 +176,7 @@ body.contact-page {
 }
 
 .form-desc {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
     color: var(--text-muted);
     margin-bottom: 30px;
@@ -209,7 +209,7 @@ body.contact-page {
     border: 1px solid rgba(113, 128, 150, 0.2);
     border-radius: 25px;
     padding: 15px 20px 15px 50px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     color: var(--text-muted);
     transition: all 0.3s ease;
@@ -239,7 +239,7 @@ textarea.form-input {
     border: none;
     border-radius: 30px;
     padding: 15px 40px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -260,10 +260,11 @@ textarea.form-input {
 .footer-contact {
     text-align: center;
     padding: 20px;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     font-size: 22px;
     color: #1a4971;
     margin-top: auto;
 }
+
 
