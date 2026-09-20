@@ -1,68 +1,114 @@
-﻿        .map-container-wrapper {
-            display: flex;
-            gap: 20px;
-            height: calc(100vh - 110px);
-        }
-        
-        #map {
-            flex: 1;
-            border-radius: 10px;
-            border: 1px solid #e0e4e8;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            z-index: 1; /* Keep map below the sidebar */
-        }
-        
-        #edit-panel {
-            width: 350px;
-            display: none;
-            flex-direction: column;
-        }
+/* SpotMap Layout Container */
+.spotmap-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-        #edit-panel.active {
-            display: flex;
-        }
+/* Form Section (now below map) */
+.spotmap-form-section {
+    width: 100%;
+    height: auto;
+}
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+.form-group {
+    margin-bottom: 15px;
+}
 
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
 
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 13px;
-        }
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
 
-        .form-group input[readonly] {
-            background-color: #f3f4f6;
-            color: #6b7280;
-            cursor: not-allowed;
-        }
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 6px;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f9fafb;
+}
 
-        .member-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f9fafb;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            border: 1px solid #e5e7eb;
-            font-size: 13px;
-        }
+.form-group small {
+    display: block;
+    margin-top: 4px;
+    color: #9ca3af;
+    font-size: 11px;
+}
 
-        .member-item button {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-        }
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+/* Map Preview Section */
+.spotmap-preview-section {
+    width: 100%;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.map-container-title {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+    background: #f8fafc;
+}
+
+.custom-map-container {
+    flex: 1;
+    position: relative;
+    background-color: #e5e7eb;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.map-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none; /* Let drag events pass through to container if needed, though we track document */
+}
+
+/* Draggable Marker */
+.map-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+}
+
+.map-marker:active {
+    cursor: grabbing;
+}
+
+.map-marker img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}

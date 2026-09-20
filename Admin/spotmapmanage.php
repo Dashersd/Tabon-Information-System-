@@ -16,12 +16,103 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Leaflet CSS for Interactive Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    
     <!-- Admin Stylesheet -->
     <link rel="stylesheet" href="css/admin_common.css">
     <link rel="stylesheet" href="css/spotmapmanage.css">
+    <style>
+        .members-section {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 15px;
+        }
+        .members-list {
+            margin-bottom: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .member-item {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            border-bottom: 1px dashed #d1d5db;
+        }
+        .member-item:last-child {
+            border-bottom: none;
+        }
+        .btn-small-add {
+            background: #2c6e49;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+        }
+        /* Saved Markers */
+        .saved-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+            transition: transform 0.2s;
+        }
+        .saved-marker:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            z-index: 20;
+        }
+        .saved-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+        /* Popup info box */
+        .map-popup {
+            display: none;
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 250px;
+            z-index: 100;
+            padding: 15px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .map-popup h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #2c6e49;
+        }
+        .map-popup p {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #4b5563;
+        }
+        .map-popup .popup-members {
+            background: #f4f6f8;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .close-popup {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+    </style>
 </head>
 <body>
 
@@ -36,9 +127,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="spotmapmanage.php" class="active"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
-                <li><a href="communitymembers.php"><i class="fa-solid fa-users"></i> Community Members</a></li>
-                <li><a href="admindashboard.php"><i class="fa-solid fa-house-chimney"></i> Households</a></li>
-                <li><a href="#"><i class="fa-solid fa-location-dot"></i> Puroks</a></li>
+
+
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li><a href="barangayboard.php"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
@@ -51,222 +141,249 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="top-bar" style="margin-bottom: 15px;">
-            <h1 class="page-title">Interactive SpotMap</h1>
-            <button class="btn-add" id="add-marker-btn"><i class="fa-solid fa-location-dot"></i> Add New Marker</button>
+        <div class="top-bar" style="margin-bottom: 20px;">
+            <div>
+                <h1 class="page-title">Add House to Map</h1>
+                <p class="page-subtitle" style="color: #6b7280; font-size: 14px; margin-top: 5px;">Upload a marker, add members, and drag the icon to save to the map.</p>
+            </div>
         </div>
 
-        <div class="map-container-wrapper">
-            <!-- Map Area -->
-            <div id="map"></div>
+        <div class="spotmap-layout">
             
-            <!-- Editing Panel -->
-            <div id="edit-panel" class="widget-panel">
-                <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>Edit Household</h2>
-                    <button id="close-panel" style="background: none; border: none; cursor: pointer; color: #6b7280; font-size: 16px;"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="widget-body" style="overflow-y: auto; flex: 1;">
-                    <form id="household-form">
-                        <div class="form-group">
-                            <label>Household ID</label>
-                            <input type="text" id="hh-id" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Head of Family</label>
-                            <input type="text" id="hh-head" placeholder="e.g. Juan Dela Cruz">
-                        </div>
-                        <div class="form-group">
-                            <label>Address / Purok</label>
-                            <input type="text" id="hh-address" placeholder="e.g. Purok 1, Brgy Tabon">
-                        </div>
-                        
-                        <h3 style="font-size: 14px; margin: 25px 0 10px 0; border-bottom: 1px solid #e0e4e8; padding-bottom: 5px; color: #2b323c;">Household Members</h3>
-                        <div id="members-list" style="margin-bottom: 15px;">
-                            <!-- Members appended here via JS -->
-                        </div>
-                        
-                        <div style="margin-bottom: 25px; display: flex; gap: 10px;">
-                            <input type="text" id="new-member-name" placeholder="New member name..." style="flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
-                            <button type="button" id="add-member-btn" class="btn-add" style="padding: 10px 15px;"><i class="fa-solid fa-plus"></i></button>
-                        </div>
+            <!-- Map Preview (Now on Top) -->
+            <div class="spotmap-preview-section">
+                <div class="custom-map-container" id="map-container">
+                    <!-- Placeholder aerial map image -->
+                    <img src="https://via.placeholder.com/800x600?text=Aerial+Map+Placeholder" alt="Map Background" class="map-bg-image" id="map-bg">
+                    
+                    <!-- Draggable Marker -->
+                    <div id="draggable-marker" class="map-marker" style="top: 50%; left: 50%; width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Marker Icon" id="marker-icon-preview">
+                    </div>
+                    
+                    <!-- Popup (Hidden by default) -->
+                    <div id="map-popup" class="map-popup">
+                        <button class="close-popup" onclick="closePopup()"><i class="fa-solid fa-xmark"></i></button>
+                        <h3 id="popup-house-num">House #001</h3>
+                        <p id="popup-address">Address here</p>
 
-                        <button type="button" id="save-btn" class="btn-add" style="width: 100%; justify-content: center;"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
-                    </form>
+                    </div>
+                    
+                    <!-- Saved Markers Container -->
+                    <div id="saved-markers-layer"></div>
                 </div>
             </div>
+
+            <!-- Form Section (Now Below) -->
+            <div class="spotmap-form-section widget-panel">
+                <form id="marker-form" onsubmit="return false;">
+                    
+                    <div class="form-group">
+                        <label>House Number</label>
+                        <input type="text" id="house-number" placeholder="e.g. 123">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Street / Address</label>
+                        <input type="text" id="street-address" placeholder="e.g. Purok 1, Sitio Mangga">
+                    </div>
+                    
+
+
+                    <div class="form-group">
+                        <label>Marker Image (icon shown on map)</label>
+                        <input type="file" id="marker-image-upload" accept="image/*">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Marker Width (px)</label>
+                            <input type="number" id="marker-width" value="40" min="10" max="200">
+                        </div>
+                        <div class="form-group half">
+                            <label>Marker Height (px)</label>
+                            <input type="number" id="marker-height" value="40" min="10" max="200">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Top position (%)</label>
+                            <input type="number" id="pos-top" step="0.01" value="50.00" min="0" max="100">
+                        </div>
+                        <div class="form-group half">
+                            <label>Left position (%)</label>
+                            <input type="number" id="pos-left" step="0.01" value="50.00" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary" id="btn-save-marker" style="width: 100%; margin-top: 15px;"><i class="fa-solid fa-floppy-disk"></i> Save to Map</button>
+
+                </form>
+            </div>
+
         </div>
     </main>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
     <script>
-        // Mock Database for Households
-        const householdsDB = {
-            'marker-1': { id: '001', head: 'Juan Dela Cruz', address: 'Street 1, Purok 1', members: ['Maria Dela Cruz', 'Jose Dela Cruz'] },
-            'marker-2': { id: '002', head: 'Pedro Penduko', address: 'Street 2, Purok 2', members: ['Ana Penduko'] },
-            'marker-3': { id: '003', head: 'Cardo Dalisay', address: 'Street 3, Purok 3', members: [] }
-        };
+        // Data State
+        let currentMembers = [];
+        let savedHouses = [];
 
-        let currentActiveMarkerId = null;
+        // DOM Elements
+        const markerUpload = document.getElementById('marker-image-upload');
+        const markerPreview = document.getElementById('marker-icon-preview');
+        const markerDraggable = document.getElementById('draggable-marker');
+        const mapContainer = document.getElementById('map-container');
+        
+        const inputTop = document.getElementById('pos-top');
+        const inputLeft = document.getElementById('pos-left');
+        const inputWidth = document.getElementById('marker-width');
+        const inputHeight = document.getElementById('marker-height');
+        
 
-        // Initialize Map (Centered around Kawit, Cavite roughly as an example, adjust as needed)
-        const map = L.map('map').setView([14.4445, 120.9022], 15);
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: 'Â© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Custom Icon for Household
-        const houseIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, -32]
+        // Handle custom marker image upload
+        markerUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    markerPreview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        // Add some mock markers
-        const markers = [
-            { id: 'marker-1', coords: [14.4450, 120.9010] },
-            { id: 'marker-2', coords: [14.4420, 120.9050] },
-            { id: 'marker-3', coords: [14.4460, 120.9080] }
-        ];
-
-        markers.forEach(m => {
-            const marker = L.marker(m.coords, { icon: houseIcon }).addTo(map);
-            
-            // Add tooltip
-            marker.bindTooltip(`Household #${householdsDB[m.id].id}`);
-            
-            // On click, open edit panel
-            marker.on('click', () => {
-                openEditPanel(m.id);
-            });
+        // Handle Width/Height Inputs
+        inputWidth.addEventListener('input', function() {
+            markerDraggable.style.width = this.value + 'px';
+        });
+        
+        inputHeight.addEventListener('input', function() {
+            markerDraggable.style.height = this.value + 'px';
         });
 
-        // UI Elements
-        const editPanel = document.getElementById('edit-panel');
-        const closePanelBtn = document.getElementById('close-panel');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const newMemberInput = document.getElementById('new-member-name');
-        const membersList = document.getElementById('members-list');
-        const saveBtn = document.getElementById('save-btn');
-
-        // Close Panel
-        closePanelBtn.addEventListener('click', () => {
-            editPanel.classList.remove('active');
-            currentActiveMarkerId = null;
+        // Handle Manual Top/Left Input Changes
+        inputTop.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if(val >= 0 && val <= 100) {
+                markerDraggable.style.top = val + '%';
+            }
         });
 
-        // Open Edit Panel and populate data
-        function openEditPanel(markerId) {
-            currentActiveMarkerId = markerId;
-            const data = householdsDB[markerId];
-            
-            document.getElementById('hh-id').value = data.id;
-            document.getElementById('hh-head').value = data.head;
-            document.getElementById('hh-address').value = data.address;
-            
-            renderMembers();
-            
-            editPanel.classList.add('active');
-        }
+        inputLeft.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if(val >= 0 && val <= 100) {
+                markerDraggable.style.left = val + '%';
+            }
+        });
 
-        // Render Members List
-        function renderMembers() {
-            membersList.innerHTML = '';
-            const members = householdsDB[currentActiveMarkerId].members;
-            
-            if (members.length === 0) {
-                membersList.innerHTML = '<p style="font-size: 13px; color: #9ca3af; font-style: italic;">No members added yet.</p>';
+        // Draggable Logic
+        let isDragging = false;
+
+        markerDraggable.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+
+            const containerRect = mapContainer.getBoundingClientRect();
+            let x = e.clientX - containerRect.left;
+            let y = e.clientY - containerRect.top;
+
+            x = Math.max(0, Math.min(x, containerRect.width));
+            y = Math.max(0, Math.min(y, containerRect.height));
+
+            const leftPercent = (x / containerRect.width) * 100;
+            const topPercent = (y / containerRect.height) * 100;
+
+            markerDraggable.style.left = leftPercent + '%';
+            markerDraggable.style.top = topPercent + '%';
+
+            inputLeft.value = leftPercent.toFixed(2);
+            inputTop.value = topPercent.toFixed(2);
+        });
+
+        // Save Button Logic
+        document.getElementById('btn-save-marker').addEventListener('click', function() {
+            const hnum = document.getElementById('house-number').value;
+            const addr = document.getElementById('street-address').value;
+            const t = inputTop.value;
+            const l = inputLeft.value;
+            const w = inputWidth.value;
+            const h = inputHeight.value;
+            const src = markerPreview.src;
+
+            if(!hnum) {
+                alert("Please provide a House Number.");
                 return;
             }
 
-            members.forEach((member, index) => {
-                const div = document.createElement('div');
-                div.className = 'member-item';
-                div.innerHTML = `
-                    <span><i class="fa-regular fa-user" style="margin-right: 8px; color: #9ca3af;"></i> ${member}</span>
-                    <button type="button" onclick="removeMember(${index})"><i class="fa-solid fa-trash-can"></i></button>
-                `;
-                membersList.appendChild(div);
-            });
+            const newHouse = {
+                id: Date.now(),
+                houseNum: hnum,
+                address: addr,
+                top: t,
+                left: l,
+                width: w,
+                height: h,
+                imageSrc: src
+            };
+
+            savedHouses.push(newHouse);
+            
+            // Add static marker to map
+            renderSavedMarker(newHouse);
+
+            // Reset form for next house
+            document.getElementById('house-number').value = '';
+            
+            alert('House saved to map! Click its marker to view details.');
+        });
+
+        function renderSavedMarker(house) {
+            const m = document.createElement('div');
+            m.className = 'saved-marker';
+            m.style.top = house.top + '%';
+            m.style.left = house.left + '%';
+            m.style.width = house.width + 'px';
+            m.style.height = house.height + 'px';
+            m.innerHTML = `<img src="${house.imageSrc}" alt="Saved Marker">`;
+            
+            m.onclick = function() {
+                openPopup(house);
+            };
+
+            savedMarkersLayer.appendChild(m);
         }
 
-        // Add Member
-        addMemberBtn.addEventListener('click', () => {
-            const name = newMemberInput.value.trim();
-            if (name && currentActiveMarkerId) {
-                householdsDB[currentActiveMarkerId].members.push(name);
-                newMemberInput.value = '';
-                renderMembers();
-            }
-        });
+        // Popup Logic
+        function openPopup(house) {
+            document.getElementById('popup-house-num').innerText = "House #" + house.houseNum;
+            document.getElementById('popup-address').innerText = house.address || "No address specified";
 
-        // Remove Member
-        window.removeMember = function(index) {
-            if (currentActiveMarkerId) {
-                householdsDB[currentActiveMarkerId].members.splice(index, 1);
-                renderMembers();
+            // Position popup near marker
+            mapPopup.style.top = `calc(${house.top}% - 20px)`;
+            mapPopup.style.left = `calc(${house.left}% + ${parseInt(house.width)/2 + 10}px)`;
+            
+            // Make sure popup doesn't overflow right side
+            if(parseFloat(house.left) > 70) {
+                mapPopup.style.left = `calc(${house.left}% - 260px)`;
             }
-        };
 
-        // Save Button Simulation
-        saveBtn.addEventListener('click', () => {
-            if (currentActiveMarkerId) {
-                householdsDB[currentActiveMarkerId].head = document.getElementById('hh-head').value;
-                householdsDB[currentActiveMarkerId].address = document.getElementById('hh-address').value;
-                
-                alert('Household data saved successfully!');
-                editPanel.classList.remove('active');
-            }
-        });
+            mapPopup.style.display = 'block';
+        }
 
-        // Optional: Add new marker feature on map click
-        let isAddingMarker = false;
-        document.getElementById('add-marker-btn').addEventListener('click', function() {
-            isAddingMarker = !isAddingMarker;
-            if (isAddingMarker) {
-                this.style.backgroundColor = '#1e4f34';
-                this.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Click on map to add';
-                document.getElementById('map').style.cursor = 'crosshair';
-            } else {
-                this.style.backgroundColor = '';
-                this.innerHTML = '<i class="fa-solid fa-location-dot"></i> Add New Marker';
-                document.getElementById('map').style.cursor = '';
-            }
-        });
-
-        map.on('click', function(e) {
-            if (isAddingMarker) {
-                const newId = 'marker-' + (Object.keys(householdsDB).length + 1);
-                const newHhId = String(Object.keys(householdsDB).length + 1).padStart(3, '0');
-                
-                // Add to DB
-                householdsDB[newId] = { id: newHhId, head: '', address: '', members: [] };
-                
-                // Create Marker
-                const marker = L.marker(e.latlng, { icon: houseIcon }).addTo(map);
-                marker.bindTooltip(`Household #${newHhId}`);
-                
-                marker.on('click', () => {
-                    openEditPanel(newId);
-                });
-                
-                // Reset state
-                isAddingMarker = false;
-                const addBtn = document.getElementById('add-marker-btn');
-                addBtn.style.backgroundColor = '';
-                addBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Add New Marker';
-                document.getElementById('map').style.cursor = '';
-                
-                // Open panel immediately for the new marker
-                openEditPanel(newId);
-            }
-        });
+        function closePopup() {
+            mapPopup.style.display = 'none';
+        }
     </script>
 </body>
 </html>

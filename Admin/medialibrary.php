@@ -124,9 +124,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
-                <li><a href="communitymembers.php"><i class="fa-solid fa-users"></i> Community Members</a></li>
-                <li><a href="admindashboard.php"><i class="fa-solid fa-house-chimney"></i> Households</a></li>
-                <li><a href="#"><i class="fa-solid fa-location-dot"></i> Puroks</a></li>
+
+
                 <li><a href="medialibrary.php" class="active"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li><a href="barangayboard.php"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>

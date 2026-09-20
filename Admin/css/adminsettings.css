@@ -1,4 +1,4 @@
-﻿/* Admin Settings */
+/* Admin Settings */
 .settings-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -128,3 +128,40 @@
     background: #fff;
 }
 
+/* File Upload and Preview */
+.settings-form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #f9fafb;
+    cursor: pointer;
+}
+
+.logo-preview-container {
+    margin-top: 10px;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+}
+
+.logo-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.contact-row {
+    display: flex;
+    gap: 15px;
+}
+.contact-row .form-group {
+    flex: 1;
+}

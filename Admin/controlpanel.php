@@ -33,9 +33,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php" class="active"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
-                <li><a href="communitymembers.php"><i class="fa-solid fa-users"></i> Community Members</a></li>
-                <li><a href="admindashboard.php"><i class="fa-solid fa-house-chimney"></i> Households</a></li>
-                <li><a href="#"><i class="fa-solid fa-location-dot"></i> Puroks</a></li>
+
+
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li><a href="barangayboard.php"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
@@ -83,32 +82,39 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <p>12</p>
                     </div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background-color: #e0e7ff; color: #4338ca;"><i class="fa-solid fa-user-check"></i></div>
+                    <div class="kpi-info">
+                        <h3>Total Active Users</h3>
+                        <p>156</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Activity & Notifications -->
             <div class="dashboard-widgets">
-                <!-- System Activity -->
+                <!-- User Concerns -->
                 <div class="widget-panel">
                     <div class="widget-header">
-                        <h2>System Activity</h2>
+                        <h2>Recent Concerns & Feedback</h2>
                     </div>
                     <div class="widget-body">
                         <ul class="activity-list">
                             <li>
                                 <span class="time">10:00 AM</span>
-                                <span class="desc">Admin updated Household #001 information.</span>
+                                <span class="desc">Juan Dela Cruz reported an issue: Broken streetlight at Purok 1.</span>
                             </li>
                             <li>
                                 <span class="time">09:30 AM</span>
-                                <span class="desc">New community member registered in Purok 2.</span>
+                                <span class="desc">Maria Santos inquired about the upcoming medical mission.</span>
                             </li>
                             <li>
                                 <span class="time">Yesterday</span>
-                                <span class="desc">Weekly system backup completed successfully.</span>
+                                <span class="desc">Pedro Penduko sent feedback: Garbage collection delay in Purok 3.</span>
                             </li>
                             <li>
                                 <span class="time">Yesterday</span>
-                                <span class="desc">SpotMap data synced with the main database.</span>
+                                <span class="desc">Anonymous submitted a noise complaint at Purok 2.</span>
                             </li>
                         </ul>
                     </div>
@@ -134,6 +140,102 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                                 <span>All SpotMap markers are currently active and functioning.</span>
                             </li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Management Widgets -->
+            <div class="dashboard-widgets management-widgets">
+                <!-- User Accounts -->
+                <div class="widget-panel">
+                    <div class="widget-header">
+                        <h2>User Accounts</h2>
+                    </div>
+                    <div class="widget-body table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#001</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>juan@example.com</td>
+                                    <td><span class="badge active">Active</span></td>
+                                    <td><button class="btn-edit-sm"><i class="fa-solid fa-pen"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>#002</td>
+                                    <td>Maria Santos</td>
+                                    <td>maria@example.com</td>
+                                    <td><span class="badge inactive">Inactive</span></td>
+                                    <td><button class="btn-edit-sm"><i class="fa-solid fa-pen"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>#003</td>
+                                    <td>Pedro Penduko</td>
+                                    <td>pedro@example.com</td>
+                                    <td><span class="badge active">Active</span></td>
+                                    <td><button class="btn-edit-sm"><i class="fa-solid fa-pen"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Posts & Pages -->
+                <div class="widget-panel">
+                    <div class="widget-header">
+                        <h2>Posts & Pages Management</h2>
+                    </div>
+                    <div class="widget-body">
+                        <div class="pages-list">
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <div class="page-icon"><i class="fa-solid fa-house"></i></div>
+                                    <div>
+                                        <h4>Home Page</h4>
+                                        <p>Hero section, announcements</p>
+                                    </div>
+                                </div>
+                                <a href="../index.php" class="btn-edit-page">View / Edit</a>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <div class="page-icon"><i class="fa-solid fa-users"></i></div>
+                                    <div>
+                                        <h4>About Us</h4>
+                                        <p>Barangay history, contact info</p>
+                                    </div>
+                                </div>
+                                <a href="../about.php" class="btn-edit-page">View / Edit</a>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <div class="page-icon"><i class="fa-solid fa-bullseye"></i></div>
+                                    <div>
+                                        <h4>Mission & Vision</h4>
+                                        <p>Core values, objectives</p>
+                                    </div>
+                                </div>
+                                <a href="../about.php" class="btn-edit-page">View / Edit</a>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <div class="page-icon"><i class="fa-solid fa-newspaper"></i></div>
+                                    <div>
+                                        <h4>Updates & News</h4>
+                                        <p>Latest articles, announcements</p>
+                                    </div>
+                                </div>
+                                <a href="../index.php" class="btn-edit-page">View / Edit</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -33,9 +33,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
-                <li><a href="communitymembers.php"><i class="fa-solid fa-users"></i> Community Members</a></li>
-                <li><a href="admindashboard.php"><i class="fa-solid fa-house-chimney"></i> Households</a></li>
-                <li><a href="#"><i class="fa-solid fa-location-dot"></i> Puroks</a></li>
+
+
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li><a href="barangayboard.php"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
                 <li><a href="adminsettings.php" class="active"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
@@ -64,13 +63,24 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <input type="text" id="brgy-name" value="Brgy Tabon" required>
                     </div>
                     <div class="form-group">
-                        <label>Official Logo URL</label>
-                        <input type="text" id="brgy-logo" value="../Barangay Logo/Logo.png" required>
+                        <label>Official Logo</label>
+                        <input type="file" id="brgy-logo-upload" accept="image/*">
+                        <div class="logo-preview-container">
+                            <img src="../Barangay Logo/Logo.png" id="logo-preview" alt="Logo Preview" onerror="this.src='https://via.placeholder.com/100?text=No+Logo'">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Contact Information (Email / Phone)</label>
-                        <input type="text" id="contact-info" value="contact@brgytabon.gov.ph | 0912-345-6789">
+                    
+                    <div class="contact-row">
+                        <div class="form-group">
+                            <label>Contact Email</label>
+                            <input type="email" id="contact-email" value="contact@brgytabon.gov.ph">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="text" id="contact-phone" value="0912-345-6789">
+                        </div>
                     </div>
+
                     <div class="form-group">
                         <label>Time on Duty</label>
                         <input type="text" id="duty-time" value="Mon - Fri, 8:00 AM to 5:00 PM">
@@ -120,16 +130,60 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     </main>
 
     <script>
+        // Load stored settings on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            if(localStorage.getItem('brgy_name')) {
+                document.getElementById('brgy-name').value = localStorage.getItem('brgy_name');
+                document.getElementById('sidebar-brgy-name').innerText = localStorage.getItem('brgy_name');
+            }
+            if(localStorage.getItem('brgy_logo_src')) {
+                document.getElementById('logo-preview').src = localStorage.getItem('brgy_logo_src');
+                document.getElementById('sidebar-logo').src = localStorage.getItem('brgy_logo_src');
+            }
+            if(localStorage.getItem('brgy_email')) {
+                document.getElementById('contact-email').value = localStorage.getItem('brgy_email');
+            }
+            if(localStorage.getItem('brgy_phone')) {
+                document.getElementById('contact-phone').value = localStorage.getItem('brgy_phone');
+            }
+            if(localStorage.getItem('brgy_duty')) {
+                document.getElementById('duty-time').value = localStorage.getItem('brgy_duty');
+            }
+        });
+
+        // Handle Image Upload Preview
+        const logoUpload = document.getElementById('brgy-logo-upload');
+        const logoPreview = document.getElementById('logo-preview');
+
+        logoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoPreview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         function saveConfig(e) {
             e.preventDefault();
             const brgyName = document.getElementById('brgy-name').value;
-            const brgyLogo = document.getElementById('brgy-logo').value;
-            const contactInfo = document.getElementById('contact-info').value;
+            const brgyEmail = document.getElementById('contact-email').value;
+            const brgyPhone = document.getElementById('contact-phone').value;
             const dutyTime = document.getElementById('duty-time').value;
+            const currentLogoSrc = logoPreview.src;
 
-            // Update UI dynamically for demonstration
+            // Save to localStorage
+            localStorage.setItem('brgy_name', brgyName);
+            localStorage.setItem('brgy_email', brgyEmail);
+            localStorage.setItem('brgy_phone', brgyPhone);
+            localStorage.setItem('brgy_duty', dutyTime);
+            localStorage.setItem('brgy_logo_src', currentLogoSrc);
+
+            // Update UI dynamically
             document.getElementById('sidebar-brgy-name').innerText = brgyName;
-            document.getElementById('sidebar-logo').src = brgyLogo;
+            document.getElementById('sidebar-logo').src = currentLogoSrc;
 
             alert("System configuration updated successfully!");
         }

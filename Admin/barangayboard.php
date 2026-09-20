@@ -124,9 +124,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
-                <li><a href="communitymembers.php"><i class="fa-solid fa-users"></i> Community Members</a></li>
-                <li><a href="admindashboard.php"><i class="fa-solid fa-house-chimney"></i> Households</a></li>
-                <li><a href="#"><i class="fa-solid fa-location-dot"></i> Puroks</a></li>
+
+
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li><a href="barangayboard.php" class="active"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
@@ -182,8 +181,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Photo URL</label>
-                        <input type="text" id="official-photo-url" placeholder="https://...">
+                        <label>Upload Photo</label>
+                        <input type="file" id="official-photo-file" accept="image/*">
+                        <input type="hidden" id="official-photo-url">
                     </div>
                 </form>
             </div>
@@ -197,10 +197,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     <script>
         // Mock Database for Officials
         let officialsDB = [
-            { id: 1, name: 'Hon. Juan Dela Cruz', position: 'Barangay Captain', photo: 'https://via.placeholder.com/300x400/223c3b/FFFFFF?text=Captain' },
-            { id: 2, name: 'Hon. Maria Santos', position: 'Barangay Kagawad', photo: 'https://via.placeholder.com/300x400/2c6e49/FFFFFF?text=Kagawad' },
-            { id: 3, name: 'Hon. Pedro Penduko', position: 'Barangay Kagawad', photo: 'https://via.placeholder.com/300x400/2c6e49/FFFFFF?text=Kagawad' },
-            { id: 4, name: 'Mr. Jose Rizal', position: 'Barangay Secretary', photo: 'https://via.placeholder.com/300x400/6b7280/FFFFFF?text=Secretary' }
+            { id: 1, name: 'Hon. Reynaldo D. Santos', position: 'Barangay Captain', photo: '../Officials/Captain.jpg' },
+            { id: 2, name: 'Hon. Mark Anthony T. Cruz', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 3, name: 'Hon. Maria Cristina S. Flores', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 4, name: 'Hon. Joseph L. Reyes', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 5, name: 'Hon. Alma B. Navarro', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 6, name: 'Hon. Allan P. Santos', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 7, name: 'Hon. Liza M. Torres', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' },
+            { id: 8, name: 'Hon. Ramon C. Dela Cruz', position: 'Barangay Kagawad', photo: '../Officials/Captain.jpg' }
         ];
 
         let editingId = null;
@@ -216,6 +220,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         const nameInput = document.getElementById('official-name');
         const posInput = document.getElementById('official-position');
         const photoInput = document.getElementById('official-photo-url');
+        const photoFileInput = document.getElementById('official-photo-file');
         const previewPhoto = document.getElementById('preview-photo');
         const removePhotoBtn = document.getElementById('remove-photo-btn');
 
@@ -250,6 +255,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             nameInput.value = '';
             posInput.value = 'Barangay Kagawad';
             photoInput.value = '';
+            photoFileInput.value = '';
             previewPhoto.src = 'https://via.placeholder.com/300x400?text=No+Photo';
             
             editModal.classList.add('active');
@@ -265,6 +271,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             nameInput.value = official.name;
             posInput.value = official.position;
             photoInput.value = official.photo;
+            photoFileInput.value = '';
             previewPhoto.src = official.photo || 'https://via.placeholder.com/300x400?text=No+Photo';
             
             editModal.classList.add('active');
@@ -273,12 +280,21 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         // Remove Photo action inside modal
         removePhotoBtn.addEventListener('click', () => {
             photoInput.value = '';
+            photoFileInput.value = '';
             previewPhoto.src = 'https://via.placeholder.com/300x400?text=No+Photo';
         });
 
-        // Update preview dynamically
-        photoInput.addEventListener('input', (e) => {
-            previewPhoto.src = e.target.value || 'https://via.placeholder.com/300x400?text=No+Photo';
+        // Handle file upload and preview dynamically
+        photoFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    photoInput.value = event.target.result;
+                    previewPhoto.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         // Delete Official
