@@ -1,0 +1,144 @@
+﻿/* Control Panel Dashboard */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* KPI Cards */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.kpi-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e4e8;
+}
+
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #e5f5eb;
+    color: #2c6e49;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+}
+
+.kpi-info h3 {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.kpi-info p {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2b323c;
+}
+
+/* Dashboard Widgets */
+.dashboard-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.widget-panel {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e4e8;
+    overflow: hidden;
+}
+
+.widget-header {
+    background-color: #f4f6f8;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e4e8;
+}
+
+.widget-header h2 {
+    font-size: 16px;
+    color: #2b323c;
+    font-weight: 600;
+}
+
+.widget-body {
+    padding: 20px;
+}
+
+.activity-list {
+    list-style: none;
+}
+
+.activity-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f2f5;
+    display: flex;
+    gap: 15px;
+}
+
+.activity-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-list .time {
+    color: #9ca3af;
+    font-size: 12px;
+    white-space: nowrap;
+    width: 75px;
+}
+
+.activity-list .desc {
+    color: #374151;
+    font-size: 13px;
+}
+
+.notification-list {
+    list-style: none;
+}
+
+.notification-list li {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-list li:last-child {
+    margin-bottom: 0;
+}
+
+.notification-list li.alert {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.notification-list li.info {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.notification-list li.success {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}

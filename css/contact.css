@@ -1,0 +1,268 @@
+/* css/contact.css */
+
+body.contact-page {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make sure the header stays fixed at the top with a bit of space below */
+.contact-page header {
+    position: relative;
+    z-index: 10;
+}
+
+/* Glassmorphism Header specific to this page */
+.contact-page .header-glass {
+    background: #ffffff;
+    padding: 15px 40px;
+    margin: 0;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contact-page .nav-item.active {
+    background-color: #dcecf7; /* Light blue background for active */
+    color: #000000;
+    border-radius: 12px;
+    padding: 6px 12px;
+}
+
+/* Main Content Split Layout */
+.contact-content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 60px;
+    flex: 1;
+    align-items: flex-start;
+}
+
+/* --- LEFT COLUMN --- */
+.contact-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 85px;
+    font-style: italic;
+    color: #1a4971;
+    font-weight: 700;
+    margin-bottom: 5px;
+    margin-top: 0;
+}
+
+.contact-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    color: #1a4971;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.contact-desc {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #1a365d;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 420px;
+}
+
+.info-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.info-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #1a4971;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.info-text h4 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #1a4971;
+    margin: 0 0 5px 0;
+    font-weight: 700;
+}
+
+.info-text p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    color: #4a5568;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.contact-quote {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 26px;
+    color: #1a4971;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* --- RIGHT COLUMN --- */
+.contact-right {
+    flex: 1;
+    width: 100%;
+}
+
+.form-container {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 40px 50px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+
+.form-header i {
+    font-size: 38px;
+    color: #1a4971;
+}
+
+.form-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 32px;
+    color: #1a4971;
+    margin: 0;
+    font-weight: 700;
+}
+
+.form-desc {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    color: #4a5568;
+    margin-bottom: 30px;
+    margin-left: 53px; /* Align perfectly under the title */
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    font-size: 16px;
+    pointer-events: none; /* Allows clicking through icon to focus input */
+}
+
+.input-group.textarea-group i {
+    top: 20px;
+    transform: none;
+}
+
+.form-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(113, 128, 150, 0.2);
+    border-radius: 25px;
+    padding: 15px 20px 15px 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-input::placeholder {
+    color: #a0aec0;
+}
+
+.form-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: #1a4971;
+    box-shadow: 0 0 0 3px rgba(26, 73, 113, 0.1);
+}
+
+textarea.form-input {
+    border-radius: 15px;
+    resize: vertical;
+    min-height: 140px;
+}
+
+.btn-submit {
+    background-color: #1a4971;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 15px 40px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 30px auto 0 auto;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-submit:hover {
+    background-color: #0f2b48;
+    transform: translateY(-2px);
+}
+
+/* Footer Accent matching the design */
+.footer-contact {
+    text-align: center;
+    padding: 20px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: #1a4971;
+    margin-top: auto;
+}

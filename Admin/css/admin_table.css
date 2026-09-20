@@ -1,0 +1,155 @@
+﻿/* Controls Header (Search & Filter) */
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f4f6f8;
+    padding: 15px 25px;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #e0e4e8;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 6px 15px;
+    width: 300px;
+}
+
+.search-bar i {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 5px 10px;
+    width: 100%;
+    font-size: 13px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.filter-select {
+    padding: 6px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #4b5563;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
+}
+
+.count-badge {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Data Table */
+.table-container {
+    background-color: #f4f6f8;
+    border-radius: 0 0 10px 10px;
+    padding: 0 25px 25px 25px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+th {
+    text-align: left;
+    padding: 15px 20px;
+    font-size: 12px;
+    color: #4b5563;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+td {
+    background-color: #ffffff;
+    padding: 15px 20px;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+/* Rounding corners of table rows */
+td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+.marker-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.purok-badge {
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.purok-badge i {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.members-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5563;
+}
+
+.members-count i {
+    color: #6b7280;
+}
+
+.position-text {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-action:hover {
+    color: #2c6e49;
+}
+
