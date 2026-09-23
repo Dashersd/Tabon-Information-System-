@@ -170,6 +170,60 @@
             </a>
         </section>
 
+        <!-- Latest Announcements Section -->
+        <div class="announcements-wrapper fade-in-up animate-on-scroll delay-1">
+            <h2 class="announcements-title">Latest Announcements</h2>
+            <div class="announcements-divider"></div>
+            <p class="announcements-subtitle">Keep track of upcoming events, meetings, and important notices in our barangay.</p>
+            
+            <div class="announcements-grid">
+                <!-- Announcement Card 1 -->
+                <div class="announcement-card">
+                    <div class="announcement-date">
+                        <span class="month">OCT</span>
+                        <span class="day">15</span>
+                    </div>
+                    <div class="announcement-details">
+                        <h3 class="announcement-card-title">General Assembly Meeting</h3>
+                        <p><strong>What:</strong> General Assembly Meeting</p>
+                        <p><strong>When:</strong> 9:00 AM, October 15</p>
+                        <p><strong>Why:</strong> Discuss infrastructure projects & budgets.</p>
+                        <p><strong>Who:</strong> All Barangay Residents</p>
+                    </div>
+                </div>
+                
+                <!-- Announcement Card 2 -->
+                <div class="announcement-card">
+                    <div class="announcement-date">
+                        <span class="month">OCT</span>
+                        <span class="day">22</span>
+                    </div>
+                    <div class="announcement-details">
+                        <h3 class="announcement-card-title">Free Medical & Dental Mission</h3>
+                        <p><strong>What:</strong> Free Medical & Dental Mission</p>
+                        <p><strong>When:</strong> 8:00 AM, October 22</p>
+                        <p><strong>Why:</strong> Offer free checkups and medicines.</p>
+                        <p><strong>Who:</strong> Senior Citizens and Children</p>
+                    </div>
+                </div>
+                
+                <!-- Announcement Card 3 -->
+                <div class="announcement-card">
+                    <div class="announcement-date">
+                        <span class="month">NOV</span>
+                        <span class="day">01</span>
+                    </div>
+                    <div class="announcement-details">
+                        <h3 class="announcement-card-title">Undas 2025 Traffic Advisory</h3>
+                        <p><strong>What:</strong> Undas 2025 Traffic Advisory</p>
+                        <p><strong>When:</strong> All Day, November 01</p>
+                        <p><strong>Why:</strong> Road closures and rerouting for Undas.</p>
+                        <p><strong>Who:</strong> All Motorists and Residents</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Footer Accent -->

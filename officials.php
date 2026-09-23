@@ -37,16 +37,10 @@
                 <i class="fa-solid fa-users"></i>
                 <span>About Us</span>
             </a>
-                        <div class="nav-item dropdown  active">
-                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <i class="fa-regular fa-image"></i>
-                    <span>Gallery & Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
-                </a>
-                <div class="dropdown-menu">
-                    <a href="officials.php" class="dropdown-item">Barangay Officials</a>
-                    <a href="skofficials.php" class="dropdown-item">SK Officials</a>
-                </div>
-            </div>
+            <a href="officials.php" class="nav-item active">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery & Officials</span>
+            </a>
             <a href="#" class="nav-item ">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>Spot Map</span>
@@ -159,7 +153,7 @@
         </section>
 
         <!-- Officials Section Title -->
-        <h2 class="officials-title" style="margin-top: 40px; margin-bottom: 30px;">MEET OUR Barangay OFFICIALS</h2>
+        <h2 class="officials-title" style="margin-top: 40px; margin-bottom: 30px;">MEET OUR BARANGAY OFFICIALS</h2>
 
         <!-- Officials Org Chart -->
         <div class="org-chart">
@@ -397,5 +391,3 @@
     <script src="js/main.js"></script>
 </body>
 </html>
-
-
