@@ -59,6 +59,14 @@ body.ml-preloader-active > *:not(#ml-preloader):not(script):not(style) {
     pointer-events: none !important;
 }
 
+/* Pause all page entrance animations while preloader is active */
+body.ml-preloader-active .fade-in-left,
+body.ml-preloader-active .fade-in-up,
+body.ml-preloader-active .fade-in-right,
+body.ml-preloader-active .animate-on-scroll {
+    animation-play-state: paused !important;
+}
+
 /* ==========================================================================
    MLBB PRELOADER CORE CONTAINER & RESETS
    ========================================================================== */

@@ -8,6 +8,12 @@
 (function() {
     'use strict';
 
+    if (window.mlPreloaderEnabled === false) {
+        // Dispatch resize so underlying carousels and observers recalculate cleanly
+        window.dispatchEvent(new Event('resize'));
+        return;
+    }
+
     // Immediately lock scroll and hide page content
     if (document.documentElement) {
         document.documentElement.classList.add('ml-preloader-active');

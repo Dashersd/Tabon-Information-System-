@@ -18,16 +18,40 @@
     }
 </style>
 <script>
-    document.documentElement.classList.add('ml-preloader-active');
-    if (document.body) {
-        document.body.classList.add('ml-preloader-active');
+    var isReload = false;
+    if (window.performance && window.performance.getEntriesByType) {
+        var navEntries = window.performance.getEntriesByType("navigation");
+        if (navEntries.length > 0 && navEntries[0].type === "reload") {
+            isReload = true;
+        }
+    } else if (window.performance && window.performance.navigation) {
+        if (window.performance.navigation.type === 1) {
+            isReload = true;
+        }
     }
-    window.scrollTo(0, 0);
+
+    var shouldShowPreloader = !sessionStorage.getItem('preloaderShown') || isReload;
+    window.mlPreloaderEnabled = shouldShowPreloader;
+
+    if (shouldShowPreloader) {
+        sessionStorage.setItem('preloaderShown', 'true');
+        document.documentElement.classList.add('ml-preloader-active');
+        if (document.body) {
+            document.body.classList.add('ml-preloader-active');
+        }
+        window.scrollTo(0, 0);
+    } else {
+        document.write('<style>#ml-preloader { display: none !important; }</style>');
+        document.documentElement.classList.remove('ml-preloader-active');
+        if (document.body) {
+            document.body.classList.remove('ml-preloader-active');
+        }
+    }
 </script>
 <!-- Mobile Legends: Bang Bang (MLBB) Inspired Preloader (HTML Only) -->
 <div id="ml-preloader" class="ml-preloader-container" data-timeout="4500" aria-label="Loading page..." role="status">
     <!-- Preloader Audio Track -->
-    <audio id="ml-preloader-audio" preload="auto" playsinline autoplay>
+    <audio id="ml-preloader-audio" preload="auto" playsinline>
         <source src="Audio/Loading%20Audio.mp3" type="audio/mpeg">
         <source src="Audio/Loading Audio.mp3" type="audio/mpeg">
     </audio>
@@ -35,6 +59,7 @@
     <!-- Immediate Audio Trigger (Plays automatically when Phase 1 starts) -->
     <script>
         (function() {
+            if (!window.mlPreloaderEnabled) return;
             var audio = document.getElementById('ml-preloader-audio');
             if (!audio) return;
             audio.currentTime = 0;
