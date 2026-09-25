@@ -1,0 +1,596 @@
+/**
+ * ==============================================================================
+ * Mobile Legends: Bang Bang (MLBB) Inspired Animated Preloader Styles
+ * Theme: Clean White / Monochrome Scheme (Matching Tabon Project Aesthetic)
+ * ==============================================================================
+ * 
+ * CUSTOMIZATION TOKENS (CSS Variables):
+ * Styled to harmonize seamlessly with the white, elegant brand palette.
+ */
+
+:root {
+    --ml-ring-size: 220px;
+    --ml-ring-glow: rgba(0, 0, 0, 0.12);        /* Elegant soft contrast shadow */
+    --ml-accent-color: #000000;                 /* Project signature dark accent */
+    --ml-accent-hover: #333333;
+    --ml-bg-main: #ffffff;                      /* Project primary white */
+    --ml-text-main: #000000;
+    --ml-text-muted: #555555;
+    --ml-border-color: #e0e0e0;
+    --ml-bg-image: url('../Images/Barangay Tabon Hall.png');
+}
+
+/* ==========================================================================
+   SCROLL LOCK & PAGE ISOLATION (Completely hides underlying page content)
+   ========================================================================== */
+html.ml-preloader-active,
+body.ml-preloader-active {
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    max-height: 100vh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+/* Hide scrollbar completely across Chrome, Edge, Safari, Firefox */
+html.ml-preloader-active::-webkit-scrollbar,
+body.ml-preloader-active::-webkit-scrollbar,
+#ml-preloader::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+body.ml-preloader-active {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Strictly hide every other section on the page while preloader is active */
+body.ml-preloader-active > *:not(#ml-preloader):not(script):not(style) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* ==========================================================================
+   MLBB PRELOADER CORE CONTAINER & RESETS
+   ========================================================================== */
+#ml-preloader {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    background-color: #ffffff !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: var(--font-body, 'Montserrat', sans-serif);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#ml-preloader.ml-preloader-dismissed {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ==========================================================================
+   PHASE 1: LOGO INTRO (0.0s – 1.6s) - WHITE SCHEME & HORIZONTAL LOCKUP
+   ========================================================================== */
+.ml-preloader-intro {
+    position: absolute;
+    inset: 0;
+    background-color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    pointer-events: none;
+    /* Intro sequence: scale in, glow pulse, hold, then scale down & fade out */
+    animation: mlLogoIntroContainer 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Horizontal lockup mimicking Image 2 (Mobile Legends layout) */
+.ml-preloader-intro-lockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    max-width: 90vw;
+}
+
+.ml-preloader-intro-mark-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Radial ambient glow behind intro logo */
+.ml-preloader-intro-glow {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.02) 55%, transparent 70%);
+    filter: blur(12px);
+    animation: mlIntroGlowPulse 1.2s ease-in-out infinite alternate;
+}
+
+.ml-preloader-intro-mark {
+    position: relative;
+    width: 105px;
+    height: 105px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.12));
+}
+
+/* Text group placed on the right side of the logo */
+.ml-preloader-intro-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Main title: Barangay Tabon */
+.ml-preloader-intro-title {
+    color: var(--ml-text-main);
+    font-family: var(--font-heading, 'Playfair Display', serif);
+    font-size: clamp(22px, 5.5vw, 32px);
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    line-height: 1.1;
+    opacity: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    /* Delayed fade-in for title (~150ms after logo mark) */
+    animation: mlTitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
+/* Subtitle: Information System (stacked below title, letter-spaced) */
+.ml-preloader-intro-subtitle {
+    margin-top: 6px;
+    color: var(--ml-text-muted);
+    font-family: var(--font-body, 'Montserrat', sans-serif);
+    font-size: clamp(10px, 2.5vw, 13px);
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    line-height: 1.2;
+    opacity: 0;
+    /* Delayed fade-in for subtitle (~250ms) */
+    animation: mlSubtitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+}
+
+/* Keyframes: Logo Intro Container Timeline (0 - 1.6s) */
+@keyframes mlLogoIntroContainer {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    35% {
+        opacity: 1;
+        transform: scale(1.0);
+    }
+    75% {
+        opacity: 1;
+        transform: scale(1.0);
+    }
+    95% {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.96);
+        display: none;
+        visibility: hidden;
+    }
+}
+
+/* Keyframes: Title Fade & Slight Slide */
+@keyframes mlTitleFade {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Keyframes: Subtitle Fade & Slight Slide */
+@keyframes mlSubtitleFade {
+    0% {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Keyframes: Intro Ambient Glow Pulse */
+@keyframes mlIntroGlowPulse {
+    0% {
+        transform: scale(0.92);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   PHASE 2: LOADING SCREEN STAGE (1.6s -> dismiss) - WHITE SCHEME
+   ========================================================================== */
+.ml-preloader-stage {
+    position: absolute;
+    inset: 0;
+    background-color: #ffffff !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    animation: mlStageFadeIn 0.5s ease-out 1.5s forwards;
+}
+
+/* Full-bleed background watermark with subtle ambient motion */
+.ml-preloader-bg {
+    position: absolute;
+    inset: -20px;
+    background-image: var(--ml-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(1.04) contrast(0.92);
+    opacity: 0.12;
+    animation: mlBgKenBurns 20s ease-in-out infinite alternate;
+}
+
+/* Soft white vignette overlay */
+.ml-preloader-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(ellipse at center, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.92) 70%, #ffffff 100%),
+        rgba(255, 255, 255, 0.85);
+}
+
+
+/* Centerpiece: Glowing Ring, Focal Image & Accent Text */
+.ml-preloader-center {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    margin-top: 10px;
+}
+
+.ml-preloader-ring-wrapper {
+    position: relative;
+    width: min(var(--ml-ring-size), 72vw);
+    height: min(var(--ml-ring-size), 72vw);
+    max-width: 260px;
+    max-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+/* Bold wide letter-spaced accent text sitting inside/behind the ring */
+.ml-preloader-accent-wrap {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.8vw, 14px);
+    pointer-events: none;
+}
+
+.ml-preloader-accent-letter {
+    font-family: var(--font-heading, 'Playfair Display', serif);
+    font-size: clamp(26px, 7.5vw, 46px);
+    font-weight: 700;
+    color: var(--ml-accent-color);
+    text-transform: uppercase;
+    opacity: 0;
+    transform: scale(0.85);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    animation: mlLetterFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Focal portrait or seal in center */
+.ml-preloader-focal-img {
+    position: absolute;
+    width: 65%;
+    height: 65%;
+    object-fit: contain;
+    border-radius: 50%;
+    z-index: 2;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.12));
+    opacity: 0.95;
+}
+
+/* Crisp & Glowing Ring with slow rotation & breathing pulse */
+.ml-preloader-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid var(--ml-accent-color);
+    box-shadow: 
+        0 0 24px var(--ml-ring-glow),
+        inset 0 0 16px var(--ml-ring-glow),
+        0 8px 30px rgba(0, 0, 0, 0.06);
+    z-index: 4;
+    pointer-events: none;
+    /* Combined continuous rotation and breathing pulse */
+    animation: 
+        mlRingRotate 9s linear infinite,
+        mlRingPulse 2.2s ease-in-out infinite alternate;
+}
+
+/* Decorative architectural notch details on ring edge */
+.ml-preloader-ring::before,
+.ml-preloader-ring::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid transparent;
+}
+
+.ml-preloader-ring::before {
+    inset: -8px;
+    border-top-color: var(--ml-accent-color);
+    border-bottom-color: var(--ml-accent-color);
+    opacity: 0.85;
+}
+
+.ml-preloader-ring::after {
+    inset: 6px;
+    border-left-color: rgba(0, 0, 0, 0.25);
+    border-right-color: rgba(0, 0, 0, 0.25);
+    opacity: 0.6;
+}
+
+/* Status text below ring */
+.ml-preloader-status {
+    font-family: var(--font-body, 'Montserrat', sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--ml-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   INDETERMINATE LOADING INDICATOR: NODES + SLIDING DIAMOND
+   ========================================================================== */
+.ml-preloader-track-wrap {
+    position: relative;
+    width: clamp(200px, 55vw, 270px);
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Thin horizontal rail (1.5px semi-transparent black rail) */
+.ml-preloader-rail {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 1.5px;
+    background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.08) 0%, 
+        rgba(0, 0, 0, 0.35) 50%, 
+        rgba(0, 0, 0, 0.08) 100%
+    );
+}
+
+/* Terminal nodes at left and right rail endpoints */
+.ml-preloader-node {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--ml-accent-color);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+    z-index: 5;
+}
+
+.ml-preloader-node-left {
+    left: 2px;
+}
+
+.ml-preloader-node-right {
+    right: 2px;
+}
+
+/* Continuous sliding diamond indicator */
+.ml-preloader-diamond {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--ml-accent-color);
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 6;
+    /* Indeterminate back-and-forth sliding animation */
+    animation: mlDiamondSlide 1.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+/* ==========================================================================
+   KEYFRAME ANIMATION DEFINITIONS
+   ========================================================================== */
+/* Phase 2 Stage entrance */
+@keyframes mlStageFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Background ambient motion */
+@keyframes mlBgKenBurns {
+    0% { transform: scale(1.03) translate(0, 0); }
+    100% { transform: scale(1.08) translate(-6px, -5px); }
+}
+
+
+/* Ring Rotation: Continuous 360deg over ~9s */
+@keyframes mlRingRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Ring Breathing Pulse: Scale 0.97 -> 1.03 */
+@keyframes mlRingPulse {
+    0% {
+        transform: scale(0.97);
+        opacity: 0.9;
+        box-shadow: 
+            0 0 16px var(--ml-ring-glow),
+            inset 0 0 12px var(--ml-ring-glow);
+    }
+    100% {
+        transform: scale(1.03);
+        opacity: 1;
+        box-shadow: 
+            0 0 30px var(--ml-ring-glow),
+            inset 0 0 22px var(--ml-ring-glow),
+            0 10px 35px rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Accent letters staggered fade-in */
+@keyframes mlLetterFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(4px);
+    }
+    100% {
+        opacity: 0.9;
+        transform: scale(1.0) translateY(0);
+    }
+}
+
+/* Indeterminate Diamond Slide: between left node and right node */
+@keyframes mlDiamondSlide {
+    0% {
+        left: 4px;
+        transform: translateY(-50%) rotate(45deg);
+    }
+    100% {
+        left: calc(100% - 14px);
+        transform: translateY(-50%) rotate(45deg);
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVE MOBILE-FIRST ADAPTATIONS
+   ========================================================================== */
+@media (max-width: 600px) {
+    .ml-preloader-intro-lockup {
+        gap: 14px;
+        padding: 0 16px;
+    }
+
+    .ml-preloader-intro-mark {
+        width: 78px;
+        height: 78px;
+    }
+
+    .ml-preloader-intro-title {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .ml-preloader-intro-subtitle {
+        font-size: 9.5px;
+        letter-spacing: 3.5px;
+        margin-top: 4px;
+    }
+
+    .ml-preloader-status {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+    }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: PREFERS REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .ml-preloader-intro,
+    .ml-preloader-stage,
+    .ml-preloader-bg,
+    .ml-preloader-intro-glow,
+    .ml-preloader-intro-title,
+    .ml-preloader-intro-subtitle,
+    .ml-preloader-accent-letter {
+        animation: none !important;
+    }
+
+    .ml-preloader-intro {
+        display: none !important;
+    }
+
+    .ml-preloader-stage {
+        opacity: 1 !important;
+    }
+
+    .ml-preloader-intro-title,
+    .ml-preloader-intro-subtitle,
+    .ml-preloader-accent-letter {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .ml-preloader-ring {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    .ml-preloader-diamond {
+        animation: none !important;
+        left: 50% !important;
+        transform: translateY(-50%) rotate(45deg) !important;
+    }
+}

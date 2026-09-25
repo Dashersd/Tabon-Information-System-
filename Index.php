@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="ml-preloader-active">
 <head>
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
     <meta charset="UTF-8">
@@ -9,10 +9,16 @@
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Preloader Stylesheet -->
+    <link rel="stylesheet" href="css/preloader.css?v=<?php echo time(); ?>">
+
     <!-- External Stylesheet -->
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
-<body>
+<body class="ml-preloader-active">
+
+    <!-- Mobile Legends Inspired Animated Preloader -->
+    <?php include 'preloader.php'; ?>
 
     <!-- Header / Navbar -->
     <header>
@@ -258,6 +264,8 @@
             </div>
         </footer>
 
+    <!-- Preloader Script -->
+    <script src="js/preloader.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
