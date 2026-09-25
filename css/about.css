@@ -23,9 +23,33 @@
     font-style: italic;
     font-size: 58px;
     font-weight: 600;
-    color: #0f2b48;
+    color: var(--secondary-black);
     line-height: 1;
     margin-bottom: 20px;
+}
+
+.about-text-scroll {
+    max-height: 230px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+.about-text-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.about-text-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 4px;
+}
+ 
+.about-text-scroll::-webkit-scrollbar-thumb {
+    background: #c1c1c1; 
+    border-radius: 4px;
+}
+
+.about-text-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8; 
 }
 
 .about-text {
@@ -33,6 +57,11 @@
     color: var(--text-muted);
     line-height: 1.7;
     font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.about-text:last-child {
+    margin-bottom: 0;
 }
 
 /* Polaroid Photo Component */
@@ -58,7 +87,7 @@
     text-align: center;
     margin-top: 10px;
     font-size: 16px;
-    color: #0f2b48;
+    color: var(--secondary-black);
     font-weight: 600;
 }
 
@@ -101,7 +130,7 @@
 
 .mv-icon {
     font-size: 26px;
-    color: #0f2b48;
+    color: var(--secondary-black);
 }
 
 .mv-divider {
@@ -114,7 +143,7 @@
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 32px;
-    color: #0f2b48;
+    color: var(--secondary-black);
     font-weight: 600;
 }
 

@@ -71,7 +71,7 @@
             </div>
             
             <div class="hero-cutout">
-                <a href="#" class="btn-explore fade-in-up delay-2">
+            <a href="#" class="btn-explore fade-in-up delay-2">
                     <i class="fa-solid fa-building"></i>
                     <span>Explore Our Services</span>
                     <i class="fa-solid fa-arrow-right"></i>
@@ -141,44 +141,44 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-        <h2 class="gallery-title" style="margin-top: 20px;">The Services</h2>
+        <h2 class="gallery-title fade-in-up animate-on-scroll" style="margin-top: 20px;">The Services</h2>
         <!-- Services Quick Access Grid -->
         <section class="services-container">
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">
                 <i class="fa-solid fa-address-card"></i>
                 <span>Resident Registry & Profiles</span>
             </a>
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.2s;">
                 <i class="fa-solid fa-building-columns"></i>
                 <span>Barangay Clearance Issuance</span>
             </a>
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">
                 <i class="fa-solid fa-hand-holding-heart"></i>
                 <span>Community Assistance Programs</span>
             </a>
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;">
                 <i class="fa-regular fa-calendar-check"></i>
                 <span>Official Events & Activities</span>
             </a>
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.5s;">
                 <i class="fa-solid fa-bullhorn"></i>
                 <span>Public Announcements</span>
             </a>
-            <a href="#" class="service-card">
+            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.6s;">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>Location & Directory</span>
             </a>
         </section>
 
         <!-- Latest Announcements Section -->
-        <div class="announcements-wrapper fade-in-up animate-on-scroll delay-1">
-            <h2 class="announcements-title">Latest Announcements</h2>
-            <div class="announcements-divider"></div>
-            <p class="announcements-subtitle">Keep track of upcoming events, meetings, and important notices in our barangay.</p>
+        <div class="announcements-wrapper">
+            <h2 class="announcements-title fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">Latest Announcements</h2>
+            <div class="announcements-divider fade-in-up animate-on-scroll" style="animation-delay: 0.2s;"></div>
+            <p class="announcements-subtitle fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">Keep track of upcoming events, meetings, and important notices in our barangay.</p>
             
             <div class="announcements-grid">
                 <!-- Announcement Card 1 -->
-                <div class="announcement-card">
+                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;">
                     <div class="announcement-date">
                         <span class="month">OCT</span>
                         <span class="day">15</span>
@@ -193,7 +193,7 @@
                 </div>
                 
                 <!-- Announcement Card 2 -->
-                <div class="announcement-card">
+                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.5s;">
                     <div class="announcement-date">
                         <span class="month">OCT</span>
                         <span class="day">22</span>
@@ -208,7 +208,7 @@
                 </div>
                 
                 <!-- Announcement Card 3 -->
-                <div class="announcement-card">
+                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.6s;">
                     <div class="announcement-date">
                         <span class="month">NOV</span>
                         <span class="day">01</span>

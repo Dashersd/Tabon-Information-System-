@@ -68,15 +68,15 @@
         
         <!-- Left Column: Info -->
         <div class="contact-left">
-            <h1 class="contact-title">Contact Us <i class="fa-solid fa-leaf" style="font-size: 40px; color: #1a4971; opacity: 0.6;"></i></h1>
-            <h3 class="contact-subtitle">We are here to help!</h3>
-            <p class="contact-desc">
+            <h1 class="contact-title fade-in-left animate-on-scroll">Contact Us <i class="fa-solid fa-leaf" style="font-size: 40px; color: #1a4971; opacity: 0.6;"></i></h1>
+            <h3 class="contact-subtitle fade-in-left animate-on-scroll delay-1">We are here to help!</h3>
+            <p class="contact-desc fade-in-left animate-on-scroll delay-2">
                 Feel free to reach out to us for any inquiries, feedback, or concerns. Your message matters to us, and we will get back to you as soon as possible.
             </p>
 
             <div class="info-cards-grid">
                 <!-- Location -->
-                <div class="info-card">
+                <div class="info-card fade-in-up animate-on-scroll delay-1">
                     <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
                     <div class="info-text">
                         <h4>Our Location</h4>
@@ -85,7 +85,7 @@
                 </div>
                 
                 <!-- Office Hours -->
-                <div class="info-card">
+                <div class="info-card fade-in-up animate-on-scroll delay-2">
                     <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
                     <div class="info-text">
                         <h4>Office Hours</h4>
@@ -94,7 +94,7 @@
                 </div>
 
                 <!-- Phone -->
-                <div class="info-card">
+                <div class="info-card fade-in-up animate-on-scroll delay-3">
                     <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
                     <div class="info-text">
                         <h4>Phone Number</h4>
@@ -108,7 +108,7 @@
 
         <!-- Right Column: Form -->
         <div class="contact-right">
-            <div class="form-container">
+            <div class="form-container fade-in-right animate-on-scroll delay-2">
                 <div class="form-header">
                     <i class="fa-regular fa-paper-plane"></i>
                     <h2>Send Us a Message</h2>
@@ -145,7 +145,7 @@
         
     </main>
 
-    <div class="contact-quote" style="margin: 20px auto 60px auto; max-width: 600px; padding: 0 20px;">
+    <div class="contact-quote fade-in-up animate-on-scroll delay-3" style="margin: 20px auto 60px auto; max-width: 600px; padding: 0 20px;">
         "Tayo ang Bayanihan, Tayo ang Barangay Tabon." 
         <br>
         <i class="fa-solid fa-heart" style="font-size: 16px;"></i><i class="fa-solid fa-heart" style="font-size: 12px; margin-left: 5px;"></i>

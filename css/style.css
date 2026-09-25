@@ -656,8 +656,10 @@ footer {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    color: inherit;
+    color: var(--secondary-black);
     text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .dropdown-toggle > i {

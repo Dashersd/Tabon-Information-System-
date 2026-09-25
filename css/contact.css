@@ -55,7 +55,7 @@ body.contact-page {
     font-family: var(--font-heading);
     font-size: 85px;
     font-style: italic;
-    color: #1a4971;
+    color: var(--secondary-black);
     font-weight: 700;
     margin-bottom: 5px;
     margin-top: 0;
@@ -64,7 +64,7 @@ body.contact-page {
 .contact-subtitle {
     font-family: var(--font-body);
     font-size: 22px;
-    color: #1a4971;
+    color: var(--secondary-black);
     font-weight: 700;
     margin-bottom: 10px;
 }
@@ -72,7 +72,7 @@ body.contact-page {
 .contact-desc {
     font-family: var(--font-body);
     font-size: 14px;
-    color: #1a365d;
+    color: var(--secondary-black);
     line-height: 1.6;
     margin-bottom: 40px;
     max-width: 420px;
@@ -101,7 +101,7 @@ body.contact-page {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #1a4971;
+    background-color: var(--secondary-black);
     color: #fff;
     display: flex;
     justify-content: center;
@@ -114,7 +114,7 @@ body.contact-page {
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 18px;
-    color: #1a4971;
+    color: var(--secondary-black);
     margin: 0 0 5px 0;
     font-weight: 700;
 }
@@ -131,7 +131,7 @@ body.contact-page {
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 26px;
-    color: #1a4971;
+    color: var(--secondary-black);
     font-weight: 700;
     line-height: 1.4;
     text-align: center;
@@ -163,14 +163,14 @@ body.contact-page {
 
 .form-header i {
     font-size: 38px;
-    color: #1a4971;
+    color: var(--secondary-black);
 }
 
 .form-header h2 {
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 32px;
-    color: #1a4971;
+    color: var(--secondary-black);
     margin: 0;
     font-weight: 700;
 }
@@ -223,7 +223,7 @@ body.contact-page {
 .form-input:focus {
     outline: none;
     background: rgba(255, 255, 255, 0.9);
-    border-color: #1a4971;
+    border-color: var(--secondary-black);
     box-shadow: 0 0 0 3px rgba(26, 73, 113, 0.1);
 }
 
@@ -234,7 +234,7 @@ textarea.form-input {
 }
 
 .btn-submit {
-    background-color: #1a4971;
+    background-color: var(--secondary-black);
     color: white;
     border: none;
     border-radius: 30px;
@@ -252,7 +252,7 @@ textarea.form-input {
 }
 
 .btn-submit:hover {
-    background-color: #0f2b48;
+    background-color: var(--accent-hover);
     transform: translateY(-2px);
 }
 
@@ -263,7 +263,7 @@ textarea.form-input {
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 22px;
-    color: #1a4971;
+    color: var(--secondary-black);
     margin-top: auto;
 }
 
