@@ -120,15 +120,6 @@
         <!-- Center Stage: Ring, Focal Image & Accent Text -->
         <div class="ml-preloader-center">
             <div class="ml-preloader-ring-wrapper">
-                <!-- Staggered accent lettering inside/behind ring -->
-                <div class="ml-preloader-accent-wrap" aria-hidden="true">
-                    <span class="ml-preloader-accent-letter" style="animation-delay: 1.7s;">T</span>
-                    <span class="ml-preloader-accent-letter" style="animation-delay: 1.8s;">A</span>
-                    <span class="ml-preloader-accent-letter" style="animation-delay: 1.9s;">B</span>
-                    <span class="ml-preloader-accent-letter" style="animation-delay: 2.0s;">O</span>
-                    <span class="ml-preloader-accent-letter" style="animation-delay: 2.1s;">N</span>
-                </div>
-
                 <!-- Central focal seal/portrait -->
                 <img 
                     src="Barangay Logo/Logo.png" 
