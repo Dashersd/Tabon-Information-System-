@@ -33,25 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
         cardShell.style.pointerEvents = 'none';
         
         setTimeout(() => {
-            // Empty the form content, keeping the container height locked
+            // Empty the form content
             formContent.innerHTML = '';
             formContent.classList.remove('is-leaving');
             
             // Shrink the card to just fit the logo (approx 140px height)
             cardShell.style.height = '140px';
             
-            // 2 & 3. Show logo glyph and pulse in the center
+            // 2 & 3. Show logo glyph and pulse
             transitionGlyph.classList.add('show');
             
             setTimeout(() => {
                 transitionGlyph.classList.remove('show');
                 
                 setTimeout(() => {
-                    // Prepare for entrance animation (make invisible)
-                    formContent.classList.add('is-entering');
-                    
                     // 4. Inject new content
                     injectTemplate(viewType);
+                    cardShell.classList.remove('is-transitioning');
                     
                     // Measure natural height of new content
                     cardShell.style.height = 'auto';
@@ -60,35 +58,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Reset to 140px to prepare for expansion transition
                     cardShell.style.height = '140px';
                     
-                    // Move brackets out
-                    cardShell.classList.remove('is-transitioning');
+                    // Start form enter animation (opacity 0 -> 1)
+                    formContent.classList.add('is-entering');
                     
-                    // Force a reflow so the browser registers the starting state
-                    void formContent.offsetWidth;
+                    // Force a reflow
                     void cardShell.offsetHeight;
                     
-                    // Expand/shrink to new target height
+                    // Expand to target height
                     cardShell.style.height = targetHeight + 'px';
                     
-                    // Start form enter animation (opacity 0 -> 1) slowly
-                    formContent.classList.remove('is-entering');
                     // Trigger the light sweep on the primary button
                     const primaryBtn = formContent.querySelector('.primary-btn');
                     if (primaryBtn) {
-                        setTimeout(() => {
-                            primaryBtn.classList.add('sweep-animate');
-                        }, 500); // Trigger after fade in completes
-                        
-                        setTimeout(() => {
-                            primaryBtn.classList.remove('sweep-animate');
-                        }, 1000);
+                        primaryBtn.classList.add('sweep-animate');
                     }
                     
                     setTimeout(() => {
+                        formContent.classList.remove('is-entering');
+                        if (primaryBtn) {
+                            primaryBtn.classList.remove('sweep-animate');
+                        }
                         cardShell.style.height = 'auto'; // Reset for responsive layout
                         cardShell.style.pointerEvents = 'auto';
                         isAnimating = false;
-                    }, 600); // Wait for enter animation and height expansion
+                    }, 500); // Wait for enter animation
                     
                 }, 300); // Wait for glyph to fade out
                 
