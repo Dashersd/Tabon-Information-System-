@@ -26,15 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     <link rel="stylesheet" href="css/login.css?v=<?php echo time(); ?>">
 </head>
 <body class="login-page">
-    <div class="bg-lines">
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line gold"></div>
-        <div class="line gold"></div>
-    </div>
-
     <div class="card-shell" id="cardShell">
         <div class="card-border"></div>
         <div class="card-cut-edge tl"></div>
@@ -42,14 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         <div class="card-bg"></div>
         <div class="card-bracket top-left">
             <svg viewBox="0 0 100 100" width="100%" height="100%">
-                <polygon points="20,20 70,20 20,70" fill="none" stroke="#F4C430" stroke-width="32" stroke-linejoin="round" />
-                <polygon points="20,20 70,20 20,70" fill="#151516" stroke="#151516" stroke-width="27" stroke-linejoin="round" />
+                <polygon points="20,20 70,20 20,70" fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" />
+                <polygon points="20,20 70,20 20,70" fill="#121214" stroke="#121214" stroke-width="27" stroke-linejoin="round" />
             </svg>
         </div>
         <div class="card-bracket bottom-right">
             <svg viewBox="0 0 100 100" width="100%" height="100%">
-                <polygon points="80,80 30,80 80,30" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="32" stroke-linejoin="round" />
-                <polygon points="80,80 30,80 80,30" fill="#151516" stroke="#151516" stroke-width="27" stroke-linejoin="round" />
+                <polygon points="80,80 30,80 80,30" fill="none" stroke="#000000" stroke-width="32" stroke-linejoin="round" />
+                <polygon points="80,80 30,80 80,30" fill="#121214" stroke="#121214" stroke-width="27" stroke-linejoin="round" />
             </svg>
         </div>
         <div class="transition-glyph" id="transitionGlyph">

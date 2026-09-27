@@ -22,72 +22,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         isAnimating = true;
-        
-        // Lock explicit height before leaving
-        const currentHeight = cardShell.offsetHeight;
-        cardShell.style.height = currentHeight + 'px';
-        
-        // 1. Fade out current content
-        formContent.classList.add('is-leaving');
-        cardShell.classList.add('is-transitioning');
         cardShell.style.pointerEvents = 'none';
         
+        // 1. Current text fades out
+        formContent.classList.remove('fade-in');
+        formContent.classList.add('is-leaving');
+        
+        // Outer boxes begin moving closer to each other towards center
+        cardShell.classList.add('is-transitioning');
+        
+        // After text fade-out completes (250ms)
         setTimeout(() => {
-            // Empty the form content
+            // Empty the form content and prepare the invisible entering state
             formContent.innerHTML = '';
             formContent.classList.remove('is-leaving');
+            formContent.classList.add('is-entering');
             
-            // Shrink the card to just fit the logo (approx 140px height)
-            cardShell.style.height = '140px';
-            
-            // 2 & 3. Show logo glyph and pulse
-            transitionGlyph.classList.add('show');
-            
+            // Outer boxes reach the center at 500ms (250ms after fade-out)
             setTimeout(() => {
-                transitionGlyph.classList.remove('show');
+                // 2. Outer boxes meet in the center - animate them (pulse & glow)
+                cardShell.classList.add('is-pulsing');
                 
+                // Inject new template while it is completely hidden (is-entering has opacity: 0)
+                injectTemplate(viewType);
+                
+                // Pulse duration is 500ms
                 setTimeout(() => {
-                    // 4. Inject new content
-                    injectTemplate(viewType);
+                    cardShell.classList.remove('is-pulsing');
+                    
+                    // 3. Now the opposing outer boxes expand back out towards the corners
                     cardShell.classList.remove('is-transitioning');
                     
-                    // Measure natural height of new content
-                    cardShell.style.height = 'auto';
-                    const targetHeight = cardShell.offsetHeight;
-                    
-                    // Reset to 140px to prepare for expansion transition
-                    cardShell.style.height = '140px';
-                    
-                    // Start form enter animation (opacity 0 -> 1)
-                    formContent.classList.add('is-entering');
-                    
-                    // Force a reflow
-                    void cardShell.offsetHeight;
-                    
-                    // Expand to target height
-                    cardShell.style.height = targetHeight + 'px';
-                    
-                    // Trigger the light sweep on the primary button
-                    const primaryBtn = formContent.querySelector('.primary-btn');
-                    if (primaryBtn) {
-                        primaryBtn.classList.add('sweep-animate');
-                    }
-                    
+                    // 4. Then, only when the opposing outer box expands do the texts appear
                     setTimeout(() => {
+                        // Force reflow so browser catches the transition from opacity 0 to 1
+                        void formContent.offsetWidth;
+                        
                         formContent.classList.remove('is-entering');
+                        formContent.classList.add('fade-in');
+                        
+                        // Primary button light sweep effect
+                        const primaryBtn = formContent.querySelector('.primary-btn');
                         if (primaryBtn) {
-                            primaryBtn.classList.remove('sweep-animate');
+                            setTimeout(() => {
+                                primaryBtn.classList.add('sweep-animate');
+                            }, 300);
+                            setTimeout(() => {
+                                primaryBtn.classList.remove('sweep-animate');
+                            }, 900);
                         }
-                        cardShell.style.height = 'auto'; // Reset for responsive layout
-                        cardShell.style.pointerEvents = 'auto';
-                        isAnimating = false;
-                    }, 500); // Wait for enter animation
+                        
+                        // Finish transition after fade-in completes
+                        setTimeout(() => {
+                            formContent.classList.remove('fade-in');
+                            cardShell.style.pointerEvents = 'auto';
+                            isAnimating = false;
+                        }, 550);
+                        
+                    }, 50); // Bracket expansion is underway; text begins fading in gracefully
                     
-                }, 300); // Wait for glyph to fade out
+                }, 500); // Center pulse duration
                 
-            }, 600); // Wait for pulse to finish
+            }, 250); // Wait for brackets to reach center
             
-        }, 300); // Wait for fade out
+        }, 250); // Wait for text fade-out
     }
     
     function injectTemplate(viewType) {
