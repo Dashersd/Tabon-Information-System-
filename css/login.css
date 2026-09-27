@@ -91,6 +91,7 @@ body.login-page {
     padding: 1.5px;
     background: linear-gradient(90deg, #F4C430 0%, rgba(255,255,255,0.18) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     clip-path: polygon(
