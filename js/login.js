@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isAnimating = false;
     
     // Initialize with Sign In view
-    loadView('signin', false);
+    loadView('signin', true);
     
     function loadView(viewType, animate = true) {
         if (isAnimating) return;
