@@ -71,7 +71,7 @@
         <section class="container-about">
             <div class="about-info fade-in-left animate-on-scroll">
                 <h1 class="about-title">About Us</h1>
-                <div class="about-text-scroll">
+                <div class="about-text-scroll" data-lenis-prevent="true">
                     <p class="about-text">Tabon means "to cover". It is derived to the characteristics of a bird name in Subanen dialect “MANGAWAG”, because when this kind of bird will lay eggs, they will dig a hole in the ground and lay eggs therein, after that it will covered with earth/soil.</p>
                     <p class="about-text">Tabon was inhabited by Subanen who made their living by picking a fruit trees and hunting wild animals in the jungle. These Lumads made houses of “NIBONG” and “SUSAY” leaves for roofing and tying rattan for the light local materials, instead of using nails. As the Lumad hunters looked for food, he roamed around to hunt, until he saw something covered in the ground with dry leaves, branches and roots of trees with mixed soil. The hunter removed the cover and dig the hole, while digging he found out it was an eggs of a wild fowl called “MANGAWAG”. This kind of wild fowls, dig the ground to lay eggs and made it a nests. The word “TABON” came from the word “TABONAN” means “TO COVER”.</p>
                     <p class="about-text">Barangay Tabon is the home of the Lumad Subanen, one of the 18 major Lumad tribes in Mindanao Island. The first Subanen families who inhabited the place when it was not yet a Barangay are only the families of “MAMULO, UNGOB, & MANGEDLOG”.</p>

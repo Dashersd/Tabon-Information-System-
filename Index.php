@@ -286,6 +286,8 @@
 
     <!-- Preloader Script -->
     <script src="js/preloader.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
