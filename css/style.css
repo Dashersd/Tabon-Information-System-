@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&display=swap');
 
+html {
+    scroll-behavior: smooth;
+}
+
 :root {
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Montserrat', sans-serif;
@@ -262,6 +266,16 @@ nav {
     display: flex;
     align-items: center;
     gap: 25px;
+}
+
+.sk-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px; /* Square with slight rounding */
+    object-fit: cover;
+    border: 3px solid var(--primary-white);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    flex-shrink: 0;
 }
 
 .captain-avatar {
@@ -872,6 +886,105 @@ footer {
     color: var(--text-muted);
     margin-bottom: 8px;
     line-height: 1.5;
+}
+
+/* Officials Message Grid */
+.officials-message-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto 60px auto;
+    padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+    .officials-message-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.official-msg-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.official-avatar-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.official-avatar-wrapper.pb-theme {
+    background-color: #e5e9eb;
+}
+
+.official-avatar-wrapper.sk-theme {
+    background-color: #e5e9eb;
+}
+
+.avatar-circle {
+    font-size: 40px;
+    font-weight: 500;
+    color: #223c3b; /* Primary Dark Green */
+    z-index: 1;
+}
+
+.official-avatar-wrapper.sk-theme .avatar-circle {
+    color: #223c3b; /* Primary Dark Green */
+}
+
+.avatar-pill {
+    position: absolute;
+    bottom: -10px;
+    background-color: #223c3b; /* Primary Dark Green */
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.official-msg-content {
+    margin-top: 10px;
+}
+
+.official-name {
+    color: #223c3b; /* Primary Dark Green */
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    margin-top: 0;
+}
+
+.official-role {
+    color: #4cd137; /* Highlight Green */
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.official-quote {
+    color: #64748b;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.6;
+    margin: 0;
 }
 
 .announcement-details p strong {

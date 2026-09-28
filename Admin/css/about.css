@@ -1,0 +1,140 @@
+/* css/about.css */
+
+.about-header {
+    margin-bottom: 25px;
+}
+
+.about-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2b323c;
+    margin: 0 0 5px 0;
+}
+
+.about-header p {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.about-content-wrapper {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+}
+
+.about-left-col {
+    width: 300px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.about-right-col {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.image-upload-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.image-drop-area {
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9fafb;
+    margin-bottom: 15px;
+}
+
+.btn-upload {
+    background-color: #1a4d33;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    align-self: center;
+}
+
+.btn-upload:hover {
+    background-color: #113622;
+}
+
+.text-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.text-card textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #4b5563;
+    resize: vertical;
+    background-color: #f9fafb;
+}
+
+.text-card textarea:focus {
+    outline: none;
+    border-color: #1a4d33;
+    background-color: #fff;
+}
+
+.save-action-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+.btn-save {
+    background-color: #1a4d33;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-save:hover {
+    background-color: #113622;
+}
+
+@media (max-width: 900px) {
+    .about-content-wrapper {
+        flex-direction: column;
+    }
+    .about-left-col {
+        width: 100%;
+    }
+}

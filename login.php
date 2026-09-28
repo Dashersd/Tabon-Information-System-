@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_POST['password'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if ($email === 'admin' && $password === '123') {
+    if (($email === 'admin' || $email === 'admin@example.com') && $password === '123') {
         $_SESSION['admin_logged_in'] = true;
-        header("Location: Admin/admindashboard.php");
+        header("Location: Admin/controlpanel.php");
         exit();
     } else {
         $error = "Invalid email or password.";
@@ -72,10 +72,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
             <?php endif; ?>
 
             <div class="input-group">
-                <label>Email Address</label>
+                <label>Email or Username</label>
                 <div class="input-wrapper">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    <input type="email" name="email" placeholder="name@example.com" required>
+                    <input type="text" name="email" placeholder="admin or name@example.com" required>
                 </div>
             </div>
 

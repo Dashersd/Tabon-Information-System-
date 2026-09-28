@@ -1,0 +1,66 @@
+﻿/* Barangay Board Gallery */
+.board-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    background-color: #f4f6f8;
+    border-radius: 10px;
+}
+
+.board-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e0e4e8;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+}
+
+.board-card:hover {
+    transform: translateY(-5px);
+}
+
+.board-img-container {
+    width: 100%;
+    height: 200px;
+    background: #e5e9eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.board-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.board-info {
+    padding: 15px;
+    text-align: center;
+}
+
+.board-info h3 {
+    font-size: 15px;
+    color: #2b323c;
+    margin-bottom: 5px;
+}
+
+.board-info p {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
+.board-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    border-top: 1px solid #f0f2f5;
+    padding-top: 15px;
+}
+

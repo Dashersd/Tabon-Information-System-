@@ -37,10 +37,14 @@
                 <i class="fa-solid fa-users"></i>
                 <span>About Us</span>
             </a>
+            <a href="gallery.php" class="nav-item ">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery</span>
+            </a>
             <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <i class="fa-regular fa-image"></i>
-                    <span>Gallery & Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
@@ -324,6 +328,7 @@
                     <li><a href="Index.php">Home</a></li>
                     <li><a href="about.php">About</a></li>
                     <li><a href="officials.php">Officials</a></li>
+                    <li><a href="gallery.php">Gallery</a></li>
                     <li><a href="contact.php">Contact</a></li>
                 </ul>
             </div>

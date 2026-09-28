@@ -40,10 +40,14 @@
                 <i class="fa-solid fa-circle-info"></i>
                 <span>About Us</span>
             </a>
-                        <div class="nav-item dropdown  ">
+            <a href="gallery.php" class="nav-item ">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery</span>
+            </a>
+            <div class="nav-item dropdown  ">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <i class="fa-regular fa-image"></i>
-                    <span>Gallery & Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
@@ -77,7 +81,7 @@
             </div>
             
             <div class="hero-cutout">
-            <a href="#" class="btn-explore fade-in-up delay-2">
+            <a href="#services-section" class="btn-explore fade-in-up delay-2">
                     <i class="fa-solid fa-building"></i>
                     <span>Explore Our Services</span>
                     <i class="fa-solid fa-arrow-right"></i>
@@ -110,22 +114,37 @@
     <!-- Officials Section -->
     <div class="main-content" style="padding-bottom: 0;">
         <h2 class="gallery-title" style="margin-top: 40px;">Meet the Officials</h2>
-        <section class="captain-card">
-            <!-- Replace src with your photo path e.g. "images/captain.jpg" -->
-            <img src="Officials/Captain.jpg" alt="Barangay Captain" class="captain-avatar">
+        <div class="officials-message-grid">
             
-            <div class="captain-content">
-                <h4>Message from the Barangay Captain</h4>
-                <blockquote>
-                    <p>As the Barangay Captain of Tabon, I extend my profound gratitude and pride to our dedicated team for the successful completion of our Barangay Development Plan.</p>
-                    <p>Through the invaluable support of our partner agencies and the unwavering commitment of our local officials, I am highly confident in our ability to realize these proposed programs and projects. Let us remain steadfast in our collaborative efforts to deliver tangible, meaningful results for the continuous progress and betterment of our entire community.</p>
-                </blockquote>
-                <div class="captain-signature">
-                    <div class="captain-name">Hon. Nancy D. Ungos</div>
-                    <div class="captain-title">Punong Barangay, Barangay Tabon</div>
+            <!-- PB Card -->
+            <div class="official-msg-card">
+                <div class="official-avatar-wrapper pb-theme">
+                    <div class="avatar-circle">PB</div>
+                    <div class="avatar-pill">Punong Barangay</div>
+                </div>
+                <div class="official-msg-content">
+                    <h3 class="official-name">Hon. Punong Barangay</h3>
+                    <p class="official-quote">
+                        "Committed to providing transparent and dedicated public service for the betterment of every resident in Barangay Tabon."
+                    </p>
                 </div>
             </div>
-        </section>
+
+            <!-- SK Card -->
+            <div class="official-msg-card">
+                <div class="official-avatar-wrapper sk-theme">
+                    <div class="avatar-circle">SK</div>
+                    <div class="avatar-pill">SK Chairman</div>
+                </div>
+                <div class="official-msg-content">
+                    <h3 class="official-name">Hon. SK Chairman</h3>
+                    <p class="official-quote">
+                        "Empowering the youth of Barangay Tabon through active participation in sports, education, and community development."
+                    </p>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- 3D Image Carousel Gallery -->
@@ -146,7 +165,7 @@
     </section>
 
     <!-- Main Content Area -->
-    <main class="main-content">
+    <main class="main-content" id="services-section">
         <h2 class="gallery-title fade-in-up animate-on-scroll" style="margin-top: 20px;">The Services</h2>
         <!-- Services Quick Access Grid -->
         <section class="services-container">
@@ -249,6 +268,7 @@
                         <li><a href="Index.php">Home</a></li>
                         <li><a href="about.php">About</a></li>
                         <li><a href="officials.php">Officials</a></li>
+                        <li><a href="gallery.php">Gallery</a></li>
                         <li><a href="contact.php">Contact</a></li>
                     </ul>
                 </div>

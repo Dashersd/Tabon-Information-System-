@@ -133,3 +133,11 @@ body {
     background-color: #1e4f34;
 }
 
+
+/* Dropdown Styles */
+.dropdown-btn { cursor: pointer; justify-content: space-between !important; }
+.dropdown-container { display: none; background-color: #1a2e2d; }
+.dropdown-container.active { display: block; }
+.dropdown-container a { padding: 10px 25px 10px 50px !important; font-size: 12px !important; border-left: 4px solid transparent; }
+.fa-caret-down { transition: transform 0.3s ease; }
+.dropdown-btn.active .fa-caret-down { transform: rotate(180deg); }

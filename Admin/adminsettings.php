@@ -32,17 +32,44 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <nav class="sidebar-nav">
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
+                <li><a href="about.php"><i class="fa-solid fa-circle-info"></i> About</a></li>
                 <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
 
 
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
-                <li><a href="barangayboard.php"><i class="fa-solid fa-user-tie"></i>Barangay Board</a></li>
+                <li>
+                    <a class="dropdown-btn"><i class="fa-solid fa-user-tie"></i> Barangay Board <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
+                    <div class="dropdown-container">
+                        <a href="barangayofficial.php">Barangay Official</a>
+                        <a href="skofficial.php">SK Official</a>
+                    </div>
+                </li>
+                <li><a href="service.php"><i class="fa-solid fa-bell-concierge"></i> Service</a></li>
+                <li><a href="announcement.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li><a href="adminsettings.php" class="active"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
                 
                 <br>
                 <li><a href="../login.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
             </ul>
         </nav>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var dropdowns = document.getElementsByClassName("dropdown-btn");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].addEventListener("click", function() {
+                        this.classList.toggle("active");
+                        var dropdownContent = this.nextElementSibling;
+                        if (dropdownContent.style.display === "block" || dropdownContent.classList.contains("active")) {
+                            dropdownContent.classList.remove("active");
+                            dropdownContent.style.display = "none";
+                        } else {
+                            dropdownContent.classList.add("active");
+                            dropdownContent.style.display = "block";
+                        }
+                    });
+                }
+            });
+        </script>
     </aside>
 
     <!-- Main Content -->
