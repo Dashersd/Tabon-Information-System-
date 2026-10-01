@@ -4,25 +4,28 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     header("Location: ../login.php");
     exit();
 }
+
+$jsonFile = 'data/households.json';
+$households = [];
+if (file_exists($jsonFile)) {
+    $households = json_decode(file_get_contents($jsonFile), true) ?? [];
+}
+
+$records = array_filter($households, function($hh) {
+    return $hh['purok'] === 'Purok 2';
+});
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" href="../Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage About Us - Brgy Tabon</title>
-    
-    <!-- FontAwesome CSS CDN -->
+    <title>Resident 2 Records - Brgy Tabon</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Admin Stylesheet -->
     <link rel="stylesheet" href="css/admin_common.css">
-    <link rel="stylesheet" href="css/about.css">
+    <link rel="stylesheet" href="css/Resident 2.css">
 </head>
 <body>
-
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="../Barangay Logo/Logo.png" alt="Barangay Logo" onerror="this.src='https://via.placeholder.com/70'">
@@ -31,8 +34,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="controlpanel.php"><i class="fa-solid fa-desktop"></i> Control Panel</a></li>
-                <li><a href="about.php" class="active"><i class="fa-solid fa-circle-info"></i> About</a></li>
+                <li><a href="controlpanel.php" class="active"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
+                <li><a href="about.php"><i class="fa-solid fa-circle-info"></i> About</a></li>
                 <li>
                     <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container">
@@ -51,6 +54,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <a href="Resident 3.php">Resident 3</a>
                     </div>
                 </li>
+
+
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li>
                     <a class="dropdown-btn"><i class="fa-solid fa-user-tie"></i> Barangay Board <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
@@ -87,63 +92,55 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         </script>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
-        
         <div class="top-bar">
-            <h1 class="page-title" style="font-size: 20px;">Manage About Us</h1>
-            <div class="user-profile" style="display: flex; align-items: center; gap: 10px; text-align: right;">
-                <div class="user-info">
-                    <h4 style="font-size: 14px; font-weight: 700; color: #2b323c; margin: 0;">System Admin</h4>
-                    <p style="font-size: 12px; color: #6b7280; margin: 0;">Administrator</p>
-                </div>
-                <div class="user-avatar" style="width: 40px; height: 40px; background-color: #f1c40f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000;">
-                    A
-                </div>
+            <div class="top-bar-left">
+                <h1>Resident 2 Records</h1>
             </div>
-        </div>
-
-        <div class="about-header">
-            <h2>About Us Content</h2>
-            <p>Update the information displayed on the public About Us page.</p>
-        </div>
-
-        <div class="about-content-wrapper">
-            <!-- Left Column: Add Image -->
-            <div class="about-left-col">
-                <div class="image-upload-card">
-                    <div class="field-label">Add Image</div>
-                    <div class="image-drop-area">
-                        <!-- Preview would go here -->
+            <div class="top-bar-right">
+                <div class="admin-profile">
+                    <div class="admin-info">
+                        <span class="admin-name">System Admin</span>
+                        <span class="admin-role">Administrator</span>
                     </div>
-                    <button type="button" class="btn-upload">Choose File</button>
-                </div>
-            </div>
-
-            <!-- Right Column: History, Vision, Mission -->
-            <div class="about-right-col">
-                <div class="text-card">
-                    <div class="field-label">History</div>
-                    <textarea placeholder="Enter barangay history here..."></textarea>
-                </div>
-
-                <div class="text-card">
-                    <div class="field-label">Vision</div>
-                    <textarea placeholder="Enter barangay vision here..."></textarea>
-                </div>
-
-                <div class="text-card">
-                    <div class="field-label">Mission</div>
-                    <textarea placeholder="Enter barangay mission here..."></textarea>
-                </div>
-
-                <div class="save-action-container">
-                    <button class="btn-save"><i class="fa-regular fa-floppy-disk"></i> Save Changes</button>
+                    <div class="admin-avatar">A</div>
                 </div>
             </div>
         </div>
-
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>House Number</th>
+                        <th>Husband Name</th>
+                        <th>Spouse Name</th>
+                        <th>Date Added</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($records)): ?>
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No records found.</td>
+                    </tr>
+                    <?php else: ?>
+                        <?php foreach ($records as $record): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($record['houseNumber']) ?></td>
+                            <td><?= htmlspecialchars($record['husbandName']) ?></td>
+                            <td><?= htmlspecialchars($record['spouseName']) ?></td>
+                            <td><?= htmlspecialchars($record['dateAdded']) ?></td>
+                            <td>
+                                <a href="Purok 2.php" class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+                                <a href="process_household.php?delete_id=<?= $record['id'] ?>&return=Resident 2.php" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to remove this record?');"><i class="fa-solid fa-trash"></i> Remove</a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </main>
-
 </body>
 </html>

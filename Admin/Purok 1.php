@@ -42,6 +42,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <a href="Purok 3.php">Purok 3</a>
                     </div>
                 </li>
+                <li>
+                    <a class="dropdown-btn"><i class="fa-solid fa-users"></i> Household <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
+                    <div class="dropdown-container">
+                        <a href="Legend Files.php">Legend Files</a>
+                        <a href="Resident 1.php">Resident 1</a>
+                        <a href="Resident 2.php">Resident 2</a>
+                        <a href="Resident 3.php">Resident 3</a>
+                    </div>
+                </li>
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li>
                     <a class="dropdown-btn"><i class="fa-solid fa-user-tie"></i> Barangay Board <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
@@ -101,48 +110,54 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </div>
 
             <div class="form-container">
-                <form action="#" method="POST" enctype="multipart/form-data">
+                <?php if (isset($_GET['success'])): ?>
+                    <div style="background-color: #dcfce3; color: #166534; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
+                        <i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i> Household successfully saved to map!
+                    </div>
+                <?php endif; ?>
+                <form action="process_household.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="purok_name" value="Purok 1">
                     <div class="form-group">
                         <label>House Number</label>
-                        <input type="text" placeholder="e.g. 123">
+                        <input type="text" name="house_number" placeholder="e.g. 123" required>
                     </div>
                     
                     <div class="form-group">
                         <label>Household Name</label>
                         <div class="form-row">
                             <div class="form-group half" style="margin-bottom: 0;">
-                                <input type="text" placeholder="Name of the Husband (e.g. Juan Dela Cruz)">
+                                <input type="text" name="husband_name" placeholder="Name of the Husband (e.g. Juan Dela Cruz)" required>
                             </div>
                             <div class="form-group half" style="margin-bottom: 0;">
-                                <input type="text" placeholder="Name of the Spouse (Maiden) (e.g. Maria Santos)">
+                                <input type="text" name="spouse_name" placeholder="Name of the Spouse (Maiden) (e.g. Maria Santos)">
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Marker Image (Icon shown on map)</label>
-                        <input type="file" id="marker_image" class="file-input">
+                        <input type="file" name="marker_image" id="marker_image" class="file-input" required>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group half">
                             <label>Marker Width (px)</label>
-                            <input type="number" value="40">
+                            <input type="number" name="marker_width" value="40">
                         </div>
                         <div class="form-group half">
                             <label>Marker Height (px)</label>
-                            <input type="number" value="40">
+                            <input type="number" name="marker_height" value="40">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group half">
                             <label>Top position (%)</label>
-                            <input type="number" step="0.01" value="50.00">
+                            <input type="number" name="top_pos" step="0.01" value="50.00">
                         </div>
                         <div class="form-group half">
                             <label>Left position (%)</label>
-                            <input type="number" step="0.01" value="50.00">
+                            <input type="number" name="left_pos" step="0.01" value="50.00">
                         </div>
                     </div>
                     
@@ -151,5 +166,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </div>
         </div>
     </main>
+    <script src="js/map_interactive.js"></script>
 </body>
 </html>
