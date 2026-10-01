@@ -11,14 +11,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     <link rel="icon" type="image/png" href="../Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage About Us - Brgy Tabon</title>
+    <title>Manage Legends - Brgy Tabon</title>
     
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Admin Stylesheet -->
     <link rel="stylesheet" href="css/admin_common.css">
-    <link rel="stylesheet" href="css/about.css">
+    <link rel="stylesheet" href="css/Legend.css">
 </head>
 <body>
 
@@ -31,12 +31,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="controlpanel.php"><i class="fa-solid fa-desktop"></i> Control Panel</a></li>
-                <li><a href="about.php" class="active"><i class="fa-solid fa-circle-info"></i> About</a></li>
+                <li><a href="controlpanel.php"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
+                <li><a href="about.php"><i class="fa-solid fa-circle-info"></i> About</a></li>
                 <li>
-                    <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
-                    <div class="dropdown-container">
-                        <a href="Legend.php">Legend</a>
+                    <a class="dropdown-btn active"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
+                    <div class="dropdown-container" style="display: block;">
+                        <a href="Legend.php" class="active" style="color: #ffffff; font-weight: 600;">Legend</a>
                         <a href="Purok 1.php">Purok 1</a>
                         <a href="Purok 2.php">Purok 2</a>
                         <a href="Purok 3.php">Purok 3</a>
@@ -53,7 +53,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 <li><a href="service.php"><i class="fa-solid fa-bell-concierge"></i> Service</a></li>
                 <li><a href="announcement.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
-                
                 <br>
                 <li><a href="../login.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
             </ul>
@@ -80,61 +79,65 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
     <!-- Main Content -->
     <main class="main-content">
+        <div class="top-bar legend-top-bar">
+            <h1 class="page-title" style="margin: 0; color: #1e293b; font-size: 24px; font-weight: 700;">Manage Legends</h1>
+            <div class="admin-profile">
+                <div class="admin-info">
+                    <span class="admin-name">System Admin</span>
+                    <span class="admin-role">Administrator</span>
+                </div>
+                <div class="admin-avatar">A</div>
+            </div>
+        </div>
         
-        <div class="top-bar">
-            <h1 class="page-title" style="font-size: 20px;">Manage About Us</h1>
-            <div class="user-profile" style="display: flex; align-items: center; gap: 10px; text-align: right;">
-                <div class="user-info">
-                    <h4 style="font-size: 14px; font-weight: 700; color: #2b323c; margin: 0;">System Admin</h4>
-                    <p style="font-size: 12px; color: #6b7280; margin: 0;">Administrator</p>
-                </div>
-                <div class="user-avatar" style="width: 40px; height: 40px; background-color: #f1c40f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000;">
-                    A
-                </div>
+        <div class="legend-content-wrapper">
+            <div class="content-header">
+                <h2>Add House to Map</h2>
+                <p>Upload a marker, add members, and drag the icon to save to the map</p>
             </div>
-        </div>
 
-        <div class="about-header">
-            <h2>About Us Content</h2>
-            <p>Update the information displayed on the public About Us page.</p>
-        </div>
+            <div class="map-container">
+                <img src="../Images/Make_this_16;9_and_4k_20261001084446.jpg" alt="Map Preview" class="map-preview-image">
+            </div>
 
-        <div class="about-content-wrapper">
-            <!-- Left Column: Add Image -->
-            <div class="about-left-col">
-                <div class="image-upload-card">
-                    <div class="field-label">Add Image</div>
-                    <div class="image-drop-area">
-                        <!-- Preview would go here -->
+            <div class="form-container">
+                <form action="#" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>House Number</label>
+                        <input type="text" placeholder="e.g. 123">
                     </div>
-                    <button type="button" class="btn-upload">Choose File</button>
-                </div>
-            </div>
-
-            <!-- Right Column: History, Vision, Mission -->
-            <div class="about-right-col">
-                <div class="text-card">
-                    <div class="field-label">History</div>
-                    <textarea placeholder="Enter barangay history here..."></textarea>
-                </div>
-
-                <div class="text-card">
-                    <div class="field-label">Vision</div>
-                    <textarea placeholder="Enter barangay vision here..."></textarea>
-                </div>
-
-                <div class="text-card">
-                    <div class="field-label">Mission</div>
-                    <textarea placeholder="Enter barangay mission here..."></textarea>
-                </div>
-
-                <div class="save-action-container">
-                    <button class="btn-save"><i class="fa-regular fa-floppy-disk"></i> Save Changes</button>
-                </div>
+                    
+                    <div class="form-group">
+                        <label>Marker Image (Icon shown on map)</label>
+                        <input type="file" id="marker_image" class="file-input">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Marker Width (px)</label>
+                            <input type="number" value="40">
+                        </div>
+                        <div class="form-group half">
+                            <label>Marker Height (px)</label>
+                            <input type="number" value="40">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Top position (%)</label>
+                            <input type="number" step="0.01" value="50.00">
+                        </div>
+                        <div class="form-group half">
+                            <label>Left position (%)</label>
+                            <input type="number" step="0.01" value="50.00">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="save-btn"><i class="fa-solid fa-download"></i> Save to Map</button>
+                </form>
             </div>
         </div>
-
     </main>
-
 </body>
 </html>

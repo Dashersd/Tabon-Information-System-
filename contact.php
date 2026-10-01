@@ -51,8 +51,8 @@
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
-            <a href="#" class="nav-item ">
-                <i class="fa-solid fa-location-dot"></i>
+            <a href="spotmap.php" class="nav-item ">
+                <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
             <a href="contact.php" class="nav-item active">

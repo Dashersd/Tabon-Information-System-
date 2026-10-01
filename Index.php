@@ -54,8 +54,8 @@
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
-            <a href="#" class="nav-item ">
-                <i class="fa-solid fa-location-dot"></i>
+            <a href="spotmap.php" class="nav-item ">
+                <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
             <a href="contact.php" class="nav-item ">
@@ -106,7 +106,7 @@
                 </div>
             </div>
             <div class="about-image fade-in-right animate-on-scroll delay-2">
-                <img src="Images/Barangay Tabon Hall.png" alt="About Barangay Tabon">
+                <img src="Images/Tabon%20Barangay%20hall.jpg" alt="About Barangay Tabon">
             </div>
         </section>
     </div>
@@ -245,6 +245,26 @@
                         <p><strong>Why:</strong> Road closures and rerouting for Undas.</p>
                         <p><strong>Who:</strong> All Motorists and Residents</p>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Spot Map Section -->
+        <div class="spot-map-wrapper">
+            <div class="spot-map-header">
+                <h2 class="spot-map-main-title fade-in-up animate-on-scroll">Spot Map</h2>
+                <p class="spot-map-subtitle fade-in-up animate-on-scroll delay-1">Geographical overview and key locations in Barangay Tabon</p>
+            </div>
+            
+            <div class="spot-map-container fade-in-up animate-on-scroll delay-2">
+                <div class="spot-map-info">
+                    <div class="spot-map-tag"><i class="fa-solid fa-location-dot"></i> EXPLORE</div>
+                    <h3 class="spot-map-title">Barangay Spot Map</h3>
+                    <p class="spot-map-desc">Navigate our community with ease. View important landmarks, territorial boundaries, purok zones, and key public facilities throughout Barangay Tabon.</p>
+                    <a href="spotmap.php" class="btn-view-map">View Full Map <i class="fa-solid fa-map"></i></a>
+                </div>
+                <div class="spot-map-image-container">
+                    <img src="Images/Make_this_16;9_and_4k_20261001084446.jpg" alt="Barangay Tabon Spot Map" class="spot-map-image">
                 </div>
             </div>
         </div>

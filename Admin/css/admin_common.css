@@ -141,3 +141,7 @@ body {
 .dropdown-container a { padding: 10px 25px 10px 50px !important; font-size: 12px !important; border-left: 4px solid transparent; }
 .fa-caret-down { transition: transform 0.3s ease; }
 .dropdown-btn.active .fa-caret-down { transform: rotate(180deg); }
+
+.sidebar-nav::-webkit-scrollbar { display: none; }
+.sidebar-nav { -ms-overflow-style: none; scrollbar-width: none; }
+

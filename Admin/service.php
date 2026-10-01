@@ -33,7 +33,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php"><i class="fa-solid fa-desktop"></i> Control Panel</a></li>
                 <li><a href="about.php"><i class="fa-solid fa-circle-info"></i> About</a></li>
-                <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
+                <li>
+                    <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
+                    <div class="dropdown-container">
+                        <a href="Legend.php">Legend</a>
+                        <a href="Purok 1.php">Purok 1</a>
+                        <a href="Purok 2.php">Purok 2</a>
+                        <a href="Purok 3.php">Purok 3</a>
+                    </div>
+                </li>
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
                 <li>
                     <a class="dropdown-btn"><i class="fa-solid fa-user-tie"></i> Barangay Board <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>

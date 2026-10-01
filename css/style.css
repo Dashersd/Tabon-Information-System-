@@ -191,7 +191,7 @@ nav {
 /* Hero Section */
 .hero-section {
     position: relative;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%), url('../Images/Barangay Tabon Hall.png') no-repeat center center;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%), url('../Images/Tabon%20Barangay%20hall.jpg') no-repeat center center;
     background-size: cover;
     border-radius: 28px;
     padding: 80px 60px 100px 60px;
@@ -475,7 +475,8 @@ footer {
 .about-image img {
     width: 80%;
     height: 80%;
-    object-fit: contain;
+    object-fit: cover;
+    border-radius: 20px;
     filter: drop-shadow(0 15px 30px rgba(0,0,0,0.15));
 }
 
@@ -1018,4 +1019,219 @@ footer {
 .announcement-details p strong {
     color: var(--secondary-black);
     font-weight: 600;
+}
+
+/* Spot Map Section */
+.spot-map-wrapper {
+    margin-top: 60px;
+    padding: 60px 20px;
+    background-color: transparent;
+}
+
+.spot-map-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.spot-map-main-title {
+    font-family: var(--font-heading);
+    font-size: 48px;
+    font-weight: 800;
+    color: #0c3823;
+    margin-bottom: 10px;
+}
+
+.spot-map-subtitle {
+    font-size: 18px;
+    color: #8c98a4;
+}
+
+.spot-map-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4%;
+    margin: 0 auto;
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .spot-map-container {
+        flex-direction: column;
+    }
+}
+
+.spot-map-info {
+    flex: 1;
+    max-width: 550px;
+}
+
+.spot-map-tag {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a7b4f;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.spot-map-title {
+    font-size: 46px;
+    font-weight: 800;
+    color: #1a2533;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.spot-map-desc {
+    font-size: 18px;
+    color: #718096;
+    line-height: 1.8;
+    margin-bottom: 35px;
+}
+
+.btn-view-map {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #fbb117;
+    color: #ffffff;
+    padding: 16px 32px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-map:hover {
+    background-color: #df9809;
+    transform: translateY(-2px);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(251, 177, 23, 0.4);
+}
+
+.spot-map-image-container {
+    flex: 2.5;
+    max-width: 1200px;
+}
+
+.spot-map-image {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    display: block;
+}
+
+/* Footer Styles */
+.site-footer {
+    background-color: #0c1b12; /* Deep dark green */
+    color: #cbd5e1;
+    padding: 60px 40px 20px;
+    font-family: var(--font-main);
+    font-style: normal;
+    margin-top: 40px;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-brand .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.footer-brand .footer-logo img {
+    height: 50px;
+    width: auto;
+}
+
+.footer-brand h2 {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    font-style: normal;
+}
+
+.footer-brand p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #94a3b8;
+    max-width: 400px;
+    font-style: normal;
+}
+
+.footer-links h3, .footer-contact h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+    font-family: var(--font-main);
+    font-style: normal;
+}
+
+.footer-links ul, .footer-contact ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links ul li, .footer-contact ul li {
+    margin-bottom: 12px;
+}
+
+.footer-links ul li a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 15px;
+    transition: color 0.3s ease;
+    font-style: normal;
+}
+
+.footer-links ul li a:hover {
+    color: #fbb117;
+}
+
+.footer-contact ul li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: #94a3b8;
+    font-style: normal;
+}
+
+.footer-contact ul li i {
+    color: #fbb117;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    font-size: 14px;
+    color: #64748b;
+    font-style: normal;
+}
+
+@media (max-width: 992px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
 }

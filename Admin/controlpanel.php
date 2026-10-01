@@ -33,7 +33,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <ul>
                 <li><a href="controlpanel.php" class="active"><i class="fa-solid fa-gauge"></i> Control Panel</a></li>
                 <li><a href="about.php"><i class="fa-solid fa-circle-info"></i> About</a></li>
-                <li><a href="spotmapmanage.php"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage</a></li>
+                <li>
+                    <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
+                    <div class="dropdown-container">
+                        <a href="Legend.php">Legend</a>
+                        <a href="Purok 1.php">Purok 1</a>
+                        <a href="Purok 2.php">Purok 2</a>
+                        <a href="Purok 3.php">Purok 3</a>
+                    </div>
+                </li>
 
 
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
@@ -107,13 +115,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <div class="kpi-info">
                         <h3>Barangay Officials</h3>
                         <p>12</p>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon" style="background-color: #e0e7ff; color: #4338ca;"><i class="fa-solid fa-user-check"></i></div>
-                    <div class="kpi-info">
-                        <h3>Total Active Users</h3>
-                        <p>156</p>
                     </div>
                 </div>
             </div>

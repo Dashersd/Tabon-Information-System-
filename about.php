@@ -48,8 +48,8 @@
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
-            <a href="#" class="nav-item ">
-                <i class="fa-solid fa-location-dot"></i>
+            <a href="spotmap.php" class="nav-item ">
+                <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
             <a href="contact.php" class="nav-item ">
@@ -82,7 +82,7 @@
             </div>
             
             <div class="polaroid-frame fade-in-right animate-on-scroll delay-1">
-                <img src="images/barangay-photo.jpg" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='https://via.placeholder.com/300x200';">
+                <img src="Images/Tabon%20Barangay%20hall.jpg" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='https://via.placeholder.com/300x200';">
                 <div class="polaroid-label">Barangay Tabon</div>
             </div>
         </section>

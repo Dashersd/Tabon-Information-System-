@@ -1,0 +1,260 @@
+/* Spot Map Full Page Styles */
+.spotmap-page {
+    background-color: var(--bg-main);
+}
+
+.full-map-section {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    text-align: left;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: row;
+}
+
+.spotmap-layout-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    margin: 0;
+    gap: 0;
+}
+
+.spotmap-sidebar {
+    width: 420px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 40px 30px;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.full-map-header {
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-align: left;
+    width: 100%;
+}
+
+.badge-title {
+    background-color: #d1f4d9;
+    color: #01352c;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 800;
+    font-size: 12px;
+    padding: 6px 14px;
+    display: inline-block;
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-family: var(--font-heading);
+    font-size: 38px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.1;
+    margin-bottom: 0;
+    letter-spacing: -1.5px;
+}
+
+.title-divider {
+    display: none;
+}
+
+.page-subtitle {
+    display: none;
+}
+
+.cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.info-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 35px 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    text-align: left;
+}
+
+.card-title {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    color: #023020;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-title i {
+    font-size: 26px;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px 15px;
+}
+
+.purok-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.legend-item {
+    font-size: 15px;
+    color: #5a6b7c;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.legend-item:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    transform: translateX(4px);
+}
+
+/* Toast Modal Styles */
+.legend-toast-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.legend-toast-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.legend-toast-content {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    transform: translateY(30px) scale(0.95);
+    transition: all 0.3s ease;
+}
+
+.legend-toast-overlay.active .legend-toast-content {
+    transform: translateY(0) scale(1);
+}
+
+.legend-toast-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 22px;
+    color: #1e293b;
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.toast-image-container {
+    width: 100%;
+    height: 550px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f1f5f9;
+}
+
+.toast-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.close-toast {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.close-toast:hover {
+    color: #ef4444;
+}
+
+.legend-item i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.purok-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.purok-pill {
+    background-color: #fff8e1;
+    border: 1px solid #ffe082;
+    color: #b07d00;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 10px 24px;
+    text-align: center;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.purok-pill:hover {
+    background-color: #ffe082;
+    transform: translateY(-2px);
+}
+
+.spotmap-main {
+    flex: 1.2;
+    background: #ffffff;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.full-spot-map-img {
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vh - 140px);
+    object-fit: cover;
+    border-radius: 28px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* Removed media query to enforce horizontal layout */
