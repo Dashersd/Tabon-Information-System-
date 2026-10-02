@@ -3,7 +3,11 @@ if (isset($_GET['delete_id'])) {
     $deleteId = $_GET['delete_id'];
     $returnPage = $_GET['return'] ?? 'controlpanel.php';
     
-    $jsonFile = 'data/households.json';
+    $jsonFile = 'data/purok1.json';
+    if (strpos($returnPage, '1') !== false) $jsonFile = 'data/purok1.json';
+    elseif (strpos($returnPage, '2') !== false) $jsonFile = 'data/purok2.json';
+    elseif (strpos($returnPage, '3') !== false) $jsonFile = 'data/purok3.json';
+    elseif (strpos($returnPage, 'Legend') !== false) $jsonFile = 'data/legend.json';
     if (file_exists($jsonFile)) {
         $households = json_decode(file_get_contents($jsonFile), true) ?? [];
         $newHouseholds = array_filter($households, function($hh) use ($deleteId) {
@@ -33,7 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $leftPos = $_POST['left_pos'] ?? '50.00';
     $purokName = $_POST['purok_name'] ?? 'Unknown';
 
-    $jsonFile = 'data/households.json';
+    $jsonFile = 'data/purok1.json';
+    if ($purokName === 'Purok 1') $jsonFile = 'data/purok1.json';
+    elseif ($purokName === 'Purok 2') $jsonFile = 'data/purok2.json';
+    elseif ($purokName === 'Purok 3') $jsonFile = 'data/purok3.json';
+    elseif ($purokName === 'Legend') $jsonFile = 'data/legend.json';
     $households = [];
     
     if (file_exists($jsonFile)) {

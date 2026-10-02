@@ -166,6 +166,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             </div>
         </div>
     </main>
-    <script src="js/map_interactive.js"></script>
+    <script src="js/map_interactive.js?v=<?= time() ?>"></script>
 </body>
 </html>

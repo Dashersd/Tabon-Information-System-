@@ -5,7 +5,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit();
 }
 
-$jsonFile = 'data/households.json';
+$jsonFile = 'data/purok2.json';
 $households = [];
 if (file_exists($jsonFile)) {
     $households = json_decode(file_get_contents($jsonFile), true) ?? [];
@@ -18,6 +18,7 @@ $records = array_filter($households, function($hh) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="../Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resident 2 Records - Brgy Tabon</title>

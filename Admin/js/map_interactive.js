@@ -47,6 +47,14 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Un-require marker input if we are uploading
             if (markerInput) markerInput.removeAttribute('required');
+            
+            // Clear the hidden ID field so it creates a NEW marker instead of updating
+            let idInput = document.querySelector('input[name="household_id"]');
+            if (idInput) idInput.value = '';
+            
+            // Reset button text
+            const submitBtn = document.querySelector('.save-btn');
+            if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-download"></i> Save to Map';
         }
         reader.readAsDataURL(file);
     }
@@ -156,7 +164,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // 6. Fetch and display existing markers
-    fetch('data/households.json')
+    let jsonFile = 'data/purok1.json';
+    if (purokInput) {
+        if (purokInput.value === 'Purok 1') jsonFile = 'data/purok1.json';
+        else if (purokInput.value === 'Purok 2') jsonFile = 'data/purok2.json';
+        else if (purokInput.value === 'Purok 3') jsonFile = 'data/purok3.json';
+        else if (purokInput.value === 'Legend') jsonFile = 'data/legend.json';
+    }
+    fetch(jsonFile + '?v=' + new Date().getTime())
         .then(response => {
             if (!response.ok) throw new Error("JSON not found");
             return response.json();
