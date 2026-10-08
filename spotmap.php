@@ -104,7 +104,14 @@
 
                 <!-- Spot Map Image (Now on Right) -->
                 <div class="spotmap-main">
-                    <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage" style="cursor: pointer;">
+                    <div class="map-container" style="position: relative; width: 100%; max-height: calc(100vh - 140px); display: flex; justify-content: center;">
+                        <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage" style="cursor: pointer; width: 100%; object-fit: cover;">
+                        
+                        <!-- Map Pin Overlay (Initially hidden) -->
+                        <div id="barangay-pin" style="position: absolute; top: 18%; left: 47%; display: none; transform: translate(-50%, -100%); cursor: pointer; text-align: center; animation: bounce 2s infinite;">
+                            <i class="fa-solid fa-location-dot" style="color: #ff2a2a; font-size: 45px; text-shadow: 2px 2px 8px rgba(0,0,0,0.6);"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -183,12 +190,23 @@
         document.getElementById('mainSpotMapImage').addEventListener('click', function() {
             currentSequenceIndex = (currentSequenceIndex + 1) % mapSequence.length;
             this.src = mapSequence[currentSequenceIndex];
+            togglePinVisibility(mapSequence[currentSequenceIndex]);
         });
 
         function changeMapImage(imageUrl) {
             document.getElementById('mainSpotMapImage').src = imageUrl;
             if (imageUrl === 'Images/Map/Philippines.png') {
                 currentSequenceIndex = 0;
+            }
+            togglePinVisibility(imageUrl);
+        }
+
+        function togglePinVisibility(imageUrl) {
+            const pin = document.getElementById('barangay-pin');
+            if (imageUrl.includes('Barangay Tabon Forest Village') || imageUrl.includes('ChatGPT Image')) {
+                pin.style.display = 'block';
+            } else {
+                pin.style.display = 'none';
             }
         }
     </script>

@@ -4,6 +4,16 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     header("Location: ../login.php");
     exit();
 }
+
+require_once '../db_connect.php';
+$existingMarkers = [];
+try {
+    $stmt = $pdo->prepare("SELECT * FROM purok1_locations");
+    $stmt->execute();
+    $existingMarkers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Error handling
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,8 +115,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 <p>Upload a marker, add members, and drag the icon to save to the map</p>
             </div>
 
-            <div class="map-container">
-                <img src="../Images/Purok/Purok 1.jpg" alt="Purok 1 Map" class="map-preview-image">
+            <div class="map-container" style="position: relative;">
+                <img src="../Images/Purok/Purok 1.jpg" alt="Purok 1 Map" class="map-preview-image" id="mapImage">
+                <!-- Render saved markers -->
+                <?php foreach ($existingMarkers as $marker): ?>
+                    <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($marker['coordinate_x']) ?>%; top: <?= htmlspecialchars($marker['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
+                        <img src="<?= htmlspecialchars($marker['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($marker['marker_width']) ?>px; height: <?= htmlspecialchars($marker['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($marker['house_number']) ?> - <?= htmlspecialchars($marker['husband_name']) ?>">
+                    </div>
+                <?php endforeach; ?>
             </div>
 
             <div class="form-container">
@@ -134,6 +150,11 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         </div>
                     </div>
                     
+                    <div class="form-group">
+                        <label>House Image (Actual Photo)</label>
+                        <input type="file" name="house_image" id="house_image" class="file-input" required>
+                    </div>
+
                     <div class="form-group">
                         <label>Marker Image (Icon shown on map)</label>
                         <input type="file" name="marker_image" id="marker_image" class="file-input" required>

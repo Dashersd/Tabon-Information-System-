@@ -257,4 +257,15 @@
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
 }
 
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translate(-50%, -100%);
+    }
+    40% {
+        transform: translate(-50%, -120%);
+    }
+    60% {
+        transform: translate(-50%, -110%);
+    }
+}
 /* Removed media query to enforce horizontal layout */

@@ -5,15 +5,16 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit();
 }
 
-$jsonFile = 'data/purok1.json';
-$households = [];
-if (file_exists($jsonFile)) {
-    $households = json_decode(file_get_contents($jsonFile), true) ?? [];
-}
+require_once '../db_connect.php';
 
-$records = array_filter($households, function($hh) {
-    return $hh['purok'] === 'Purok 1';
-});
+$records = [];
+try {
+    $stmt = $pdo->prepare("SELECT * FROM purok1_locations ORDER BY id DESC");
+    $stmt->execute();
+    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Handle error gracefully
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -129,14 +130,14 @@ $records = array_filter($households, function($hh) {
                     <?php else: ?>
                         <?php foreach ($records as $record): ?>
                         <tr>
-                            <td><img src="<?= htmlspecialchars($record['markerImage']) ?>" alt="Marker" style="width: 40px; height: 40px; object-fit: contain;"></td>
-                            <td><?= htmlspecialchars($record['houseNumber']) ?></td>
-                            <td><?= htmlspecialchars($record['husbandName']) ?></td>
-                            <td><?= htmlspecialchars($record['spouseName']) ?></td>
-                            <td><?= htmlspecialchars($record['dateAdded']) ?></td>
+                            <td><img src="<?= htmlspecialchars($record['house_image']) ?>" alt="House Photo" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                            <td><?= htmlspecialchars($record['house_number']) ?></td>
+                            <td><?= htmlspecialchars($record['husband_name']) ?></td>
+                            <td><?= htmlspecialchars($record['spouse_name']) ?></td>
+                            <td><?= htmlspecialchars($record['created_at']) ?></td>
                             <td>
                                 <a href="Purok 1.php" class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
-                                <a href="process_household.php?delete_id=<?= $record['id'] ?>&return=Resident 1.php" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to remove this record?');"><i class="fa-solid fa-trash"></i> Remove</a>
+                                <a href="process_household.php?delete_id=<?= $record['id'] ?>&purok_name=Purok 1&return=Resident 1.php" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to remove this record?');"><i class="fa-solid fa-trash"></i> Remove</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
