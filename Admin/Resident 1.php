@@ -113,6 +113,7 @@ $records = array_filter($households, function($hh) {
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th>Image</th>
                         <th>House Number</th>
                         <th>Husband Name</th>
                         <th>Spouse Name</th>
@@ -123,11 +124,12 @@ $records = array_filter($households, function($hh) {
                 <tbody>
                     <?php if (empty($records)): ?>
                     <tr>
-                        <td colspan="5" style="text-align: center;">No records found.</td>
+                        <td colspan="6" style="text-align: center;">No records found.</td>
                     </tr>
                     <?php else: ?>
                         <?php foreach ($records as $record): ?>
                         <tr>
+                            <td><img src="<?= htmlspecialchars($record['markerImage']) ?>" alt="Marker" style="width: 40px; height: 40px; object-fit: contain;"></td>
                             <td><?= htmlspecialchars($record['houseNumber']) ?></td>
                             <td><?= htmlspecialchars($record['husbandName']) ?></td>
                             <td><?= htmlspecialchars($record['spouseName']) ?></td>

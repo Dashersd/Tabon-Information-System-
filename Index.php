@@ -264,7 +264,7 @@
                     <a href="spotmap.php" class="btn-view-map">View Full Map <i class="fa-solid fa-map"></i></a>
                 </div>
                 <div class="spot-map-image-container">
-                    <img src="Images/Make_this_16;9_and_4k_20261001084446.jpg" alt="Barangay Tabon Spot Map" class="spot-map-image">
+                    <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map" class="spot-map-image" id="indexSpotMapImage" style="cursor: pointer;">
                 </div>
             </div>
         </div>
@@ -309,6 +309,25 @@
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        const indexMapSequence = [
+            'Images/Map/Philippines.png',
+            'Images/Map/mindanao.jpg',
+            'Images/Map/Zamboanga del Sur.jpg',
+            'Images/Map/Lapuyan.gif',
+            'Images/Map/Barangay Tabon Forest Village.png',
+            'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png'
+        ];
+        let indexCurrentMapIndex = 0;
+
+        const indexMapImage = document.getElementById('indexSpotMapImage');
+        if (indexMapImage) {
+            indexMapImage.addEventListener('click', function() {
+                indexCurrentMapIndex = (indexCurrentMapIndex + 1) % indexMapSequence.length;
+                this.src = indexMapSequence[indexCurrentMapIndex];
+            });
+        }
+    </script>
 </body>
 </html>
 

@@ -96,7 +96,7 @@
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 1.jpg')">Purok 1</div>
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 2.jpg')">Purok 2</div>
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 3.jpg')">Purok 3</div>
-                                <div class="purok-pill" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;" onclick="changeMapImage('Images/Make_this_16;9_and_4k_20261001084446.jpg')">Full Map</div>
+                                <div class="purok-pill" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;" onclick="changeMapImage('Images/Map/Philippines.png')">Full Map</div>
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@
 
                 <!-- Spot Map Image (Now on Right) -->
                 <div class="spotmap-main">
-                    <img src="Images/Make_this_16;9_and_4k_20261001084446.jpg" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage">
+                    <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage" style="cursor: pointer;">
                 </div>
             </div>
         </section>
@@ -170,8 +170,26 @@
             document.getElementById('legendToast').classList.remove('active');
         }
 
+        const mapSequence = [
+            'Images/Map/Philippines.png',
+            'Images/Map/mindanao.jpg',
+            'Images/Map/Zamboanga del Sur.jpg',
+            'Images/Map/Lapuyan.gif',
+            'Images/Map/Barangay Tabon Forest Village.png',
+            'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png'
+        ];
+        let currentSequenceIndex = 0;
+
+        document.getElementById('mainSpotMapImage').addEventListener('click', function() {
+            currentSequenceIndex = (currentSequenceIndex + 1) % mapSequence.length;
+            this.src = mapSequence[currentSequenceIndex];
+        });
+
         function changeMapImage(imageUrl) {
             document.getElementById('mainSpotMapImage').src = imageUrl;
+            if (imageUrl === 'Images/Map/Philippines.png') {
+                currentSequenceIndex = 0;
+            }
         }
     </script>
     <script src="js/main.js"></script>
