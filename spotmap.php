@@ -1,3 +1,14 @@
+<?php
+require_once 'db_connect.php';
+$purok1 = [];
+$purok2 = [];
+$purok3 = [];
+try {
+    $stmt1 = $pdo->prepare("SELECT * FROM purok1_locations"); $stmt1->execute(); $purok1 = $stmt1->fetchAll(PDO::FETCH_ASSOC);
+    $stmt2 = $pdo->prepare("SELECT * FROM purok2_locations"); $stmt2->execute(); $purok2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    $stmt3 = $pdo->prepare("SELECT * FROM purok3_locations"); $stmt3->execute(); $purok3 = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,6 +122,33 @@
                         <div id="barangay-pin" style="position: absolute; top: 18%; left: 47%; display: none; transform: translate(-50%, -100%); cursor: pointer; text-align: center; animation: bounce 2s infinite;">
                             <i class="fa-solid fa-location-dot" style="color: #ff2a2a; font-size: 45px; text-shadow: 2px 2px 8px rgba(0,0,0,0.6);"></i>
                         </div>
+
+                        <!-- Purok 1 Markers -->
+                        <div id="purok1-markers" style="display: none;">
+                            <?php foreach($purok1 as $m): ?>
+                                <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Purok 2 Markers -->
+                        <div id="purok2-markers" style="display: none;">
+                            <?php foreach($purok2 as $m): ?>
+                                <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Purok 3 Markers -->
+                        <div id="purok3-markers" style="display: none;">
+                            <?php foreach($purok3 as $m): ?>
+                                <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,7 +202,50 @@
         </div>
     </div>
 
+    <!-- Household Details Modal -->
+    <div id="householdModal" class="household-modal-overlay" onclick="closeHouseholdDetails()">
+        <div class="household-modal-content" onclick="event.stopPropagation()">
+            <span class="close-toast" onclick="closeHouseholdDetails()">&times;</span>
+            
+            <div class="modal-header">
+                <h2>Household Details</h2>
+                <p>Barangay Tabon</p>
+            </div>
+            
+            <div class="modal-image-circle">
+                <img id="modalHouseImage" src="" alt="Household Image">
+            </div>
+            
+            <div class="modal-info-card">
+                <div class="info-row">
+                    <span class="info-label">House Number</span>
+                    <span class="info-value" id="modalHouseNumber"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Husband/Head</span>
+                    <span class="info-value" id="modalHusbandName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Spouse Name</span>
+                    <span class="info-value" id="modalSpouseName"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Household Details functions
+        function showHouseholdDetails(imageSrc, houseNumber, husbandName, spouseName) {
+            document.getElementById('modalHouseImage').src = imageSrc;
+            document.getElementById('modalHouseNumber').innerText = houseNumber;
+            document.getElementById('modalHusbandName').innerText = husbandName || 'N/A';
+            document.getElementById('modalSpouseName').innerText = spouseName || 'N/A';
+            document.getElementById('householdModal').classList.add('active');
+        }
+
+        function closeHouseholdDetails() {
+            document.getElementById('householdModal').classList.remove('active');
+        }
         function showLegendToast(title) {
             document.getElementById('toastTitle').innerText = title;
             // Generate a random image using picsum for demonstration
@@ -188,25 +269,64 @@
         let currentSequenceIndex = 0;
 
         document.getElementById('mainSpotMapImage').addEventListener('click', function() {
-            currentSequenceIndex = (currentSequenceIndex + 1) % mapSequence.length;
-            this.src = mapSequence[currentSequenceIndex];
-            togglePinVisibility(mapSequence[currentSequenceIndex]);
+            // Allow clicking the map to advance ONLY before reaching the Forest Village image
+            if (currentSequenceIndex < mapSequence.length - 2) {
+                currentSequenceIndex++;
+                this.src = mapSequence[currentSequenceIndex];
+                togglePinVisibility(mapSequence[currentSequenceIndex]);
+                
+                // Disable map click cursor once Forest Village image is reached
+                if (currentSequenceIndex === mapSequence.length - 2) {
+                    this.style.cursor = 'default';
+                }
+            }
+        });
+
+        // The pin click advances the sequence to the last image
+        document.getElementById('barangay-pin').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent bubbling
+            if (currentSequenceIndex === mapSequence.length - 2) {
+                currentSequenceIndex++;
+                const mapImg = document.getElementById('mainSpotMapImage');
+                mapImg.src = mapSequence[currentSequenceIndex];
+                togglePinVisibility(mapSequence[currentSequenceIndex]);
+                mapImg.style.cursor = 'default';
+            }
         });
 
         function changeMapImage(imageUrl) {
             document.getElementById('mainSpotMapImage').src = imageUrl;
             if (imageUrl === 'Images/Map/Philippines.png') {
                 currentSequenceIndex = 0;
+                document.getElementById('mainSpotMapImage').style.cursor = 'pointer';
+            } else {
+                document.getElementById('mainSpotMapImage').style.cursor = 'default';
             }
             togglePinVisibility(imageUrl);
         }
 
         function togglePinVisibility(imageUrl) {
             const pin = document.getElementById('barangay-pin');
-            if (imageUrl.includes('Barangay Tabon Forest Village') || imageUrl.includes('ChatGPT Image')) {
+            const p1 = document.getElementById('purok1-markers');
+            const p2 = document.getElementById('purok2-markers');
+            const p3 = document.getElementById('purok3-markers');
+            
+            p1.style.display = 'none';
+            p2.style.display = 'none';
+            p3.style.display = 'none';
+
+            if (imageUrl.includes('Barangay Tabon Forest Village')) {
                 pin.style.display = 'block';
             } else {
                 pin.style.display = 'none';
+            }
+
+            if (imageUrl.includes('Purok 1')) {
+                p1.style.display = 'block';
+            } else if (imageUrl.includes('Purok 2')) {
+                p2.style.display = 'block';
+            } else if (imageUrl.includes('Purok 3')) {
+                p3.style.display = 'block';
             }
         }
     </script>
