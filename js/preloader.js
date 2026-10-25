@@ -5,7 +5,7 @@
  * ==============================================================================
  */
 
-(function() {
+(function () {
     'use strict';
 
     if (window.mlPreloaderEnabled === false) {
@@ -42,7 +42,7 @@
         // Preloader Audio fallback check
         var audio = document.getElementById('ml-preloader-audio');
         if (audio && audio.paused && !isDismissed) {
-            audio.play().catch(function() {});
+            audio.play().catch(function () { });
         }
 
         function dismissPreloader() {
@@ -51,7 +51,7 @@
 
             // Fade out audio smoothly over 400ms if playing
             if (audio && !audio.paused) {
-                var fadeAudio = setInterval(function() {
+                var fadeAudio = setInterval(function () {
                     if (audio.volume > 0.15) {
                         audio.volume = Math.max(0, audio.volume - 0.15);
                     } else {
