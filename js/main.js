@@ -281,6 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nav = document.querySelector('nav');
     if (!header || !nav) return;
 
+    // Anchor placeholder to keep exact desktop position inside header
+    const navPlaceholder = document.createComment('nav-desktop-placeholder');
+    header.insertBefore(navPlaceholder, nav);
+
     // Create hamburger toggle button if it doesn't exist
     let toggleBtn = header.querySelector('.mobile-menu-toggle');
     if (!toggleBtn) {
@@ -329,7 +333,26 @@ document.addEventListener('DOMContentLoaded', () => {
         closeBtn.after(drawerBrand);
     }
 
+    // Ensures nav is a direct child of <body> on mobile so it completely escapes header's stacking context
+    function syncNavPlacement() {
+        if (window.innerWidth <= 992) {
+            if (nav.parentElement !== document.body) {
+                document.body.appendChild(nav);
+            }
+        } else {
+            if (nav.parentElement !== header) {
+                navPlaceholder.after(nav);
+            }
+            closeMobileMenu();
+        }
+    }
+    syncNavPlacement();
+    window.addEventListener('resize', syncNavPlacement);
+
     function openMobileMenu() {
+        if (nav.parentElement !== document.body) {
+            document.body.appendChild(nav);
+        }
         nav.classList.add('mobile-open');
         backdrop.classList.add('active');
         toggleBtn.classList.add('open');
@@ -389,13 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && nav.classList.contains('mobile-open')) {
-            closeMobileMenu();
-        }
-    });
-
-    // Close if resized to desktop breakpoint
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 992 && nav.classList.contains('mobile-open')) {
             closeMobileMenu();
         }
     });

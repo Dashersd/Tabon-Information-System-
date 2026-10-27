@@ -1850,19 +1850,21 @@ footer {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.55);
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 99998;
+    z-index: 999980;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.3s ease;
 }
 
 .mobile-nav-backdrop.active {
     display: block;
     opacity: 1;
+    pointer-events: auto;
 }
 
 .mobile-nav-close {
@@ -1914,20 +1916,24 @@ body.menu-open-lock {
         right: -340px;
         width: min(85vw, 320px);
         height: 100vh;
-        background: #ffffff;
-        box-shadow: -8px 0 30px rgba(0, 0, 0, 0.18);
+        background: #ffffff !important;
+        box-shadow: -8px 0 35px rgba(0, 0, 0, 0.28);
         flex-direction: column;
         align-items: stretch;
         padding: 24px 20px 40px 20px;
         transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 99999;
+        z-index: 999999 !important;
         overflow-y: auto;
         gap: 8px;
         flex-wrap: nowrap;
+        pointer-events: auto !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
     }
 
     nav.mobile-open {
-        right: 0;
+        right: 0 !important;
     }
 
     .mobile-nav-close {

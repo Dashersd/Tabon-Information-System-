@@ -570,7 +570,7 @@ function get_home_announcement_date($when_date, $created_at) {
     <script src="js/preloader.js"></script>
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>
 

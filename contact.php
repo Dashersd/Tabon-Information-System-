@@ -247,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>
 

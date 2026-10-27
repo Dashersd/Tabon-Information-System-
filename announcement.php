@@ -296,6 +296,6 @@ if ($res) {
 
     <!-- Preloader Script -->
     <script src="js/preloader.js?v=<?php echo time(); ?>"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>
