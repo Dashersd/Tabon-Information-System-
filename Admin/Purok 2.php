@@ -6,13 +6,22 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 require_once '../db_connect.php';
-$existingMarkers = [];
+
+$module_name = "Purok 2";
+$target_file = "purok2";
+$table_name = "purok2_locations";
+$map_image_src = "../Images/Purok/Purok%202.jpg";
+$map_page_file = "Purok 2.php";
+$resident_page_file = "Resident 2.php";
+
+// Fetch existing markers for Purok 2
+$existing_markers = [];
 try {
-    $stmt = $pdo->prepare("SELECT * FROM purok2_locations");
+    $stmt = $pdo->prepare("SELECT * FROM `$table_name` ORDER BY id ASC");
     $stmt->execute();
-    $existingMarkers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $existing_markers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Error handling
+    $error_msg = $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -21,18 +30,153 @@ try {
     <link rel="icon" type="image/png" href="../Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Purok 2 - Brgy Tabon</title>
+    <title>Manage Spot Map - <?= $module_name ?> | Brgy Tabon</title>
     
-    <!-- FontAwesome CSS CDN -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Admin Stylesheet -->
+    <!-- Admin Common & Page Stylesheet -->
     <link rel="stylesheet" href="css/admin_common.css">
-    <link rel="stylesheet" href="css/Purok 2.css">
+    <style>
+        .map-wrapper, .map-container {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            min-height: 520px;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            margin-bottom: 30px;
+            border: 2px solid #cbd5e1;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .spot-map-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+        .form-card {
+            background: #ffffff;
+            padding: 35px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border-top: 4px solid #223c3b;
+        }
+        .form-title {
+            margin: 0 0 20px 0;
+            color: #223c3b;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            border-color: #2c6e49;
+            box-shadow: 0 0 0 3px rgba(44, 110, 73, 0.15);
+        }
+        .row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .row .col { flex: 1; }
+        .btn-add-child {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-add-child:hover {
+            background: #bae6fd;
+            color: #0284c7;
+        }
+        .btn-save {
+            width: 100%;
+            background: #2c6e49;
+            color: #ffffff;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(44, 110, 73, 0.2);
+        }
+        .btn-save:hover { background: #1e4f34; }
+        .alert-banner {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .alert-success { background: #d1fae5; border-left: 5px solid #10b981; color: #065f46; }
+        .alert-updated { background: #e0f2fe; border-left: 5px solid #0284c7; color: #075985; }
+        .saved-marker-pin {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            z-index: 50;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+        }
+        .saved-marker-pin:hover {
+            transform: translate(-50%, -115%) scale(1.15);
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
+    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="../Barangay Logo/Logo.png" alt="Barangay Logo" onerror="this.src='https://via.placeholder.com/70'">
@@ -69,8 +213,8 @@ try {
                         <a href="skofficial.php">SK Official</a>
                     </div>
                 </li>
-                <li><a href="service.php"><i class="fa-solid fa-bell-concierge"></i> Service</a></li>
-                <li><a href="announcement.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
+                <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
+                <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
                 <br>
                 <li><a href="../login.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
@@ -96,97 +240,144 @@ try {
         </script>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content Canvas -->
     <main class="main-content">
-        <div class="top-bar legend-top-bar">
-            <h1 class="page-title" style="margin: 0; color: #1e293b; font-size: 24px; font-weight: 700;">Manage Purok 2</h1>
-            <div class="admin-profile">
-                <div class="admin-info">
-                    <span class="admin-name">System Admin</span>
-                    <span class="admin-role">Administrator</span>
+        <div class="top-bar">
+            <div>
+                <h1 class="page-title" style="margin: 0; color: #1e293b; font-size: 24px; font-weight: 700;">Manage <?= $module_name ?> Spot Map</h1>
+                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">Plot household locations, manage heads, dependents, and pin coordinates.</p>
+            </div>
+            <div class="admin-profile" style="display: flex; align-items: center; gap: 15px;">
+                <div class="admin-info" style="text-align: right;">
+                    <span class="admin-name" style="font-weight: 700; color: #1e293b; font-size: 14px; display: block;">System Admin</span>
+                    <span class="admin-role" style="color: #64748b; font-size: 12px;">Administrator</span>
                 </div>
-                <div class="admin-avatar">A</div>
+                <div class="admin-avatar" style="width: 40px; height: 40px; background-color: #223c3b; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">A</div>
             </div>
         </div>
-        
-        <div class="legend-content-wrapper">
-            <div class="content-header">
-                <h2>Add House to Map</h2>
-                <p>Upload a marker, add members, and drag the icon to save to the map</p>
-            </div>
 
-            <div class="map-container" style="position: relative;">
-                <img src="../Images/Purok/Purok 2.jpg" alt="Purok 2 Map" class="map-preview-image" id="mapImage">
-                <!-- Render saved markers -->
-                <?php foreach ($existingMarkers as $marker): ?>
-                    <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($marker['coordinate_x']) ?>%; top: <?= htmlspecialchars($marker['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                        <img src="<?= htmlspecialchars($marker['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($marker['marker_width']) ?>px; height: <?= htmlspecialchars($marker['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($marker['house_number']) ?> - <?= htmlspecialchars($marker['husband_name']) ?>">
-                    </div>
-                <?php endforeach; ?>
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert-banner alert-success">
+                <div><i class="fa-solid fa-circle-check"></i> Household pin successfully plotted and saved to <?= $module_name ?>!</div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#065f46;">&times;</button>
             </div>
+        <?php elseif (isset($_GET['updated'])): ?>
+            <div class="alert-banner alert-updated">
+                <div><i class="fa-solid fa-circle-check"></i> Household details and map coordinates successfully updated!</div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#075985;">&times;</button>
+            </div>
+        <?php endif; ?>
 
-            <div class="form-container">
-                <?php if (isset($_GET['success'])): ?>
-                    <div style="background-color: #dcfce3; color: #166534; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;">
-                        <i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i> Household successfully saved to map!
-                    </div>
+        <!-- Spot Map Canvas with Saved Markers & Tooltips -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; color: #223c3b; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-map-location-dot" style="color: #2c6e49;"></i> <?= $module_name ?> Map Canvas
+            </h3>
+            <span style="font-size: 0.85rem; color: #64748b;">
+                <i class="fa-solid fa-hand-pointer"></i> Drag preview pin to position or click saved pins to view dependents
+            </span>
+        </div>
+        <div class="map-wrapper map-container" id="map-container">
+            <img src="<?= $map_image_src ?>" alt="<?= $module_name ?> Map" class="spot-map-img" id="base-map-img" onerror="this.onerror=null; this.src='../Images/Purok/Purok 2.jpg';" draggable="false">
+            
+            <?php foreach ($existing_markers as $marker): ?>
+                <?php if (!empty($marker['marker_image'])): ?>
+                    <img src="<?= htmlspecialchars($marker['marker_image']) ?>" 
+                         class="saved-marker-pin"
+                         draggable="false"
+                         data-id="<?= $marker['id'] ?>"
+                         data-house-number="<?= htmlspecialchars($marker['house_number']) ?>"
+                         data-husband="<?= htmlspecialchars($marker['husband_name']) ?>"
+                         data-spouse="<?= htmlspecialchars($marker['spouse_name'] ?? '') ?>"
+                         data-children="<?= htmlspecialchars($marker['children'] ?? '[]') ?>"
+                         data-house-image="<?= htmlspecialchars($marker['house_image']) ?>"
+                         data-top="<?= $marker['coordinate_y'] ?>"
+                         data-left="<?= $marker['coordinate_x'] ?>"
+                         data-width="<?= $marker['marker_width'] ?>"
+                         data-height="<?= $marker['marker_height'] ?>"
+                         style="top: <?= $marker['coordinate_y'] ?>%; left: <?= $marker['coordinate_x'] ?>%; width: <?= $marker['marker_width'] ?>px; height: <?= $marker['marker_height'] ?>px;">
                 <?php endif; ?>
-                <form action="process_household.php" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="purok_name" value="Purok 2">
-                    <div class="form-group">
-                        <label>House Number</label>
-                        <input type="text" name="house_number" placeholder="e.g. 123" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Household Name</label>
-                        <div class="form-row">
-                            <div class="form-group half" style="margin-bottom: 0;">
-                                <input type="text" name="husband_name" placeholder="Name of the Husband (e.g. Juan Dela Cruz)" required>
-                            </div>
-                            <div class="form-group half" style="margin-bottom: 0;">
-                                <input type="text" name="spouse_name" placeholder="Name of the Spouse (Maiden) (e.g. Maria Santos)">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>House Image (Actual Photo)</label>
-                        <input type="file" name="house_image" id="house_image" class="file-input" required>
-                    </div>
+            <?php endforeach; ?>
+        </div>
 
-                    <div class="form-group">
-                        <label>Marker Image (Icon shown on map)</label>
-                        <input type="file" name="marker_image" id="marker_image" class="file-input" required>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label>Marker Width (px)</label>
-                            <input type="number" name="marker_width" value="40">
+        <!-- Household Data Placement Form -->
+        <div class="form-card">
+            <h3 class="form-title"><i class="fa-solid fa-house-chimney-medical"></i> Plot Household & Dependents</h3>
+            
+            <form action="process_household.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="target_file" value="<?= $target_file ?>">
+                <input type="hidden" name="household_id" id="household_id" value="">
+
+                <div class="form-group">
+                    <label>House Number <span style="color:#e11d48;">*</span></label>
+                    <input type="text" name="house_number" placeholder="e.g. 204-B" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Household Heads</label>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" name="husband_name" placeholder="Name of Husband / Head (e.g. Juan Dela Cruz)" class="form-control" required>
                         </div>
-                        <div class="form-group half">
-                            <label>Marker Height (px)</label>
-                            <input type="number" name="marker_height" value="40">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label>Top position (%)</label>
-                            <input type="number" name="top_pos" step="0.01" value="50.00">
-                        </div>
-                        <div class="form-group half">
-                            <label>Left position (%)</label>
-                            <input type="number" name="left_pos" step="0.01" value="50.00">
+                        <div class="col">
+                            <input type="text" name="spouse_name" placeholder="Name of Spouse / Maiden (e.g. Maria Santos)" class="form-control">
                         </div>
                     </div>
-                    
-                    <button type="submit" class="save-btn"><i class="fa-solid fa-download"></i> Save to Map</button>
-                </form>
-            </div>
+                </div>
+
+                <!-- Dynamic Children / Dependents Builder -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin: 0;"><i class="fa-solid fa-children"></i> Children / Dependents (Optional)</label>
+                        <button type="button" id="btn-add-child" class="btn-add-child">
+                            <i class="fa-solid fa-plus-circle"></i> + Add Child
+                        </button>
+                    </div>
+                    <div id="children-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                    <small style="color: #64748b; font-size: 0.8rem; margin-top: 4px; display: block;">Click "+ Add Child" if this household has children or dependents residing at this location.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label>House Actual Photo (Viewed upon inspection) <span style="color:#e11d48;">*</span></label>
+                        <input type="file" name="house_image" id="house_image" accept="image/*" class="form-control" required>
+                    </div>
+                    <div class="col form-group">
+                        <label>Marker Icon (Graphic shown on map canvas) <span style="color:#e11d48;">*</span></label>
+                        <input type="file" name="marker_image" id="marker_image" accept="image/*" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Marker Width (px)</label>
+                        <input type="number" name="marker_width" value="40" class="form-control">
+                    </div>
+                    <div class="col form-group">
+                        <label>Marker Height (px)</label>
+                        <input type="number" name="marker_height" value="40" class="form-control">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Top Position (%)</label>
+                        <input type="number" step="0.01" name="top_position" value="50.00" class="form-control" required>
+                    </div>
+                    <div class="col form-group">
+                        <label>Left Position (%)</label>
+                        <input type="number" step="0.01" name="left_position" value="50.00" class="form-control" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-save-record" class="btn-save">
+                    <i class="fa-solid fa-map-pin"></i> Save to Map
+                </button>
+            </form>
         </div>
     </main>
-    <script src="js/map_interactive.js?v=<?= time() ?>"></script>
+
+    <!-- Interactive Map Script -->
+    <script src="js/admin_spotmap.js?v=<?= time() ?>"></script>
 </body>
 </html>

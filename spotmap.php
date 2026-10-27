@@ -40,19 +40,15 @@ try {
         </div>
 
         <nav>
-            <a href="index.php" class="nav-item ">
+            <a href="index.php" class="nav-item">
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item ">
+            <a href="about.php" class="nav-item">
                 <i class="fa-solid fa-circle-info"></i>
                 <span>About Us</span>
             </a>
-            <a href="gallery.php" class="nav-item ">
-                <i class="fa-regular fa-image"></i>
-                <span>Gallery</span>
-            </a>
-            <div class="nav-item dropdown  ">
+            <div class="nav-item dropdown">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <i class="fa-solid fa-user-tie"></i>
                     <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
@@ -62,11 +58,23 @@ try {
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
+            <a href="gallery.php" class="nav-item">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery</span>
+            </a>
+            <a href="service.php" class="nav-item">
+                <i class="fa-solid fa-bell-concierge"></i>
+                <span>Service</span>
+            </a>
+            <a href="announcement.php" class="nav-item">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Announcement</span>
+            </a>
             <a href="spotmap.php" class="nav-item active">
                 <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
-            <a href="contact.php" class="nav-item ">
+            <a href="contact.php" class="nav-item">
                 <i class="fa-regular fa-envelope"></i>
                 <span>Contact Us</span>
             </a>
@@ -127,7 +135,7 @@ try {
                         <div id="purok1-markers" style="display: none;">
                             <?php foreach($purok1 as $m): ?>
                                 <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="Admin/<?= htmlspecialchars($m['house_image']) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -136,7 +144,7 @@ try {
                         <div id="purok2-markers" style="display: none;">
                             <?php foreach($purok2 as $m): ?>
                                 <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="Admin/<?= htmlspecialchars($m['house_image']) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -145,7 +153,7 @@ try {
                         <div id="purok3-markers" style="display: none;">
                             <?php foreach($purok3 as $m): ?>
                                 <div class="saved-marker" style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; drop-shadow: 0 4px 6px rgba(0,0,0,0.3);" title="House #<?= htmlspecialchars($m['house_number']) ?>" onclick="showHouseholdDetails('Admin/<?= htmlspecialchars($m['house_image']) ?>', '<?= htmlspecialchars($m['house_number']) ?>', '<?= htmlspecialchars(addslashes($m['husband_name'])) ?>', '<?= htmlspecialchars(addslashes($m['spouse_name'])) ?>')">
+                                    <img src="Admin/<?= htmlspecialchars($m['marker_image']) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="Admin/<?= htmlspecialchars($m['house_image']) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -229,17 +237,62 @@ try {
                     <span class="info-label">Spouse Name</span>
                     <span class="info-value" id="modalSpouseName"></span>
                 </div>
+                <div class="info-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                    <span class="info-label" style="font-weight: 600; color: #475569; font-size: 15px;">Children / Dependents</span>
+                    <div class="info-value" id="modalChildrenList" style="width: 100%; text-align: left;"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         // Household Details functions
+        function openPublicHouseholdModal(el) {
+            const img = el.getAttribute('data-image');
+            const house = el.getAttribute('data-house');
+            const husband = el.getAttribute('data-husband');
+            const spouse = el.getAttribute('data-spouse');
+            const rawChildren = el.getAttribute('data-children') || '[]';
+
+            let childrenArr = [];
+            try { 
+                childrenArr = JSON.parse(rawChildren); 
+            } catch(e) {}
+            if (!Array.isArray(childrenArr)) childrenArr = [];
+
+            document.getElementById('modalHouseImage').src = img;
+            document.getElementById('modalHouseNumber').innerText = house;
+            document.getElementById('modalHusbandName').innerText = husband || 'N/A';
+            document.getElementById('modalSpouseName').innerText = spouse || 'N/A';
+
+            const childrenListEl = document.getElementById('modalChildrenList');
+            if (childrenListEl) {
+                if (childrenArr.length > 0) {
+                    childrenListEl.innerHTML = `
+                        <ul style="margin: 0; padding-left: 20px; list-style-type: disc; display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                            ${childrenArr.map(c => `
+                                <li style="color: #0284c7; font-size: 1rem;">
+                                    <span style="color: #1e293b; font-size: 0.95rem; font-weight: 600;">${c}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                } else {
+                    childrenListEl.innerHTML = '<span style="color:#94a3b8; font-style:italic; font-weight: normal; font-size: 0.88rem;">No dependents listed</span>';
+                }
+            }
+            document.getElementById('householdModal').classList.add('active');
+        }
+
         function showHouseholdDetails(imageSrc, houseNumber, husbandName, spouseName) {
             document.getElementById('modalHouseImage').src = imageSrc;
             document.getElementById('modalHouseNumber').innerText = houseNumber;
             document.getElementById('modalHusbandName').innerText = husbandName || 'N/A';
             document.getElementById('modalSpouseName').innerText = spouseName || 'N/A';
+            const childrenListEl = document.getElementById('modalChildrenList');
+            if (childrenListEl) {
+                childrenListEl.innerHTML = '<span style="color:#94a3b8; font-style:italic; font-weight: normal; font-size: 0.88rem;">No dependents listed</span>';
+            }
             document.getElementById('householdModal').classList.add('active');
         }
 

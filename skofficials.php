@@ -29,17 +29,13 @@
         </div>
 
         <nav>
-            <a href="index.php" class="nav-item ">
+            <a href="index.php" class="nav-item">
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item ">
+            <a href="about.php" class="nav-item">
                 <i class="fa-solid fa-users"></i>
                 <span>About Us</span>
-            </a>
-            <a href="gallery.php" class="nav-item ">
-                <i class="fa-regular fa-image"></i>
-                <span>Gallery</span>
             </a>
             <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
@@ -51,11 +47,23 @@
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
-            <a href="spotmap.php" class="nav-item ">
+            <a href="gallery.php" class="nav-item">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery</span>
+            </a>
+            <a href="service.php" class="nav-item">
+                <i class="fa-solid fa-bell-concierge"></i>
+                <span>Service</span>
+            </a>
+            <a href="announcement.php" class="nav-item">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Announcement</span>
+            </a>
+            <a href="spotmap.php" class="nav-item">
                 <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
-            <a href="contact.php" class="nav-item ">
+            <a href="contact.php" class="nav-item">
                 <i class="fa-regular fa-envelope"></i>
                 <span>Contact Us</span>
             </a>

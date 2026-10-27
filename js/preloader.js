@@ -8,7 +8,14 @@
 (function () {
     'use strict';
 
+    if (window.__mlPreloaderInitialized) return;
+    window.__mlPreloaderInitialized = true;
+
     if (window.mlPreloaderEnabled === false) {
+        if (document.documentElement) document.documentElement.classList.remove('ml-preloader-active');
+        if (document.body) document.body.classList.remove('ml-preloader-active');
+        var p = document.getElementById('ml-preloader');
+        if (p && p.parentNode) p.parentNode.removeChild(p);
         // Dispatch resize so underlying carousels and observers recalculate cleanly
         window.dispatchEvent(new Event('resize'));
         return;
@@ -24,7 +31,11 @@
 
     function initPreloader() {
         var preloader = document.getElementById('ml-preloader');
-        if (!preloader) return;
+        if (!preloader) {
+            if (document.documentElement) document.documentElement.classList.remove('ml-preloader-active');
+            if (document.body) document.body.classList.remove('ml-preloader-active');
+            return;
+        }
 
         // Ensure page is pinned to top and locked
         document.documentElement.classList.add('ml-preloader-active');
@@ -33,8 +44,22 @@
         }
         window.scrollTo(0, 0);
 
+        var isReloadNav = false;
+        try {
+            if (window.performance && window.performance.getEntriesByType) {
+                var navEntries = window.performance.getEntriesByType("navigation");
+                if (navEntries.length > 0 && navEntries[0].type === "reload") {
+                    isReloadNav = true;
+                }
+            } else if (window.performance && window.performance.navigation) {
+                if (window.performance.navigation.type === 1) {
+                    isReloadNav = true;
+                }
+            }
+        } catch (e) {}
+
         var startTime = (window.performance && window.performance.now) ? performance.now() : Date.now();
-        // Allow Phase 1 (0-1.6s intro) AND Phase 2 (1.6-3.8s MLBB loading screen) to play smoothly
+        // Allow both Phase 1 (0-1.6s intro) AND Phase 2 (1.6-3.8s MLBB loading screen stage) to play completely
         var minDisplayTime = 3800;
         var maxTimeout = parseInt(preloader.getAttribute('data-timeout'), 10) || 4500;
         var isDismissed = false;
@@ -48,8 +73,9 @@
         function dismissPreloader() {
             if (isDismissed) return;
             isDismissed = true;
+            window.dispatchEvent(new Event('mlPreloaderDismissed'));
 
-            // Fade out audio smoothly over 400ms if playing
+            // Fade out audio smoothly over 300ms if playing
             if (audio && !audio.paused) {
                 var fadeAudio = setInterval(function () {
                     if (audio.volume > 0.15) {
@@ -58,7 +84,7 @@
                         clearInterval(fadeAudio);
                         audio.pause();
                     }
-                }, 50);
+                }, 40);
             }
 
             // Unlock html/body and restore underlying content visibility

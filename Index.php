@@ -1,13 +1,78 @@
+<?php
+require_once 'db_connect.php';
+
+// Fetch gallery photos for 3D carousel
+$carousel_images = [];
+try {
+    $carousel_query = "SELECT m.*, f.name as folder_name 
+                       FROM gallery_media m 
+                       JOIN gallery_folders f ON m.folder_id = f.id 
+                       ORDER BY m.id DESC LIMIT 16";
+    $c_res = $conn->query($carousel_query);
+    if ($c_res) {
+        while ($row = $c_res->fetch_assoc()) {
+            $checkPath = (strpos($row['file_path'], 'Admin/') === 0) ? $row['file_path'] : 'Admin/' . $row['file_path'];
+            if (file_exists($checkPath)) {
+                $row['web_src'] = $checkPath;
+                $carousel_images[] = $row;
+            }
+        }
+    }
+} catch (Exception $e) {}
+
+// If gallery has uploaded photos, ensure at least 8 cards for a seamless 3D curved loop
+$carousel_display_list = [];
+if (!empty($carousel_images)) {
+    $carousel_display_list = $carousel_images;
+    while (count($carousel_display_list) < 8) {
+        $carousel_display_list = array_merge($carousel_display_list, $carousel_images);
+    }
+}
+
+// Fetch active services for the Services quick access grid
+$home_services = [];
+try {
+    $s_res = $conn->query("SELECT * FROM services WHERE status = 'active' ORDER BY display_order ASC, id ASC LIMIT 6");
+    if ($s_res) {
+        while ($s_row = $s_res->fetch_assoc()) {
+            $home_services[] = $s_row;
+        }
+    }
+} catch (Exception $e) {}
+
+// Fetch published announcements for the Announcements section
+$home_announcements = [];
+try {
+    $a_res = $conn->query("SELECT * FROM announcements WHERE status = 'published' ORDER BY created_at DESC LIMIT 3");
+    if ($a_res) {
+        while ($a_row = $a_res->fetch_assoc()) {
+            $home_announcements[] = $a_row;
+        }
+    }
+} catch (Exception $e) {}
+
+function get_home_announcement_date($when_date, $created_at) {
+    $ts = !empty($when_date) ? strtotime($when_date) : null;
+    if (!$ts || $ts <= 0) {
+        $ts = !empty($created_at) ? strtotime($created_at) : time();
+    }
+    return [
+        'month' => strtoupper(date('M', $ts)),
+        'day'   => date('d', $ts)
+    ];
+}
+?>
 <!DOCTYPE html>
-<html lang="en" class="ml-preloader-active">
+<html lang="en">
 <head>
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Tabon - Home</title>
     
-    <!-- FontAwesome CSS CDN -->
+    <!-- FontAwesome & Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Preloader Stylesheet -->
     <link rel="stylesheet" href="css/preloader.css?v=<?php echo time(); ?>">
@@ -15,7 +80,7 @@
     <!-- External Stylesheet -->
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
-<body class="ml-preloader-active">
+<body>
 
     <!-- Mobile Legends Inspired Animated Preloader -->
     <?php include 'preloader.php'; ?>
@@ -36,15 +101,11 @@
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item ">
+            <a href="about.php" class="nav-item">
                 <i class="fa-solid fa-circle-info"></i>
                 <span>About Us</span>
             </a>
-            <a href="gallery.php" class="nav-item ">
-                <i class="fa-regular fa-image"></i>
-                <span>Gallery</span>
-            </a>
-            <div class="nav-item dropdown  ">
+            <div class="nav-item dropdown">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <i class="fa-solid fa-user-tie"></i>
                     <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
@@ -54,11 +115,23 @@
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>
-            <a href="spotmap.php" class="nav-item ">
+            <a href="gallery.php" class="nav-item">
+                <i class="fa-regular fa-image"></i>
+                <span>Gallery</span>
+            </a>
+            <a href="service.php" class="nav-item">
+                <i class="fa-solid fa-bell-concierge"></i>
+                <span>Service</span>
+            </a>
+            <a href="announcement.php" class="nav-item">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Announcement</span>
+            </a>
+            <a href="spotmap.php" class="nav-item">
                 <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
-            <a href="contact.php" class="nav-item ">
+            <a href="contact.php" class="nav-item">
                 <i class="fa-regular fa-envelope"></i>
                 <span>Contact Us</span>
             </a>
@@ -112,140 +185,325 @@
     </div>
 
     <!-- Officials Section -->
-    <div class="main-content" style="padding-bottom: 0;">
-        <h2 class="gallery-title" style="margin-top: 40px;">Meet the Officials</h2>
-        <div class="officials-message-grid">
-            
-            <!-- PB Card -->
-            <div class="official-msg-card">
-                <div class="official-avatar-wrapper pb-theme">
-                    <div class="avatar-circle">PB</div>
-                    <div class="avatar-pill">Punong Barangay</div>
-                </div>
-                <div class="official-msg-content">
-                    <h3 class="official-name">Hon. Punong Barangay</h3>
-                    <p class="official-quote">
-                        "Committed to providing transparent and dedicated public service for the betterment of every resident in Barangay Tabon."
-                    </p>
-                </div>
+    <section class="officials-spotlight-section">
+        <div class="captain-spotlight-card fade-in-up animate-on-scroll">
+            <div class="captain-spotlight-img-box">
+                <img src="Officials/Captain.jpg" alt="Barangay Captain" class="captain-spotlight-photo" onerror="this.src='Barangay Logo/Logo.png';">
             </div>
-
-            <!-- SK Card -->
-            <div class="official-msg-card">
-                <div class="official-avatar-wrapper sk-theme">
-                    <div class="avatar-circle">SK</div>
-                    <div class="avatar-pill">SK Chairman</div>
-                </div>
-                <div class="official-msg-content">
-                    <h3 class="official-name">Hon. SK Chairman</h3>
-                    <p class="official-quote">
-                        "Empowering the youth of Barangay Tabon through active participation in sports, education, and community development."
-                    </p>
-                </div>
+            <div class="captain-spotlight-details">
+                <span class="captain-badge-title">BARANGAY CAPTAIN</span>
+                <h2 class="captain-fullname">Hon. Reynaldo D. Santos</h2>
+                <p class="captain-quote-text">
+                    "To our residents, partners, and every member of our community, thank you for your trust, cooperation, and unwavering support. At Barangay Tabon, we remain committed to delivering honest and transparent public service that promotes safety, unity, and progress for all. Together, let us continue building a barangay where every family feels heard, respected, and supported."
+                </p>
+                <a href="officials.php" class="btn-captain-view-officials">
+                    <span>View Barangay Officials</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
-
         </div>
-    </div>
+    </section>
 
-    <!-- 3D Image Carousel Gallery -->
+    <!-- 3D Image Carousel Gallery (Fetches Images from Gallery) -->
     <section class="gallery-wrapper" style="padding-top: 0;">
         <div class="carousel">
             <div class="track">
-                <!-- 8 placeholder images from picsum.photos -->
-                <div class="card"><img src="https://picsum.photos/id/1015/400/520" alt="Gallery 1"></div>
-                <div class="card"><img src="https://picsum.photos/id/1016/400/520" alt="Gallery 2"></div>
-                <div class="card"><img src="https://picsum.photos/id/1018/400/520" alt="Gallery 3"></div>
-                <div class="card"><img src="https://picsum.photos/id/1019/400/520" alt="Gallery 4"></div>
-                <div class="card"><img src="https://picsum.photos/id/1020/400/520" alt="Gallery 5"></div>
-                <div class="card"><img src="https://picsum.photos/id/1021/400/520" alt="Gallery 6"></div>
-                <div class="card"><img src="https://picsum.photos/id/1022/400/520" alt="Gallery 7"></div>
-                <div class="card"><img src="https://picsum.photos/id/1023/400/520" alt="Gallery 8"></div>
+                <?php if (!empty($carousel_display_list)): ?>
+                    <?php foreach ($carousel_display_list as $c_img): 
+                        $c_title = !empty($c_img['caption']) ? $c_img['caption'] : (!empty($c_img['file_name']) ? pathinfo($c_img['file_name'], PATHINFO_FILENAME) : 'Community Highlight');
+                        $c_folder = !empty($c_img['folder_name']) ? $c_img['folder_name'] : 'General';
+                        $c_date = !empty($c_img['created_at']) ? date('M d, Y • h:i A', strtotime($c_img['created_at'])) : date('M d, Y • h:i A');
+                    ?>
+                        <div class="card" data-title="<?= htmlspecialchars($c_title) ?>" data-folder="<?= htmlspecialchars($c_folder) ?>" data-date="<?= htmlspecialchars($c_date) ?>" data-img="<?= htmlspecialchars($c_img['web_src']) ?>">
+                            <img src="<?= htmlspecialchars($c_img['web_src']) ?>" alt="<?= htmlspecialchars($c_title) ?>" loading="lazy">
+                            <div class="card-overlay">
+                                <div class="card-overlay-btn" title="View Fullscreen">
+                                    <i class="fa-solid fa-expand"></i>
+                                </div>
+                                <div class="card-overlay-title"><?= htmlspecialchars($c_title) ?></div>
+                                <div class="card-overlay-folder">
+                                    <i class="fa-solid fa-folder"></i> <?= strtoupper(htmlspecialchars($c_folder)) ?>
+                                </div>
+                                <div class="card-overlay-date">
+                                    <i class="fa-regular fa-clock"></i> <?= htmlspecialchars($c_date) ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <!-- Fallback placeholder images if no gallery photos uploaded yet -->
+                    <?php 
+                    $fallbacks = [
+                        ['id' => 1015, 'title' => 'Community Service', 'folder' => 'Community Services', 'date' => 'Oct 13, 2026 • 09:52 AM'],
+                        ['id' => 1016, 'title' => 'Barangay Assembly', 'folder' => 'Meetings', 'date' => 'Oct 14, 2026 • 02:30 PM'],
+                        ['id' => 1018, 'title' => 'Sports Festival', 'folder' => 'Sports', 'date' => 'Oct 16, 2026 • 08:00 AM'],
+                        ['id' => 1019, 'title' => 'Health & Wellness', 'folder' => 'Health Care', 'date' => 'Oct 18, 2026 • 10:15 AM'],
+                        ['id' => 1020, 'title' => 'Youth Development', 'folder' => 'SK Programs', 'date' => 'Oct 20, 2026 • 01:45 PM'],
+                        ['id' => 1021, 'title' => 'Clean & Green Drive', 'folder' => 'Environmental', 'date' => 'Oct 21, 2026 • 07:30 AM'],
+                        ['id' => 1022, 'title' => 'Fiesta Celebrations', 'folder' => 'Cultural Events', 'date' => 'Oct 23, 2026 • 06:00 PM'],
+                        ['id' => 1023, 'title' => 'Relief Distribution', 'folder' => 'Social Welfare', 'date' => 'Oct 25, 2026 • 09:00 AM'],
+                    ];
+                    foreach ($fallbacks as $fb): ?>
+                        <div class="card" data-title="<?= $fb['title'] ?>" data-folder="<?= $fb['folder'] ?>" data-date="<?= $fb['date'] ?>" data-img="https://picsum.photos/id/<?= $fb['id'] ?>/400/520">
+                            <img src="https://picsum.photos/id/<?= $fb['id'] ?>/400/520" alt="<?= $fb['title'] ?>">
+                            <div class="card-overlay">
+                                <div class="card-overlay-btn" title="View Fullscreen">
+                                    <i class="fa-solid fa-expand"></i>
+                                </div>
+                                <div class="card-overlay-title"><?= $fb['title'] ?></div>
+                                <div class="card-overlay-folder">
+                                    <i class="fa-solid fa-folder"></i> <?= strtoupper($fb['folder']) ?>
+                                </div>
+                                <div class="card-overlay-date">
+                                    <i class="fa-regular fa-clock"></i> <?= $fb['date'] ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </section>
 
     <!-- Main Content Area -->
-    <main class="main-content" id="services-section">
-        <h2 class="gallery-title fade-in-up animate-on-scroll" style="margin-top: 20px;">The Services</h2>
-        <!-- Services Quick Access Grid -->
-        <section class="services-container">
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">
-                <i class="fa-solid fa-address-card"></i>
-                <span>Resident Registry & Profiles</span>
-            </a>
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.2s;">
-                <i class="fa-solid fa-building-columns"></i>
-                <span>Barangay Clearance Issuance</span>
-            </a>
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">
-                <i class="fa-solid fa-hand-holding-heart"></i>
-                <span>Community Assistance Programs</span>
-            </a>
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;">
-                <i class="fa-regular fa-calendar-check"></i>
-                <span>Official Events & Activities</span>
-            </a>
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.5s;">
-                <i class="fa-solid fa-bullhorn"></i>
-                <span>Public Announcements</span>
-            </a>
-            <a href="#" class="service-card fade-in-up animate-on-scroll" style="animation-delay: 0.6s;">
-                <i class="fa-solid fa-location-dot"></i>
-                <span>Location & Directory</span>
-            </a>
+    <main class="main-content" id="main-content">
+
+        <!-- Services Section -->
+        <section class="home-services-wrapper" id="services-section">
+            <div class="home-services-header">
+                <div class="home-services-header-text">
+                    <span class="home-services-badge fade-in-up animate-on-scroll">
+                        <i class="fa-solid fa-hand-holding-hand"></i> Frontline Citizen Services
+                    </span>
+                    <h2 class="home-services-title fade-in-up animate-on-scroll delay-1">Barangay Tabon Services</h2>
+                    <p class="home-services-subtitle fade-in-up animate-on-scroll delay-2">
+                        Fast, accessible, and transparent frontline public assistance, community clearances, and certifications.
+                    </p>
+                </div>
+                <div class="home-services-header-action fade-in-up animate-on-scroll delay-2">
+                    <a href="service.php" class="btn-view-all-services">
+                        <span>View All Services</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Services Grid -->
+            <div class="home-services-grid">
+                <?php if (!empty($home_services)): ?>
+                    <?php $delay = 0.1; foreach ($home_services as $hs): ?>
+                        <?php 
+                            $rawIcon = trim($hs['icon'] ?? '');
+                            if (empty($rawIcon)) {
+                                $iconClass = 'fa-solid fa-file-lines';
+                            } elseif (strpos($rawIcon, 'bi-') === 0) {
+                                $iconClass = 'bi ' . $rawIcon;
+                            } elseif (strpos($rawIcon, 'fa-') !== false) {
+                                $iconClass = $rawIcon;
+                            } else {
+                                $iconClass = 'bi bi-' . $rawIcon;
+                            }
+                            $serviceFee = !empty($hs['fee']) ? $hs['fee'] : 'Free';
+                            $serviceProcTime = !empty($hs['processing_time']) ? $hs['processing_time'] : 'Same Day';
+                            $serviceDesc = !empty($hs['description']) ? $hs['description'] : 'Official barangay document and citizen service provided by Barangay Tabon.';
+                        ?>
+                        <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: <?= number_format($delay, 1) ?>s;" onclick="window.location.href='service.php?id=<?= (int)$hs['id'] ?>#service-<?= (int)$hs['id'] ?>'" role="button" tabindex="0">
+                            <div class="home-service-card-top">
+                                <div class="home-service-icon-box">
+                                    <i class="<?= htmlspecialchars($iconClass) ?>"></i>
+                                </div>
+                                <div class="home-service-badges">
+                                    <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> <?= htmlspecialchars($serviceFee) ?></span>
+                                    <span class="service-pill time"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars($serviceProcTime) ?></span>
+                                </div>
+                            </div>
+                            <h3 class="home-service-name"><?= htmlspecialchars($hs['name']) ?></h3>
+                            <p class="home-service-desc"><?= htmlspecialchars($serviceDesc) ?></p>
+                            <div class="home-service-card-footer">
+                                <a href="service.php?id=<?= (int)$hs['id'] ?>#service-<?= (int)$hs['id'] ?>" class="btn-card-action" onclick="event.stopPropagation();">
+                                    <span><?= htmlspecialchars(!empty($hs['button_text']) ? $hs['button_text'] : 'Request Document') ?></span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <?php $delay += 0.08; endforeach; ?>
+                <?php else: ?>
+                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.1s;" onclick="window.location.href='service.php'">
+                        <div class="home-service-card-top">
+                            <div class="home-service-icon-box"><i class="fa-solid fa-stamp"></i></div>
+                            <div class="home-service-badges">
+                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> ₱50.00</span>
+                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> 10-15 Mins</span>
+                            </div>
+                        </div>
+                        <h3 class="home-service-name">Barangay Clearance</h3>
+                        <p class="home-service-desc">Official certification required for job applications, postal ID, and general legal verification.</p>
+                        <div class="home-service-card-footer">
+                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Document</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.2s;" onclick="window.location.href='service.php'">
+                        <div class="home-service-card-top">
+                            <div class="home-service-icon-box"><i class="fa-solid fa-hands-holding-child"></i></div>
+                            <div class="home-service-badges">
+                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> Free</span>
+                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> Same Day</span>
+                            </div>
+                        </div>
+                        <h3 class="home-service-name">Certificate of Indigency</h3>
+                        <p class="home-service-desc">Issued to low-income residents for medical, educational, burial, or legal assistance from DSWD.</p>
+                        <div class="home-service-card-footer">
+                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Assistance</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.3s;" onclick="window.location.href='service.php'">
+                        <div class="home-service-card-top">
+                            <div class="home-service-icon-box"><i class="fa-solid fa-address-card"></i></div>
+                            <div class="home-service-badges">
+                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> Free</span>
+                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> Same Day</span>
+                            </div>
+                        </div>
+                        <h3 class="home-service-name">Certificate of Residency</h3>
+                        <p class="home-service-desc">Formal verification confirming continuous bonafide residency within Barangay Tabon.</p>
+                        <div class="home-service-card-footer">
+                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Document</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;" onclick="window.location.href='service.php'">
+                        <div class="home-service-card-top">
+                            <div class="home-service-icon-box"><i class="fa-solid fa-briefcase"></i></div>
+                            <div class="home-service-badges">
+                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> ₱100.00</span>
+                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> 1-2 Days</span>
+                            </div>
+                        </div>
+                        <h3 class="home-service-name">Barangay Business Clearance</h3>
+                        <p class="home-service-desc">Permit clearance mandatory for commercial enterprises and local stores operating in Tabon.</p>
+                        <div class="home-service-card-footer">
+                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Apply Clearance</span> <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
         </section>
 
         <!-- Latest Announcements Section -->
-        <div class="announcements-wrapper">
+        <div class="announcements-wrapper" id="announcements">
             <h2 class="announcements-title fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">Latest Announcements</h2>
             <div class="announcements-divider fade-in-up animate-on-scroll" style="animation-delay: 0.2s;"></div>
-            <p class="announcements-subtitle fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">Keep track of upcoming events, meetings, and important notices in our barangay.</p>
+            <p class="announcements-subtitle fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">
+                Keep track of upcoming events, meetings, and important notices in our barangay. 
+                <a href="announcement.php" style="color:var(--secondary-black); font-weight:700; text-decoration:underline; margin-left:6px;">View All Announcements &rarr;</a>
+            </p>
             
             <div class="announcements-grid">
-                <!-- Announcement Card 1 -->
-                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;">
-                    <div class="announcement-date">
-                        <span class="month">OCT</span>
-                        <span class="day">15</span>
+                <?php if (!empty($home_announcements)): ?>
+                    <?php 
+                    $delay = 0.4;
+                    foreach ($home_announcements as $ha): 
+                        $hdate = get_home_announcement_date($ha['when_date'] ?? '', $ha['created_at'] ?? '');
+                        $annId = (int)$ha['id'];
+                    ?>
+                        <div class="announcement-card fade-in-up animate-on-scroll" 
+                             style="animation-delay: <?= $delay ?>s; cursor: pointer;"
+                             onclick="window.location.href='announcement.php?id=<?= $annId ?>#announcement-<?= $annId ?>'">
+                            <div class="announcement-date">
+                                <span class="month"><?= htmlspecialchars($hdate['month']) ?></span>
+                                <span class="day"><?= htmlspecialchars($hdate['day']) ?></span>
+                            </div>
+                            <div class="announcement-details">
+                                <h3 class="announcement-card-title"><?= htmlspecialchars($ha['title']) ?></h3>
+                                <?php if (!empty($ha['what'])): ?>
+                                    <p><strong>What:</strong> <?= htmlspecialchars($ha['what']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($ha['when_date'])): ?>
+                                    <p><strong>When:</strong> <?= htmlspecialchars($ha['when_date']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($ha['where_place'])): ?>
+                                    <p><strong>Where:</strong> <?= htmlspecialchars($ha['where_place']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($ha['who'])): ?>
+                                    <p><strong>Who:</strong> <?= htmlspecialchars($ha['who']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($ha['why'])): ?>
+                                    <p><strong>Why:</strong> <?= htmlspecialchars($ha['why']) ?></p>
+                                <?php endif; ?>
+                                <div class="announcement-card-action">
+                                    <a href="announcement.php?id=<?= $annId ?>#announcement-<?= $annId ?>" class="btn-announcement-link" onclick="event.stopPropagation();">
+                                        <span>Read Announcement</span> <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php 
+                        $delay += 0.1;
+                    endforeach; 
+                    ?>
+                <?php else: ?>
+                    <!-- Announcement Card 1 -->
+                    <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s; cursor: pointer;" onclick="window.location.href='announcement.php'">
+                        <div class="announcement-date">
+                            <span class="month">OCT</span>
+                            <span class="day">15</span>
+                        </div>
+                        <div class="announcement-details">
+                            <h3 class="announcement-card-title">General Assembly Meeting</h3>
+                            <p><strong>What:</strong> General Assembly Meeting</p>
+                            <p><strong>When:</strong> 9:00 AM, October 15, 2026</p>
+                            <p><strong>Where:</strong> Barangay Covered Gymnasium</p>
+                            <p><strong>Who:</strong> All Barangay Residents</p>
+                            <p><strong>Why:</strong> Discuss infrastructure projects & budgets.</p>
+                            <div class="announcement-card-action">
+                                <a href="announcement.php" class="btn-announcement-link" onclick="event.stopPropagation();">
+                                    <span>Read Announcement</span> <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="announcement-details">
-                        <h3 class="announcement-card-title">General Assembly Meeting</h3>
-                        <p><strong>What:</strong> General Assembly Meeting</p>
-                        <p><strong>When:</strong> 9:00 AM, October 15</p>
-                        <p><strong>Why:</strong> Discuss infrastructure projects & budgets.</p>
-                        <p><strong>Who:</strong> All Barangay Residents</p>
+                    
+                    <!-- Announcement Card 2 -->
+                    <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.5s; cursor: pointer;" onclick="window.location.href='announcement.php'">
+                        <div class="announcement-date">
+                            <span class="month">OCT</span>
+                            <span class="day">22</span>
+                        </div>
+                        <div class="announcement-details">
+                            <h3 class="announcement-card-title">Free Medical & Dental Mission</h3>
+                            <p><strong>What:</strong> Free Medical & Dental Mission</p>
+                            <p><strong>When:</strong> 8:00 AM - 3:00 PM, October 22, 2026</p>
+                            <p><strong>Where:</strong> Barangay Tabon Health Center</p>
+                            <p><strong>Who:</strong> Senior Citizens and Children</p>
+                            <p><strong>Why:</strong> Offer free checkups and medicines.</p>
+                            <div class="announcement-card-action">
+                                <a href="announcement.php" class="btn-announcement-link" onclick="event.stopPropagation();">
+                                    <span>Read Announcement</span> <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Announcement Card 2 -->
-                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.5s;">
-                    <div class="announcement-date">
-                        <span class="month">OCT</span>
-                        <span class="day">22</span>
+                    
+                    <!-- Announcement Card 3 -->
+                    <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.6s; cursor: pointer;" onclick="window.location.href='announcement.php'">
+                        <div class="announcement-date">
+                            <span class="month">NOV</span>
+                            <span class="day">01</span>
+                        </div>
+                        <div class="announcement-details">
+                            <h3 class="announcement-card-title">Undas 2026 Traffic Advisory</h3>
+                            <p><strong>What:</strong> Traffic & Security Advisory</p>
+                            <p><strong>When:</strong> All Day, November 01, 2026</p>
+                            <p><strong>Where:</strong> Main Barangay Access Road & Cemetery Perimeter</p>
+                            <p><strong>Who:</strong> All Motorists and Residents</p>
+                            <p><strong>Why:</strong> Road closures and rerouting for peaceful Undas.</p>
+                            <div class="announcement-card-action">
+                                <a href="announcement.php" class="btn-announcement-link" onclick="event.stopPropagation();">
+                                    <span>Read Announcement</span> <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="announcement-details">
-                        <h3 class="announcement-card-title">Free Medical & Dental Mission</h3>
-                        <p><strong>What:</strong> Free Medical & Dental Mission</p>
-                        <p><strong>When:</strong> 8:00 AM, October 22</p>
-                        <p><strong>Why:</strong> Offer free checkups and medicines.</p>
-                        <p><strong>Who:</strong> Senior Citizens and Children</p>
-                    </div>
-                </div>
-                
-                <!-- Announcement Card 3 -->
-                <div class="announcement-card fade-in-up animate-on-scroll" style="animation-delay: 0.6s;">
-                    <div class="announcement-date">
-                        <span class="month">NOV</span>
-                        <span class="day">01</span>
-                    </div>
-                    <div class="announcement-details">
-                        <h3 class="announcement-card-title">Undas 2025 Traffic Advisory</h3>
-                        <p><strong>What:</strong> Undas 2025 Traffic Advisory</p>
-                        <p><strong>When:</strong> All Day, November 01</p>
-                        <p><strong>Why:</strong> Road closures and rerouting for Undas.</p>
-                        <p><strong>Who:</strong> All Motorists and Residents</p>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -264,7 +522,7 @@
                     <a href="spotmap.php" class="btn-view-map">View Full Map <i class="fa-solid fa-map"></i></a>
                 </div>
                 <div class="spot-map-image-container">
-                    <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map" class="spot-map-image" id="indexSpotMapImage" style="cursor: pointer;">
+                    <img src="Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png" alt="Barangay Tabon Spot Map" class="spot-map-image">
                 </div>
             </div>
         </div>
@@ -309,25 +567,6 @@
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
-    <script>
-        const indexMapSequence = [
-            'Images/Map/Philippines.png',
-            'Images/Map/mindanao.jpg',
-            'Images/Map/Zamboanga del Sur.jpg',
-            'Images/Map/Lapuyan.gif',
-            'Images/Map/Barangay Tabon Forest Village.png',
-            'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png'
-        ];
-        let indexCurrentMapIndex = 0;
-
-        const indexMapImage = document.getElementById('indexSpotMapImage');
-        if (indexMapImage) {
-            indexMapImage.addEventListener('click', function() {
-                indexCurrentMapIndex = (indexCurrentMapIndex + 1) % indexMapSequence.length;
-                this.src = indexMapSequence[indexCurrentMapIndex];
-            });
-        }
-    </script>
 </body>
 </html>
 

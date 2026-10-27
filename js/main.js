@@ -167,11 +167,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="lightbox-content">
             <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
             <img src="" alt="Expanded View">
+            <div class="carousel-lightbox-caption" style="color:#ffffff; font-size:1.05rem; margin-top:12px; font-weight:600; text-align:center; font-family:'Montserrat',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.6);"></div>
         </div>
     `;
     document.body.appendChild(lightbox);
     
     const lightboxImg = lightbox.querySelector('img');
+    const lightboxCaption = lightbox.querySelector('.carousel-lightbox-caption');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
 
     // Event delegation on the track to catch all clicks (including cloned cards)
@@ -179,7 +181,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = e.target.closest('.card');
         if (card) {
             const img = card.querySelector('img');
-            lightboxImg.src = img.src;
+            const dataImg = card.getAttribute('data-img') || (img ? img.src : '');
+            lightboxImg.src = dataImg;
+
+            const title = card.getAttribute('data-title') || (img ? img.getAttribute('alt') : '') || '';
+            const folder = card.getAttribute('data-folder') || '';
+            const date = card.getAttribute('data-date') || '';
+
+            if (lightboxCaption) {
+                let captionHtml = `<div style="font-size:1.25rem; font-weight:700; color:#ffffff; margin-bottom:8px; font-family:'Montserrat',sans-serif; text-shadow:0 2px 5px rgba(0,0,0,0.85);">${title}</div>`;
+                if (folder || date) {
+                    captionHtml += `<div style="display:inline-flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;">`;
+                    if (folder) {
+                        captionHtml += `<span style="display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:50px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.18); color:#fbbf24; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;"><i class="fa-solid fa-folder"></i> ${folder}</span>`;
+                    }
+                    if (date) {
+                        captionHtml += `<span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; background:rgba(15,23,42,0.88); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; font-size:0.75rem; font-weight:600;"><i class="fa-regular fa-clock" style="color:#fbbf24;"></i> ${date}</span>`;
+                    }
+                    captionHtml += `</div>`;
+                }
+                lightboxCaption.innerHTML = captionHtml;
+            }
             lightbox.classList.add('active');
             isPaused = true; // Pause carousel when expanded
         }

@@ -61,8 +61,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <a href="skofficial.php">SK Official</a>
                     </div>
                 </li>
-                <li><a href="service.php"><i class="fa-solid fa-bell-concierge"></i> Service</a></li>
-                <li><a href="announcement.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
+                <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
+                <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
                 
                 <br>

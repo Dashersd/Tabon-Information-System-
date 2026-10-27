@@ -11,4 +11,11 @@ try {
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
+
+// MySQLi connection for scripts utilizing mysqli statements
+$conn = new mysqli($host, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("MySQLi connection failed: " . $conn->connect_error);
+}
+$conn->set_charset("utf8mb4");
 ?>

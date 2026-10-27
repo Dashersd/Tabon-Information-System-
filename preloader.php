@@ -117,7 +117,7 @@
         <div class="ml-preloader-overlay"></div>
 
 
-        <!-- Center Stage: Ring, Focal Image & Accent Text -->
+        <!-- Center Stage: Ring & Focal Image -->
         <div class="ml-preloader-center">
             <div class="ml-preloader-ring-wrapper">
                 <!-- Central focal seal/portrait -->
@@ -146,3 +146,26 @@
         </div>
     </div>
 </div>
+
+<!-- Embedded Preloader Controller & Fail-safe Guard -->
+<script src="js/preloader.js?v=<?php echo time(); ?>"></script>
+<script>
+    (function() {
+        if (!window.mlPreloaderEnabled) return;
+        var safeTimer = setTimeout(function() {
+            var p = document.getElementById('ml-preloader');
+            if (p && !p.classList.contains('ml-preloader-dismissed')) {
+                document.documentElement.classList.remove('ml-preloader-active');
+                if (document.body) document.body.classList.remove('ml-preloader-active');
+                p.classList.add('ml-preloader-dismissed');
+                setTimeout(function() {
+                    if (p && p.parentNode) p.parentNode.removeChild(p);
+                }, 500);
+            }
+        }, 4800);
+
+        window.addEventListener('mlPreloaderDismissed', function() {
+            clearTimeout(safeTimer);
+        });
+    })();
+</script>
