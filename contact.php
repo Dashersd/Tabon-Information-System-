@@ -1,4 +1,35 @@
- <!DOCTYPE html>
+<?php
+require_once 'db_connect.php';
+$msg_sent = false;
+$msg_error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) {
+    $name = trim($_POST['fullName'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if (!empty($name) && !empty($message)) {
+        // Generate a unique thread ID for the new conversation
+        $thread_id = 'thread_' . bin2hex(random_bytes(16));
+        $full_message = "[Service: Contact Inquiry]\n\n" . $message . (!empty($phone) ? "\n\nContact Phone: " . $phone : "");
+        
+        // Insert into feedback_chats table
+        $stmt = $conn->prepare("INSERT INTO feedback_chats (thread_id, sender_name, email, sender_type, message, is_read) VALUES (?, ?, ?, 'user', ?, 0)");
+        $stmt->bind_param("ssss", $thread_id, $name, $email, $full_message);
+        
+        if ($stmt->execute()) {
+            $stmt->close();
+            $msg_sent = true;
+        } else {
+            $msg_error = "Could not send message. Please try again later.";
+        }
+    } else {
+        $msg_error = "Please provide your name and message.";
+    }
+}
+?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
@@ -133,25 +164,39 @@
                 </div>
                 <p class="form-desc">Fill out the form below and we'll get back to you shortly.</p>
                 
-                <form action="#" method="POST">
+                <?php if ($msg_sent): ?>
+                    <div style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Thank you! Your message has been sent to Barangay Tabon.</span>
+                    </div>
+                <?php elseif (!empty($msg_error)): ?>
+                    <div style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span><?= htmlspecialchars($msg_error) ?></span>
+                    </div>
+                <?php endif; ?>
+
+                <form action="contact.php" method="POST">
+                    <input type="hidden" name="send_contact_msg" value="1">
+
                     <div class="input-group">
                         <i class="fa-regular fa-user"></i>
-                        <input type="text" class="form-input" placeholder="Full Name" required>
+                        <input type="text" name="fullName" class="form-input" placeholder="Full Name *" required>
                     </div>
                     
                     <div class="input-group">
                         <i class="fa-regular fa-envelope"></i>
-                        <input type="email" class="form-input" placeholder="Email Address" required>
+                        <input type="email" name="email" class="form-input" placeholder="Email Address">
                     </div>
                     
                     <div class="input-group">
                         <i class="fa-solid fa-phone"></i>
-                        <input type="tel" class="form-input" placeholder="Phone Number">
+                        <input type="tel" name="phone" class="form-input" placeholder="Phone Number">
                     </div>
                     
                     <div class="input-group textarea-group">
                         <i class="fa-regular fa-message"></i>
-                        <textarea class="form-input" placeholder="Message" required></textarea>
+                        <textarea name="message" class="form-input" placeholder="Message *" required></textarea>
                     </div>
 
                     <button type="submit" class="btn-submit">

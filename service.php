@@ -185,6 +185,14 @@ if ($res) {
                     <strong>Processing Time</strong>
                     <p id="detailModalTime"></p>
                 </div>
+                <div class="modal-info-item" id="detailModalDocItem" style="display:none;">
+                    <strong>Form / Document Template</strong>
+                    <p style="margin:4px 0 0 0;">
+                        <a id="detailModalDocLink" href="#" target="_blank" download style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#e8f5ee; color:#137547; border:1px solid #bbf7d0; border-radius:6px; font-weight:600; font-size:0.88rem; text-decoration:none;">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Download Attached Template
+                        </a>
+                    </p>
+                </div>
                 <a href="contact.php" id="detailModalLink" class="btn-request" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">Proceed to Request</a>
             </div>
         </div>
@@ -253,8 +261,19 @@ if ($res) {
         }
 
         document.getElementById('detailModalFee').textContent = svc.fee || 'Free';
-        document.getElementById('detailModalTime').textContent = svc.processing_time || '15-30 Minutes';
+        document.getElementById('detailModalTime').textContent = svc.processing_time || 'Same Day';
         
+        const docItem = document.getElementById('detailModalDocItem');
+        if (docItem) {
+            if (svc.document_file && svc.document_file.trim() !== '') {
+                const docLink = document.getElementById('detailModalDocLink');
+                docLink.href = 'Admin/' + svc.document_file;
+                docItem.style.display = 'block';
+            } else {
+                docItem.style.display = 'none';
+            }
+        }
+
         const link = document.getElementById('detailModalLink');
         link.href = svc.button_url || 'contact.php';
         link.textContent = svc.button_text || 'Proceed to Request';
