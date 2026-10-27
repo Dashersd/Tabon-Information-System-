@@ -255,6 +255,99 @@
     object-fit: cover;
     border-radius: 28px;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    cursor: default;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Interactive Map Pin Styling */
+.interactive-map-pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    text-align: center;
+    z-index: 25;
+    animation: pinBounce 2s ease-in-out infinite;
+    transition: left 0.4s ease, top 0.4s ease, opacity 0.3s ease;
+    user-select: none;
+}
+
+.pin-badge {
+    background: rgba(15, 23, 42, 0.9);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.pin-badge i {
+    color: #facc15;
+    font-size: 11px;
+}
+
+.pin-icon {
+    display: block;
+    color: #ef4444;
+    font-size: 44px;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+    transition: transform 0.25s ease, color 0.25s ease, filter 0.25s ease;
+}
+
+.interactive-map-pin:hover .pin-icon {
+    transform: scale(1.18);
+    color: #dc2626;
+    filter: drop-shadow(0 8px 18px rgba(220, 38, 38, 0.6));
+}
+
+.interactive-map-pin:hover .pin-badge {
+    background: #093d25;
+    border-color: #facc15;
+}
+
+.pin-marker-pulse {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 6px;
+    background: rgba(239, 68, 68, 0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.8);
+    animation: pulseRing 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    pointer-events: none;
+}
+
+@keyframes pinBounce {
+    0%, 100% {
+        transform: translate(-50%, -100%);
+    }
+    50% {
+        transform: translate(-50%, -114%);
+    }
+}
+
+@keyframes pulseRing {
+    0% {
+        opacity: 0.9;
+        transform: translateX(-50%) scale(0.8);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(2.6);
+    }
 }
 
 @keyframes bounce {

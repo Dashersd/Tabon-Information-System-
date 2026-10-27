@@ -123,12 +123,14 @@ try {
 
                 <!-- Spot Map Image (Now on Right) -->
                 <div class="spotmap-main">
-                    <div class="map-container" style="position: relative; width: 100%; max-height: calc(100vh - 140px); display: flex; justify-content: center;">
-                        <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage" style="cursor: pointer; width: 100%; object-fit: cover;">
+                    <div class="map-container" style="position: relative; width: 100%; max-height: calc(100vh - 140px); display: flex; justify-content: center; overflow: hidden; border-radius: 28px;">
+                        <img src="Images/Map/Philippines.png" alt="Barangay Tabon Spot Map Full View" class="full-spot-map-img" id="mainSpotMapImage" style="cursor: default; width: 100%; object-fit: cover;">
                         
-                        <!-- Map Pin Overlay (Initially hidden) -->
-                        <div id="barangay-pin" style="position: absolute; top: 18%; left: 47%; display: none; transform: translate(-50%, -100%); cursor: pointer; text-align: center; animation: bounce 2s infinite;">
-                            <i class="fa-solid fa-location-dot" style="color: #ff2a2a; font-size: 45px; text-shadow: 2px 2px 8px rgba(0,0,0,0.6);"></i>
+                        <!-- Interactive Zoom-In Pin Overlay -->
+                        <div id="barangay-pin" class="interactive-map-pin" style="top: 74%; left: 60%; display: block;" title="Click pin to zoom into Mindanao">
+                            <div class="pin-badge"><i class="fa-solid fa-magnifying-glass-plus"></i> <span id="pin-badge-text">Mindanao</span></div>
+                            <div class="pin-marker-pulse"></div>
+                            <i class="fa-solid fa-location-dot pin-icon"></i>
                         </div>
 
                         <!-- Purok 1 Markers -->
@@ -311,75 +313,140 @@ try {
             document.getElementById('legendToast').classList.remove('active');
         }
 
-        const mapSequence = [
-            'Images/Map/Philippines.png',
-            'Images/Map/mindanao.jpg',
-            'Images/Map/Zamboanga del Sur.jpg',
-            'Images/Map/Lapuyan.gif',
-            'Images/Map/Barangay Tabon Forest Village.png',
-            'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png'
-        ];
-        let currentSequenceIndex = 0;
-
-        document.getElementById('mainSpotMapImage').addEventListener('click', function() {
-            // Allow clicking the map to advance ONLY before reaching the Forest Village image
-            if (currentSequenceIndex < mapSequence.length - 2) {
-                currentSequenceIndex++;
-                this.src = mapSequence[currentSequenceIndex];
-                togglePinVisibility(mapSequence[currentSequenceIndex]);
-                
-                // Disable map click cursor once Forest Village image is reached
-                if (currentSequenceIndex === mapSequence.length - 2) {
-                    this.style.cursor = 'default';
+        // Step-by-Step Interactive Zoom Configuration (Pins only)
+        const mapSteps = [
+            {
+                image: 'Images/Map/Philippines.png',
+                stepLabel: 'Philippines &rarr; Click pin on Mindanao',
+                pin: {
+                    show: true,
+                    left: '60%',
+                    top: '74%',
+                    title: 'Click pin to zoom into Mindanao',
+                    label: 'Mindanao'
+                }
+            },
+            {
+                image: 'Images/Map/mindanao.jpg',
+                stepLabel: 'Mindanao &rarr; Click pin on Zamboanga del Sur',
+                pin: {
+                    show: true,
+                    left: '30.5%',
+                    top: '57%',
+                    title: 'Click pin to zoom into Zamboanga del Sur',
+                    label: 'Zamboanga del Sur'
+                }
+            },
+            {
+                image: 'Images/Map/Zamboanga del Sur.jpg',
+                stepLabel: 'Zamboanga del Sur &rarr; Click pin on Lapuyan',
+                pin: {
+                    show: true,
+                    left: '47.3%',
+                    top: '58.3%',
+                    title: 'Click pin to zoom into Lapuyan',
+                    label: 'Lapuyan'
+                }
+            },
+            {
+                image: 'Images/Map/Lapuyan.gif',
+                stepLabel: 'Lapuyan &rarr; Click pin on Barangay Tabon',
+                pin: {
+                    show: true,
+                    left: '50%',
+                    top: '50%',
+                    title: 'Click pin to view 3D Spot Map',
+                    label: 'Barangay Tabon'
+                }
+            },
+            {
+                image: 'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png',
+                stepLabel: 'Barangay Tabon 3D Spot Map (Interactive)',
+                pin: {
+                    show: false
                 }
             }
-        });
+        ];
 
-        // The pin click advances the sequence to the last image
-        document.getElementById('barangay-pin').addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent bubbling
-            if (currentSequenceIndex === mapSequence.length - 2) {
-                currentSequenceIndex++;
-                const mapImg = document.getElementById('mainSpotMapImage');
-                mapImg.src = mapSequence[currentSequenceIndex];
-                togglePinVisibility(mapSequence[currentSequenceIndex]);
-                mapImg.style.cursor = 'default';
-            }
-        });
+        let currentStepIndex = 0;
 
-        function changeMapImage(imageUrl) {
-            document.getElementById('mainSpotMapImage').src = imageUrl;
-            if (imageUrl === 'Images/Map/Philippines.png') {
-                currentSequenceIndex = 0;
-                document.getElementById('mainSpotMapImage').style.cursor = 'pointer';
-            } else {
-                document.getElementById('mainSpotMapImage').style.cursor = 'default';
+        function applyMapStep(index) {
+            currentStepIndex = index;
+            const step = mapSteps[index];
+            const mapImg = document.getElementById('mainSpotMapImage');
+            const pin = document.getElementById('barangay-pin');
+            const pinText = document.getElementById('pin-badge-text');
+
+            if (mapImg && step) {
+                mapImg.src = step.image;
+                mapImg.style.cursor = 'default'; // Map background is NOT clickable
             }
-            togglePinVisibility(imageUrl);
+
+            if (pin) {
+                if (step.pin && step.pin.show) {
+                    pin.style.display = 'block';
+                    pin.style.left = step.pin.left;
+                    pin.style.top = step.pin.top;
+                    pin.title = step.pin.title;
+                    if (pinText) {
+                        pinText.textContent = step.pin.label;
+                    }
+                } else {
+                    pin.style.display = 'none';
+                }
+            }
+
+            // Hide all purok markers when zooming in
+            const p1 = document.getElementById('purok1-markers');
+            const p2 = document.getElementById('purok2-markers');
+            const p3 = document.getElementById('purok3-markers');
+            if (p1) p1.style.display = 'none';
+            if (p2) p2.style.display = 'none';
+            if (p3) p3.style.display = 'none';
         }
 
-        function togglePinVisibility(imageUrl) {
+        // ONLY clicking the PIN advances the sequence
+        const interactivePin = document.getElementById('barangay-pin');
+        if (interactivePin) {
+            interactivePin.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentStepIndex < mapSteps.length - 1) {
+                    applyMapStep(currentStepIndex + 1);
+                }
+            });
+        }
+
+        // Reset to initial Philippines map
+        function resetToFullMap() {
+            applyMapStep(0);
+        }
+
+        function changeMapImage(imageUrl) {
+            const mapImg = document.getElementById('mainSpotMapImage');
             const pin = document.getElementById('barangay-pin');
             const p1 = document.getElementById('purok1-markers');
             const p2 = document.getElementById('purok2-markers');
             const p3 = document.getElementById('purok3-markers');
-            
-            p1.style.display = 'none';
-            p2.style.display = 'none';
-            p3.style.display = 'none';
 
-            if (imageUrl.includes('Barangay Tabon Forest Village')) {
-                pin.style.display = 'block';
-            } else {
-                pin.style.display = 'none';
+            if (p1) p1.style.display = 'none';
+            if (p2) p2.style.display = 'none';
+            if (p3) p3.style.display = 'none';
+
+            if (imageUrl === 'Images/Map/Philippines.png') {
+                applyMapStep(0);
+                return;
             }
 
+            mapImg.src = imageUrl;
+            mapImg.style.cursor = 'default';
+            if (pin) pin.style.display = 'none';
+
             if (imageUrl.includes('Purok 1')) {
-                p1.style.display = 'block';
+                if (p1) p1.style.display = 'block';
             } else if (imageUrl.includes('Purok 2')) {
-                p2.style.display = 'block';
+                if (p2) p2.style.display = 'block';
             } else if (imageUrl.includes('Purok 3')) {
-                p3.style.display = 'block';
+                if (p3) p3.style.display = 'block';
             }
         }
     </script>
