@@ -63,6 +63,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 </li>
                 <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
                 <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
+                <li><a href="feedbackchat.php"><i class="fa-solid fa-comments"></i> Feedback Chat</a></li>
                 <li><a href="adminsettings.php" class="active"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
                 
                 <br>
