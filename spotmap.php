@@ -32,7 +32,7 @@ try {
     <!-- Header / Navbar -->
     <header>
         <div class="brand-container">
-            <img src="Barangay Logo/Logo.png" alt="Logo" class="brand-logo">
+            <img src="Barangay Logo/Logo.png" alt="Barangay Tabon Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/65';">
             <div>
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
@@ -44,10 +44,16 @@ try {
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item">
-                <i class="fa-solid fa-circle-info"></i>
-                <span>About Us</span>
-            </a>
+            <div class="nav-item dropdown">
+                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="history.php" class="dropdown-item">History</a>
+                    <a href="about.php" class="dropdown-item">Mission & Vision</a>
+                </div>
+            </div>
             <div class="nav-item dropdown">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <i class="fa-solid fa-user-tie"></i>
@@ -177,22 +183,22 @@ try {
             </div>
             
             <div class="footer-links">
-                <h3>Quick Links</h3>
+                <h4>Menu</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="about.php">About Us</a></li>
+                    <li><a href="about.php">About</a></li>
                     <li><a href="officials.php">Officials</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
+                    <li><a href="gallery.php">Gallery</a></li>
+                    <li><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
             
-            <div class="footer-contact">
-                <h3>Contact Info</h3>
-                <ul>
-                    <li><i class="fa-solid fa-location-dot"></i> Barangay Tabon, Town, Province</li>
-                    <li><i class="fa-solid fa-phone"></i> (123) 456-7890</li>
-                    <li><i class="fa-solid fa-envelope"></i> tabon@example.com</li>
-                </ul>
+            <div class="footer-links footer-partner-col">
+                <h4>Partnership by</h4>
+                <p class="footer-partner-name">Municipality of Lapuyan</p>
+                <div class="footer-partner-wrap">
+                    <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="footer-partner-logo">
+                </div>
             </div>
         </div>
         

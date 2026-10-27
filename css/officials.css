@@ -418,6 +418,79 @@ body.officials-page {
     transform: scale(1.1);
 }
 
+/* ========================================================
+   OFFICIALS MOBILE RESPONSIVE STYLES
+   ======================================================== */
+@media (max-width: 768px) {
+    .officials-content {
+        padding: 24px 14px 40px 14px;
+    }
+
+    .gallery-cursive {
+        font-size: clamp(34px, 8vw, 48px);
+    }
+
+    .gallery-cursive::before,
+    .gallery-cursive::after {
+        display: none !important;
+    }
+
+    .officials-title {
+        font-size: 18px;
+        letter-spacing: 2px;
+    }
+
+    .officials-subtitle {
+        font-size: 13.5px;
+    }
+
+    .org-chart {
+        gap: 20px;
+    }
+
+    .row-kagawad-1,
+    .row-kagawad-2 {
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .official-card {
+        width: calc(50% - 10px);
+        min-width: 140px;
+        max-width: 170px;
+        padding: 12px 10px;
+    }
+
+    .card-img-wrapper {
+        height: 130px;
+    }
+
+    .official-name {
+        font-size: 10px;
+        padding: 5px 6px;
+    }
+
+    .official-title {
+        font-size: 8.5px;
+    }
+
+    .modal-content {
+        width: 95%;
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .official-card {
+        width: 100%;
+        max-width: 220px;
+    }
+
+    .card-img-wrapper {
+        height: 160px;
+    }
+}
+
 
 
 

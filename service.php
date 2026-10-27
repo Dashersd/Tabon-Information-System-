@@ -51,10 +51,16 @@ if ($res) {
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item">
-                <i class="fa-solid fa-circle-info"></i>
-                <span>About Us</span>
-            </a>
+            <div class="nav-item dropdown">
+                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="history.php" class="dropdown-item">History</a>
+                    <a href="about.php" class="dropdown-item">Mission & Vision</a>
+                </div>
+            </div>
             <div class="nav-item dropdown">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <i class="fa-solid fa-user-tie"></i>
@@ -195,22 +201,21 @@ if ($res) {
                 <p>The Barangay Tabon information system aims to provide better services, transparent governance, and a vibrant community experience for all residents.</p>
             </div>
             <div class="footer-links">
-                <h4>Navigation</h4>
+                <h4>Menu</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="about.php">About Us</a></li>
-                    <li><a href="service.php">Services</a></li>
-                    <li><a href="announcement.php">Announcements</a></li>
+                    <li><a href="about.php">About</a></li>
+                    <li><a href="officials.php">Officials</a></li>
                     <li><a href="gallery.php">Gallery</a></li>
-                    <li><a href="spotmap.php">Spot Map</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
+                    <li><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
-            <div class="footer-contact">
-                <h4>Contact Us</h4>
-                <p><i class="fa-solid fa-location-dot"></i> Barangay Hall, Tabon</p>
-                <p><i class="fa-solid fa-phone"></i> +63 912 345 6789</p>
-                <p><i class="fa-solid fa-envelope"></i> tabon.info@gmail.com</p>
+            <div class="footer-links footer-partner-col">
+                <h4>Partnership by</h4>
+                <p class="footer-partner-name">Municipality of Lapuyan</p>
+                <div class="footer-partner-wrap">
+                    <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="footer-partner-logo">
+                </div>
             </div>
         </div>
         <div class="footer-bottom">
@@ -294,5 +299,6 @@ if ($res) {
 
     <!-- Preloader Script -->
     <script src="js/preloader.js?v=<?php echo time(); ?>"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -272,3 +272,131 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(raf);
     }
 });
+
+// ----------------------------------------------------
+// Universal Mobile Navigation Drawer Initialization
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('header');
+    const nav = document.querySelector('nav');
+    if (!header || !nav) return;
+
+    // Create hamburger toggle button if it doesn't exist
+    let toggleBtn = header.querySelector('.mobile-menu-toggle');
+    if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mobile-menu-toggle';
+        toggleBtn.setAttribute('aria-label', 'Toggle navigation menu');
+        toggleBtn.setAttribute('type', 'button');
+        toggleBtn.innerHTML = `
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+        `;
+        header.appendChild(toggleBtn);
+    }
+
+    // Create backdrop if it doesn't exist
+    let backdrop = document.querySelector('.mobile-nav-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'mobile-nav-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    // Create close button inside nav if not present
+    let closeBtn = nav.querySelector('.mobile-nav-close');
+    if (!closeBtn) {
+        closeBtn = document.createElement('button');
+        closeBtn.className = 'mobile-nav-close';
+        closeBtn.setAttribute('aria-label', 'Close menu');
+        closeBtn.setAttribute('type', 'button');
+        closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        nav.prepend(closeBtn);
+    }
+
+    // Mobile brand header inside nav drawer
+    let drawerBrand = nav.querySelector('.mobile-drawer-brand');
+    if (!drawerBrand) {
+        drawerBrand = document.createElement('div');
+        drawerBrand.className = 'mobile-drawer-brand';
+        drawerBrand.innerHTML = `
+            <div class="drawer-brand-text">
+                <div class="drawer-brand-title">Barangay Tabon</div>
+                <div class="drawer-brand-sub">Together for a Stronger Community</div>
+            </div>
+        `;
+        closeBtn.after(drawerBrand);
+    }
+
+    function openMobileMenu() {
+        nav.classList.add('mobile-open');
+        backdrop.classList.add('active');
+        toggleBtn.classList.add('open');
+        document.body.classList.add('menu-open-lock');
+    }
+
+    function closeMobileMenu() {
+        nav.classList.remove('mobile-open');
+        backdrop.classList.remove('active');
+        toggleBtn.classList.remove('open');
+        document.body.classList.remove('menu-open-lock');
+    }
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (nav.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    });
+
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMobileMenu();
+    });
+
+    backdrop.addEventListener('click', () => {
+        closeMobileMenu();
+    });
+
+    // Mobile dropdown accordion handling (About Us & Officials)
+    const dropdownToggles = nav.querySelectorAll('.nav-item.dropdown > .dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992) {
+                e.preventDefault();
+                e.stopPropagation();
+                const parent = toggle.closest('.nav-item.dropdown');
+                if (parent) {
+                    parent.classList.toggle('expanded');
+                }
+            }
+        });
+    });
+
+    // Close mobile nav when clicking a direct navigation link
+    const directLinks = nav.querySelectorAll('a:not(.dropdown-toggle)');
+    directLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                closeMobileMenu();
+            }
+        });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && nav.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        }
+    });
+
+    // Close if resized to desktop breakpoint
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992 && nav.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        }
+    });
+});

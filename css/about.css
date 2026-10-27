@@ -180,4 +180,72 @@
     opacity: 0.6;
 }
 
+/* ========================================================
+   ABOUT & HISTORY MOBILE RESPONSIVE STYLES
+   ======================================================== */
+@media (max-width: 900px) {
+    .container-about {
+        flex-direction: column;
+        gap: 30px;
+        text-align: left;
+    }
+
+    .about-info {
+        max-width: 100%;
+    }
+
+    .about-title {
+        font-size: clamp(32px, 7vw, 48px);
+        margin-bottom: 16px;
+    }
+
+    .polaroid-frame {
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+        transform: rotate(0deg);
+    }
+
+    .polaroid-img {
+        height: 200px;
+    }
+
+    .mv-grid {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .container-mission, .container-vision {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .mv-title {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-title {
+        font-size: 28px;
+    }
+
+    .about-text {
+        font-size: 13.5px;
+    }
+
+    .about-text-scroll {
+        max-height: 350px;
+    }
+
+    .container-mission, .container-vision {
+        padding: 20px 16px;
+    }
+
+    .mv-quote {
+        font-size: 13px;
+        padding: 0 4px;
+    }
+}
+
 

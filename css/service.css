@@ -740,3 +740,18 @@
     .service-hero-title { font-size: 2.1rem; }
     .services-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 480px) {
+    .service-page-wrapper {
+        padding: 10px 14px 60px 14px;
+    }
+    .service-hero {
+        padding: 20px 10px 30px 10px;
+    }
+    .service-hero-title {
+        font-size: 1.85rem;
+    }
+    .modal-dialog {
+        width: 95%;
+    }
+}

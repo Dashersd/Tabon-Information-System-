@@ -21,7 +21,7 @@
     <!-- Header / Navbar -->
     <header>
         <div class="brand-container">
-            <img src="Barangay Logo/Logo.png" alt="Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/65';">
+            <img src="Barangay Logo/Logo.png" alt="Barangay Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/65';">
             <div>
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
@@ -33,10 +33,16 @@
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="about.php" class="nav-item">
-                <i class="fa-solid fa-users"></i>
-                <span>About Us</span>
-            </a>
+            <div class="nav-item dropdown">
+                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="history.php" class="dropdown-item">History</a>
+                    <a href="about.php" class="dropdown-item">Mission & Vision</a>
+                </div>
+            </div>
             <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <i class="fa-solid fa-user-tie"></i>
@@ -249,14 +255,16 @@
                 </ul>
             </div>
             
-            <div class="footer-links">
-                <h4>Utilities</h4>
-                <ul>
-                    <li><a href="login.php">Admin Login</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms and Condition</a></li>
-                </ul>
+            <div class="footer-links footer-partner-col">
+                <h4>Partnership by</h4>
+                <p class="footer-partner-name">Municipality of Lapuyan</p>
+                <div class="footer-partner-wrap">
+                    <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="footer-partner-logo">
+                </div>
             </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <?php echo date('Y'); ?> Barangay Tabon Information System. All Rights Reserved.</p>
         </div>
     </footer>
 

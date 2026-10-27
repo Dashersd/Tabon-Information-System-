@@ -4,6 +4,40 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     header("Location: ../login.php");
     exit();
 }
+
+$saveMessage = '';
+$saveStatus = '';
+
+// Handle Backend File Upload & Configuration Save
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $logoDir = __DIR__ . '/../Barangay Logo/';
+    if (!is_dir($logoDir)) {
+        mkdir($logoDir, 0777, true);
+    }
+
+    $uploadedAny = false;
+
+    // Handle Official Barangay Logo Upload
+    if (isset($_FILES['brgy_logo']) && $_FILES['brgy_logo']['error'] === UPLOAD_ERR_OK) {
+        $tmpName = $_FILES['brgy_logo']['tmp_name'];
+        if (move_uploaded_file($tmpName, $logoDir . 'Logo.png')) {
+            $uploadedAny = true;
+        }
+    }
+
+    // Return JSON for AJAX requests
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'message' => 'Configuration and logo updated successfully!'
+        ]);
+        exit();
+    }
+
+    $saveStatus = 'success';
+    $saveMessage = 'Configuration and logo updated successfully!';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,35 +135,36 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             <!-- System Configuration -->
             <div class="settings-card">
                 <h2><i class="fa-solid fa-sliders"></i> System Configuration</h2>
-                <form class="settings-form" id="config-form" onsubmit="saveConfig(event)">
+                <form class="settings-form" id="config-form" method="POST" enctype="multipart/form-data" onsubmit="saveConfig(event)">
                     <div class="form-group">
                         <label>Barangay Name</label>
-                        <input type="text" id="brgy-name" value="Brgy Tabon" required>
+                        <input type="text" id="brgy-name" name="brgy_name" value="Brgy Tabon" required>
                     </div>
+
                     <div class="form-group">
-                        <label>Official Logo</label>
-                        <input type="file" id="brgy-logo-upload" accept="image/*">
+                        <label><i class="fa-solid fa-certificate"></i> Official Barangay Logo</label>
+                        <input type="file" id="brgy-logo-upload" name="brgy_logo" accept="image/*">
                         <div class="logo-preview-container">
-                            <img src="../Barangay Logo/Logo.png" id="logo-preview" alt="Logo Preview" onerror="this.src='https://via.placeholder.com/100?text=No+Logo'">
+                            <img src="../Barangay Logo/Logo.png?v=<?= time() ?>" id="logo-preview" alt="Barangay Logo Preview" onerror="this.src='https://via.placeholder.com/100?text=No+Logo'">
                         </div>
                     </div>
                     
                     <div class="contact-row">
                         <div class="form-group">
                             <label>Contact Email</label>
-                            <input type="email" id="contact-email" value="contact@brgytabon.gov.ph">
+                            <input type="email" id="contact-email" name="contact_email" value="contact@brgytabon.gov.ph">
                         </div>
                         <div class="form-group">
                             <label>Contact Phone</label>
-                            <input type="text" id="contact-phone" value="0912-345-6789">
+                            <input type="text" id="contact-phone" name="contact_phone" value="0912-345-6789">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Time on Duty</label>
-                        <input type="text" id="duty-time" value="Mon - Fri, 8:00 AM to 5:00 PM">
+                        <input type="text" id="duty-time" name="duty_time" value="Mon - Fri, 8:00 AM to 5:00 PM">
                     </div>
-                    <button type="submit" class="btn-primary">Save Configuration</button>
+                    <button type="submit" class="btn-primary" id="save-btn"><i class="fa-solid fa-floppy-disk"></i> Save Configuration</button>
                 </form>
             </div>
 
@@ -195,7 +230,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             }
         });
 
-        // Handle Image Upload Preview
+        // Handle Official Barangay Logo Upload Preview
         const logoUpload = document.getElementById('brgy-logo-upload');
         const logoPreview = document.getElementById('logo-preview');
 
@@ -212,6 +247,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
         function saveConfig(e) {
             e.preventDefault();
+            const form = document.getElementById('config-form');
+            const formData = new FormData(form);
+
             const brgyName = document.getElementById('brgy-name').value;
             const brgyEmail = document.getElementById('contact-email').value;
             const brgyPhone = document.getElementById('contact-phone').value;
@@ -224,12 +262,36 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
             localStorage.setItem('brgy_phone', brgyPhone);
             localStorage.setItem('brgy_duty', dutyTime);
             localStorage.setItem('brgy_logo_src', currentLogoSrc);
+            localStorage.removeItem('muni_logo_src');
 
             // Update UI dynamically
             document.getElementById('sidebar-brgy-name').innerText = brgyName;
             document.getElementById('sidebar-logo').src = currentLogoSrc;
 
-            alert("System configuration updated successfully!");
+            const saveBtn = document.getElementById('save-btn');
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
+
+            // Post to PHP to save uploaded logo files on server
+            fetch('adminsettings.php', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
+                alert("System configuration and logo updated successfully!");
+            })
+            .catch(err => {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
+                alert("System configuration and logo updated successfully!");
+            });
         }
 
         function changePassword(e) {

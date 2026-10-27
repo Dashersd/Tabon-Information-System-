@@ -481,3 +481,41 @@ body.login-page {
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
     opacity: 0.85;
 }
+
+/* ========================================================
+   LOGIN PAGE MOBILE RESPONSIVE STYLES
+   ======================================================== */
+@media (max-width: 600px), (max-height: 720px) {
+    html, body.login-page {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto !important;
+        padding: 20px 0;
+    }
+
+    .card-shell {
+        min-height: auto;
+        padding: 28px 18px;
+        margin: 12px auto;
+        width: 94%;
+        border-radius: 16px;
+    }
+
+    .card-bg {
+        border-radius: 16px;
+        clip-path: none;
+    }
+
+    .login-header h1 {
+        font-size: 24px;
+    }
+
+    .role-row {
+        gap: 8px;
+    }
+
+    .role-pill {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
