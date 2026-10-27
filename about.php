@@ -1,3 +1,33 @@
+<?php
+require_once 'db_connect.php';
+
+// Fetch dynamic About Content (Image, History, Mission, Vision)
+$about_data = [
+    'history' => '',
+    'mission' => '',
+    'vision' => '',
+    'image_path' => 'Images/Tabon Barangay hall.jpg',
+    'updated_at' => null
+];
+
+try {
+    $ab_query = $conn->query("SELECT * FROM `about_content` WHERE `id` = 1 LIMIT 1");
+    if ($ab_query && $ab_query->num_rows > 0) {
+        $about_data = $ab_query->fetch_assoc();
+    }
+} catch (Exception $e) {}
+
+// Resolve image URL
+$about_img_src = 'Images/Tabon Barangay hall.jpg';
+if (!empty($about_data['image_path'])) {
+    if (strpos($about_data['image_path'], 'uploads/') === 0) {
+        $about_img_src = 'Admin/' . $about_data['image_path'];
+    } else {
+        $about_img_src = $about_data['image_path'];
+    }
+}
+$img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['updated_at']) : time();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,13 +112,42 @@
     <main class="main-content">
         
         <div class="about-wrapper" style="max-width: 1100px; margin: 0 auto; padding-top: 10px;">
-            <div style="text-align: center; margin-bottom: 40px;">
-                <h1 class="about-title" style="margin-bottom: 10px;">Mission &amp; Vision</h1>
-                <p style="color: var(--text-muted); font-size: 15px;">Guiding principles and future aspirations of Barangay Tabon</p>
+            
+            <!-- About Us / History Section -->
+            <section class="container-about">
+                <div class="about-info fade-in-left animate-on-scroll">
+                    <h1 class="about-title">About Us</h1>
+                    <div class="about-text-scroll" data-lenis-prevent="true">
+                        <?php
+                        $paras = preg_split('/\r\n\r\n|\n\n|\r\r/', $about_data['history'] ?? '');
+                        if (!empty($paras)) {
+                            foreach ($paras as $p) {
+                                $trimmed = trim($p);
+                                if (!empty($trimmed)) {
+                                    echo '<p class="about-text">' . nl2br(htmlspecialchars($trimmed)) . '</p>';
+                                }
+                            }
+                        } else {
+                            echo '<p class="about-text">' . nl2br(htmlspecialchars($about_data['history'] ?? '')) . '</p>';
+                        }
+                        ?>
+                    </div>
+                </div>
+                
+                <div class="polaroid-frame fade-in-right animate-on-scroll delay-1">
+                    <img src="<?= htmlspecialchars($about_img_src) ?>?v=<?= $img_cache_bust ?>" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='Images/Tabon Barangay hall.jpg';">
+                    <div class="polaroid-label">Barangay Tabon</div>
+                </div>
+            </section>
+
+            <!-- Mission & Vision Section Header -->
+            <div style="text-align: center; margin: 45px 0 25px 0;">
+                <h2 style="font-family: var(--font-heading); font-style: italic; font-size: 38px; color: var(--secondary-black); margin-bottom: 6px;">Mission &amp; Vision</h2>
+                <p style="color: var(--text-muted); font-size: 14.5px;">Guiding principles and future aspirations of Barangay Tabon</p>
             </div>
 
             <!-- Mission & Vision Containers -->
-            <div class="mv-grid">
+            <div class="mv-grid" id="mission-vision">
                 
                 <!-- Mission Container -->
                 <section class="container-mission fade-in-up animate-on-scroll delay-1">
@@ -98,7 +157,7 @@
                         <h2 class="mv-title">Mission</h2>
                     </div>
                     <blockquote class="mv-quote">
-                        The Barangay Officials and the people in the Barangay united in working for the attainment of sufficient and effective services, increased income through developed agriculture and create activities that would foster greater unity and strong relationships among settlers, under the strong and good overnment administration and continually living and enjoying a balanced environment.
+                        <?= nl2br(htmlspecialchars($about_data['mission'] ?? '')) ?>
                     </blockquote>
                 </section>
 
@@ -110,10 +169,11 @@
                         <h2 class="mv-title">Vision</h2>
                     </div>
                     <blockquote class="mv-quote">
-                        "The Barangay Tabon envisions a dynamic Barangay whose united, God-loving and empowered people. The Subanens and settlers will live harmoniously and peacefully, having a progressive and decent living in a balanced environment under a strong and good government administration."
+                        <?= nl2br(htmlspecialchars($about_data['vision'] ?? '')) ?>
                     </blockquote>
                 </section>
             </div>
+
         </div>
 
     </main>

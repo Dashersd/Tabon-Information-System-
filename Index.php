@@ -51,6 +51,32 @@ try {
     }
 } catch (Exception $e) {}
 
+// Fetch dynamic About Content for the Home page About Section
+$home_about = [
+    'history' => '',
+    'mission' => '',
+    'vision' => '',
+    'image_path' => 'Images/Tabon Barangay hall.jpg',
+    'updated_at' => null
+];
+try {
+    $ab_query = $conn->query("SELECT * FROM `about_content` WHERE `id` = 1 LIMIT 1");
+    if ($ab_query && $ab_query->num_rows > 0) {
+        $home_about = $ab_query->fetch_assoc();
+    }
+} catch (Exception $e) {}
+
+$home_about_img = 'Images/Tabon Barangay hall.jpg';
+if (!empty($home_about['image_path'])) {
+    if (strpos($home_about['image_path'], 'uploads/') === 0) {
+        $home_about_img = 'Admin/' . $home_about['image_path'];
+    } else {
+        $home_about_img = $home_about['image_path'];
+    }
+}
+$home_about_cache = !empty($home_about['updated_at']) ? strtotime($home_about['updated_at']) : time();
+
+
 function get_home_announcement_date($when_date, $created_at) {
     $ts = !empty($when_date) ? strtotime($when_date) : null;
     if (!$ts || $ts <= 0) {
@@ -173,15 +199,32 @@ function get_home_announcement_date($when_date, $created_at) {
                 <p class="about-desc fade-in-left animate-on-scroll delay-1">
                     Our barangay is dedicated to providing an inclusive, safe, and dynamic environment for all residents. With a deep commitment to community building, we actively embrace innovation and preserve our cultural heritage.
                 </p>
+                <?php if (!empty($home_about['mission']) || !empty($home_about['vision'])): ?>
+                <div class="about-mv-highlights fade-in-left animate-on-scroll delay-2" style="display: flex; gap: 15px; margin: 10px 0 20px 0; flex-wrap: wrap;">
+                    <?php if (!empty($home_about['mission'])): ?>
+                    <div style="flex: 1; min-width: 200px; background: rgba(0,0,0,0.03); border-left: 3px solid #1a4d33; padding: 10px 14px; border-radius: 6px;">
+                        <strong style="display:block; font-size: 11px; color: #1a4d33; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;"><i class="fa-solid fa-bullseye"></i> Mission</strong>
+                        <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin: 0;"><?= htmlspecialchars(mb_strimwidth($home_about['mission'], 0, 110, '...')) ?></p>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($home_about['vision'])): ?>
+                    <div style="flex: 1; min-width: 200px; background: rgba(0,0,0,0.03); border-left: 3px solid #fbb117; padding: 10px 14px; border-radius: 6px;">
+                        <strong style="display:block; font-size: 11px; color: #b7791f; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;"><i class="fa-regular fa-eye"></i> Vision</strong>
+                        <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin: 0;"><?= htmlspecialchars(mb_strimwidth($home_about['vision'], 0, 110, '...')) ?></p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php else: ?>
                 <p class="about-desc fade-in-left animate-on-scroll delay-2">
                     Learn how our programs and services uplift families, empower the youth, and create lasting opportunities for everyone.
                 </p>
+                <?php endif; ?>
                 <div class="about-actions fade-in-left animate-on-scroll delay-3">
                     <a href="about.php" class="btn-read-more">Read More</a>
                 </div>
             </div>
             <div class="about-image fade-in-right animate-on-scroll delay-2">
-                <img src="Images/Tabon%20Barangay%20hall.jpg" alt="About Barangay Tabon">
+                <img src="<?= htmlspecialchars($home_about_img) ?>?v=<?= $home_about_cache ?>" alt="About Barangay Tabon" onerror="this.src='Images/Tabon Barangay hall.jpg';">
             </div>
         </section>
     </div>

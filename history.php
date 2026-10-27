@@ -1,3 +1,33 @@
+<?php
+require_once 'db_connect.php';
+
+// Fetch dynamic About Content (Image, History, Mission, Vision)
+$about_data = [
+    'history' => '',
+    'mission' => '',
+    'vision' => '',
+    'image_path' => 'Images/Tabon Barangay hall.jpg',
+    'updated_at' => null
+];
+
+try {
+    $ab_query = $conn->query("SELECT * FROM `about_content` WHERE `id` = 1 LIMIT 1");
+    if ($ab_query && $ab_query->num_rows > 0) {
+        $about_data = $ab_query->fetch_assoc();
+    }
+} catch (Exception $e) {}
+
+// Resolve image URL
+$about_img_src = 'Images/Tabon Barangay hall.jpg';
+if (!empty($about_data['image_path'])) {
+    if (strpos($about_data['image_path'], 'uploads/') === 0) {
+        $about_img_src = 'Admin/' . $about_data['image_path'];
+    } else {
+        $about_img_src = $about_data['image_path'];
+    }
+}
+$img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['updated_at']) : time();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,17 +126,24 @@
                 <div class="about-info fade-in-left animate-on-scroll">
                     <h1 class="about-title">History</h1>
                     <div class="about-text-scroll" data-lenis-prevent="true">
-                        <p class="about-text">Tabon means "to cover". It is derived to the characteristics of a bird name in Subanen dialect “MANGAWAG”, because when this kind of bird will lay eggs, they will dig a hole in the ground and lay eggs therein, after that it will covered with earth/soil.</p>
-                        <p class="about-text">Tabon was inhabited by Subanen who made their living by picking a fruit trees and hunting wild animals in the jungle. These Lumads made houses of “NIBONG” and “SUSAY” leaves for roofing and tying rattan for the light local materials, instead of using nails. As the Lumad hunters looked for food, he roamed around to hunt, until he saw something covered in the ground with dry leaves, branches and roots of trees with mixed soil. The hunter removed the cover and dig the hole, while digging he found out it was an eggs of a wild fowl called “MANGAWAG”. This kind of wild fowls, dig the ground to lay eggs and made it a nests. The word “TABON” came from the word “TABONAN” means “TO COVER”.</p>
-                        <p class="about-text">Barangay Tabon is the home of the Lumad Subanen, one of the 18 major Lumad tribes in Mindanao Island. The first Subanen families who inhabited the place when it was not yet a Barangay are only the families of “MAMULO, UNGOB, & MANGEDLOG”.</p>
-                        <p class="about-text">When the Barangay was not yet created it was a sitio of “BARANGAY MARWING”, and when Barangay Marwing was created into a Municipality in the year 1964, Tabon was created into Barangay by the Municipal Councilors of Marwing. That when Municipality of Marwing was dissolved in the year 1965, the municipal Government of Lapuyan still recognized Tabon as Barangay. That during those prior years a sitio will be created into a Barangay to not less than 500 inhabitants & in the year 1972, there was a Circular from the Office of the President that all Barangay should be approved by the House of Representatives and Senate and to be signed by the President before it will become a Regular Barangay. On “AUGUST 28, 1972”, by Virtue of “REPUBLIC ACT 3590” Tabon was created a regular Barangay.</p>
-                        <p class="about-text">The first leader of the Barangay was “SAGUILE LIPA”, because it was created into Barangay when Marwing was created into Municipality and until Marwing was dissolved, the municipality of Lapuyan still recognized it as a Barangay. That during that time said SAGUILE LIPA was a municipal councilor.</p>
-                        <p class="about-text">The first appointed Barangay Captain when Maruing was a Municipality was “BENTIA MALINTANG”, and when Maruing was dissolved being SAGUILE LIPA is no longer a Municipal Councilor, he was then appointed as Barangay Captain until he was again elected. Thereafter, it was again “PAPAO GALS, then RUBIO TILABAD, then Barangay Captain JANITO LIPA”, and the new elected Punong Barangay Nelcy D. Ongub.</p>
+                        <?php
+                        $paras = preg_split('/\r\n\r\n|\n\n|\r\r/', $about_data['history'] ?? '');
+                        if (!empty($paras)) {
+                            foreach ($paras as $p) {
+                                $trimmed = trim($p);
+                                if (!empty($trimmed)) {
+                                    echo '<p class="about-text">' . nl2br(htmlspecialchars($trimmed)) . '</p>';
+                                }
+                            }
+                        } else {
+                            echo '<p class="about-text">' . nl2br(htmlspecialchars($about_data['history'] ?? '')) . '</p>';
+                        }
+                        ?>
                     </div>
                 </div>
                 
                 <div class="polaroid-frame fade-in-right animate-on-scroll delay-1">
-                    <img src="Images/Tabon%20Barangay%20hall.jpg" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='https://via.placeholder.com/300x200';">
+                    <img src="<?= htmlspecialchars($about_img_src) ?>?v=<?= $img_cache_bust ?>" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='Images/Tabon Barangay hall.jpg';">
                     <div class="polaroid-label">Barangay Tabon</div>
                 </div>
             </section>
