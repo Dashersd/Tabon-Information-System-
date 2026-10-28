@@ -59,20 +59,14 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
             <a href="index.php" class="nav-item">
                 <span>Home</span>
             </a>
-            <div class="nav-item dropdown">
+            <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">Mission & Vision</a>
-                </div>
-            </div>
-            <div class="nav-item dropdown">
-                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
-                </a>
-                <div class="dropdown-menu">
+                    <a href="about.php#mission" class="dropdown-item">Mission</a>
+                    <a href="about.php#vision" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
@@ -142,7 +136,7 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
             <div class="mv-grid" id="mission-vision">
                 
                 <!-- Mission Container -->
-                <section class="container-mission fade-in-up animate-on-scroll delay-1">
+                <section class="container-mission fade-in-up animate-on-scroll delay-1" id="mission">
                     <div class="mv-header">
                         <i class="fa-solid fa-bullseye mv-icon"></i>
                         <span class="mv-divider">|</span>
@@ -154,7 +148,7 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
                 </section>
 
                 <!-- Vision Container -->
-                <section class="container-vision fade-in-up animate-on-scroll delay-2">
+                <section class="container-vision fade-in-up animate-on-scroll delay-2" id="vision">
                     <div class="mv-header">
                         <i class="fa-regular fa-eye mv-icon"></i>
                         <span class="mv-divider">|</span>

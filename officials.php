@@ -90,21 +90,15 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
             <a href="index.php" class="nav-item">
                 <span>Home</span>
             </a>
-            <div class="nav-item dropdown">
+            <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
                     <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php" class="dropdown-item">Mission & Vision</a>
-                </div>
-            </div>
-            <div class="nav-item dropdown active">
-                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
-                </a>
-                <div class="dropdown-menu">
-                    <a href="officials.php" class="dropdown-item">Barangay Officials</a>
+                    <a href="about.php#mission" class="dropdown-item">Mission</a>
+                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="officials.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
             </div>

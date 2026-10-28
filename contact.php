@@ -69,14 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php" class="dropdown-item">Mission & Vision</a>
-                </div>
-            </div>
-            <div class="nav-item dropdown">
-                <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
-                </a>
-                <div class="dropdown-menu">
+                    <a href="about.php#mission" class="dropdown-item">Mission</a>
+                    <a href="about.php#vision" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
