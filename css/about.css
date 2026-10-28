@@ -250,4 +250,60 @@
     }
 }
 
+/* Solo Mission & Vision Dedicated Page Styles */
+.solo-mission, .solo-vision {
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.solo-mission:hover, .solo-vision:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+}
+
+.solo-quote {
+    position: relative;
+}
+
+.solo-quote::before {
+    content: '“';
+    font-family: var(--font-heading);
+    font-size: 56px;
+    color: #0284c7;
+    position: absolute;
+    left: -15px;
+    top: -20px;
+    opacity: 0.35;
+    line-height: 1;
+}
+
+.solo-quote::after {
+    content: '”';
+    font-family: var(--font-heading);
+    font-size: 56px;
+    color: #0284c7;
+    position: absolute;
+    right: -15px;
+    bottom: -35px;
+    opacity: 0.35;
+    line-height: 1;
+}
+
+.solo-vision .solo-quote::before,
+.solo-vision .solo-quote::after {
+    color: #d97706;
+}
+
+@media (max-width: 768px) {
+    .solo-mission, .solo-vision {
+        padding: 30px 22px !important;
+        margin-left: 15px !important;
+        margin-right: 15px !important;
+    }
+    .solo-quote {
+        font-size: 15px !important;
+        padding: 5px 10px !important;
+    }
+}
+
 

@@ -96,8 +96,8 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php#mission" class="dropdown-item">Mission</a>
-                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="mission.php" class="dropdown-item">Mission</a>
+                    <a href="vision.php" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>

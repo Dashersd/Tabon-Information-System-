@@ -115,8 +115,8 @@ $sk7 = get_pub_sk_official('kagawad_7', 'Hon. Mc Felco T Bugao', 'SK KAGAWAD 7',
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php#mission" class="dropdown-item">Mission</a>
-                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="mission.php" class="dropdown-item">Mission</a>
+                    <a href="vision.php" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">SK Officials</a>
                 </div>

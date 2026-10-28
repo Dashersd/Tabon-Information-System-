@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php#mission" class="dropdown-item">Mission</a>
-                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="mission.php" class="dropdown-item">Mission</a>
+                    <a href="vision.php" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>

@@ -74,8 +74,8 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">History</a>
-                    <a href="about.php#mission" class="dropdown-item">Mission</a>
-                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="mission.php" class="dropdown-item">Mission</a>
+                    <a href="vision.php" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>

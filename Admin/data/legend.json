@@ -19,5 +19,26 @@
         "markerWidth": 40,
         "markerHeight": 40,
         "dateAdded": "2026-10-28"
+    },
+    {
+        "id": 16,
+        "name": "Tabon Elementary School",
+        "icon_path": "bi-book-half",
+        "color_hex": "#F59E0B",
+        "is_active": 1,
+        "display_order": 2,
+        "top_position": 68.88,
+        "left_position": 17.84,
+        "marker_width": 40,
+        "marker_height": 40,
+        "image_path": "uploads\/landmarks\/landmark_1793190013_6ae1e87d881eb.png",
+        "purok": "Legend",
+        "houseNumber": "Tabon Elementary School",
+        "markerImage": "bi-book-half",
+        "topPos": 68.88,
+        "leftPos": 17.84,
+        "markerWidth": 40,
+        "markerHeight": 40,
+        "dateAdded": "2026-10-28"
     }
 ]

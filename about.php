@@ -34,7 +34,7 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Tabon - About Us</title>
+    <title>Barangay Tabon - Mission</title>
     
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,7 +43,7 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/about.css?v=<?php echo time(); ?>">
 </head>
-<body>
+<body class="mission-page">
 
     <!-- Header / Navbar -->
     <header>
@@ -65,8 +65,8 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
                 </a>
                 <div class="dropdown-menu">
                     <a href="history.php" class="dropdown-item">History</a>
-                    <a href="about.php#mission" class="dropdown-item">Mission</a>
-                    <a href="about.php#vision" class="dropdown-item">Vision</a>
+                    <a href="mission.php" class="dropdown-item" style="color: #fbb117; font-weight: 600;">Mission</a>
+                    <a href="vision.php" class="dropdown-item">Vision</a>
                     <a href="officials.php" class="dropdown-item">Barangay Officials</a>
                     <a href="skofficials.php" class="dropdown-item">SK Officials</a>
                 </div>
@@ -97,68 +97,28 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
     <!-- Main Content Layout -->
     <main class="main-content">
         
-        <div class="about-wrapper" style="max-width: 1100px; margin: 0 auto; padding-top: 10px;">
+        <div class="about-wrapper mission-wrapper" style="max-width: 900px; margin: 0 auto; padding-top: 25px;">
             
-            <!-- About Us / History Section -->
-            <section class="container-about">
-                <div class="about-info fade-in-left animate-on-scroll">
-                    <h1 class="about-title">About Us</h1>
-                    <div class="about-text-scroll" data-lenis-prevent="true">
-                        <?php
-                        $paras = preg_split('/\r\n\r\n|\n\n|\r\r/', $about_data['history'] ?? '');
-                        if (!empty($paras)) {
-                            foreach ($paras as $p) {
-                                $trimmed = trim($p);
-                                if (!empty($trimmed)) {
-                                    echo '<p class="about-text">' . nl2br(htmlspecialchars($trimmed)) . '</p>';
-                                }
-                            }
-                        } else {
-                            echo '<p class="about-text">' . nl2br(htmlspecialchars($about_data['history'] ?? '')) . '</p>';
-                        }
-                        ?>
-                    </div>
+            <!-- Mission Header -->
+            <div class="mission-page-header fade-in-down animate-on-scroll" style="text-align: center; margin-bottom: 35px;">
+                <div class="mission-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #e0f2fe; color: #0369a1; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 15px;">
+                    <i class="fa-solid fa-bullseye"></i> Our Purpose &amp; Commitment
                 </div>
-                
-                <div class="polaroid-frame fade-in-right animate-on-scroll delay-1">
-                    <img src="<?= htmlspecialchars($about_img_src) ?>?v=<?= $img_cache_bust ?>" alt="Barangay Tabon View" class="polaroid-img" onerror="this.src='Images/Tabon Barangay hall.jpg';">
-                    <div class="polaroid-label">Barangay Tabon</div>
+                <h1 style="font-family: var(--font-heading); font-style: italic; font-size: 52px; color: var(--secondary-black); margin-bottom: 10px; line-height: 1.1;">Barangay Mission</h1>
+                <p style="color: var(--text-muted); font-size: 15px; max-width: 620px; margin: 0 auto;">Guiding principles, dedicated public service, and the core purpose of Barangay Tabon.</p>
+            </div>
+
+            <!-- Single Dedicated Mission Container -->
+            <section class="container-mission solo-mission fade-in-up animate-on-scroll delay-1" id="mission" style="max-width: 820px; margin: 0 auto 50px auto; padding: 45px 50px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);">
+                <div class="mv-header" style="justify-content: center; margin-bottom: 25px;">
+                    <i class="fa-solid fa-bullseye mv-icon" style="font-size: 34px; color: #0284c7;"></i>
+                    <span class="mv-divider" style="font-size: 26px;">|</span>
+                    <h2 class="mv-title" style="font-size: 34px;">Mission Statement</h2>
                 </div>
+                <blockquote class="mv-quote solo-quote" style="font-size: 16.5px; line-height: 1.85; color: #2d3748; text-align: center; max-width: 700px; margin: 0 auto; padding: 10px 30px;">
+                    <?= nl2br(htmlspecialchars($about_data['mission'] ?? '')) ?>
+                </blockquote>
             </section>
-
-            <!-- Mission & Vision Section Header -->
-            <div style="text-align: center; margin: 45px 0 25px 0;">
-                <h2 style="font-family: var(--font-heading); font-style: italic; font-size: 38px; color: var(--secondary-black); margin-bottom: 6px;">Mission &amp; Vision</h2>
-                <p style="color: var(--text-muted); font-size: 14.5px;">Guiding principles and future aspirations of Barangay Tabon</p>
-            </div>
-
-            <!-- Mission & Vision Containers -->
-            <div class="mv-grid" id="mission-vision">
-                
-                <!-- Mission Container -->
-                <section class="container-mission fade-in-up animate-on-scroll delay-1" id="mission">
-                    <div class="mv-header">
-                        <i class="fa-solid fa-bullseye mv-icon"></i>
-                        <span class="mv-divider">|</span>
-                        <h2 class="mv-title">Mission</h2>
-                    </div>
-                    <blockquote class="mv-quote">
-                        <?= nl2br(htmlspecialchars($about_data['mission'] ?? '')) ?>
-                    </blockquote>
-                </section>
-
-                <!-- Vision Container -->
-                <section class="container-vision fade-in-up animate-on-scroll delay-2" id="vision">
-                    <div class="mv-header">
-                        <i class="fa-regular fa-eye mv-icon"></i>
-                        <span class="mv-divider">|</span>
-                        <h2 class="mv-title">Vision</h2>
-                    </div>
-                    <blockquote class="mv-quote">
-                        <?= nl2br(htmlspecialchars($about_data['vision'] ?? '')) ?>
-                    </blockquote>
-                </section>
-            </div>
 
         </div>
 
