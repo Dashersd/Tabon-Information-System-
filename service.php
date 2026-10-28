@@ -108,11 +108,22 @@ if ($res) {
                     <p style="margin: 0; color: #64748b;">Services will be displayed here as soon as they are made available by Barangay Tabon.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($services as $service): ?>
+                <?php foreach ($services as $service): 
+                    $rawIcon = trim($service['icon'] ?? '');
+                    if (empty($rawIcon)) {
+                        $iconClass = 'fa-solid fa-file-lines';
+                    } elseif (strpos($rawIcon, 'bi-') === 0) {
+                        $iconClass = 'bi ' . $rawIcon;
+                    } elseif (strpos($rawIcon, 'fa-') !== false) {
+                        $iconClass = $rawIcon;
+                    } else {
+                        $iconClass = 'bi bi-' . $rawIcon;
+                    }
+                ?>
                     <div class="service-item-card" id="service-<?= (int)$service['id'] ?>">
                         <div>
                             <div class="service-icon-box">
-                                <i class="bi <?= htmlspecialchars($service['icon'] ?: 'bi-file-earmark-text') ?>"></i>
+                                <i class="<?= htmlspecialchars($iconClass) ?>"></i>
                             </div>
 
                             <h2 class="service-title"><?= htmlspecialchars($service['name']) ?></h2>

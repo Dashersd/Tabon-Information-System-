@@ -422,20 +422,6 @@ function get_home_announcement_date($when_date, $created_at) {
                             <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Document</span> <i class="fa-solid fa-arrow-right"></i></a>
                         </div>
                     </div>
-                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.4s;" onclick="window.location.href='service.php'">
-                        <div class="home-service-card-top">
-                            <div class="home-service-icon-box"><i class="fa-solid fa-briefcase"></i></div>
-                            <div class="home-service-badges">
-                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> ₱100.00</span>
-                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> 1-2 Days</span>
-                            </div>
-                        </div>
-                        <h3 class="home-service-name">Barangay Business Clearance</h3>
-                        <p class="home-service-desc">Permit clearance mandatory for commercial enterprises and local stores operating in Tabon.</p>
-                        <div class="home-service-card-footer">
-                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Apply Clearance</span> <i class="fa-solid fa-arrow-right"></i></a>
-                        </div>
-                    </div>
                 <?php endif; ?>
             </div>
         </section>
