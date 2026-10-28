@@ -88,12 +88,10 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
 
         <nav>
             <a href="index.php" class="nav-item">
-                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
             <div class="nav-item dropdown">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <i class="fa-solid fa-circle-info"></i>
                     <span>About Us <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
@@ -103,7 +101,6 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
             </div>
             <div class="nav-item dropdown active">
                 <a href="#" class="dropdown-toggle" style="text-decoration:none;">
-                    <i class="fa-solid fa-user-tie"></i>
                     <span>Officials <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:3px;"></i></span>
                 </a>
                 <div class="dropdown-menu">
@@ -112,23 +109,18 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
                 </div>
             </div>
             <a href="gallery.php" class="nav-item">
-                <i class="fa-regular fa-image"></i>
                 <span>Gallery</span>
             </a>
             <a href="service.php" class="nav-item">
-                <i class="fa-solid fa-bell-concierge"></i>
                 <span>Service</span>
             </a>
             <a href="announcement.php" class="nav-item">
-                <i class="fa-solid fa-bullhorn"></i>
                 <span>Announcement</span>
             </a>
             <a href="spotmap.php" class="nav-item">
-                <i class="fa-solid fa-map"></i>
                 <span>Spot Map</span>
             </a>
             <a href="contact.php" class="nav-item">
-                <i class="fa-regular fa-envelope"></i>
                 <span>Contact Us</span>
             </a>
 

@@ -134,18 +134,18 @@ nav {
 .nav-item {
     text-decoration: none;
     color: var(--secondary-black);
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: 600;
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    padding: 6px 4px;
     transition: all 0.2s ease;
 }
 
 .nav-item i {
-    font-size: 18px;
-    color: var(--secondary-black);
+    font-size: 11px;
+    color: inherit;
 }
 
 .nav-item:hover, .nav-item.active {
@@ -1107,18 +1107,19 @@ footer {
 }
 
 .dropdown-toggle {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     color: var(--secondary-black);
     text-decoration: none;
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: 600;
+    padding: 6px 4px;
+    transition: all 0.2s ease;
 }
 
-.dropdown-toggle > i {
-    font-size: 18px;
+.dropdown-toggle i {
+    font-size: 10px;
     color: inherit;
 }
 
@@ -2035,17 +2036,13 @@ body.menu-open-lock {
         background: #f1f5f9;
     }
 
-    .nav-item.dropdown > .dropdown-toggle > i:first-child {
-        width: 24px;
-        text-align: center;
-    }
-
     .nav-item.dropdown > .dropdown-toggle > span {
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex: 1;
-        margin-left: 14px;
+        margin-left: 0;
+        width: 100%;
     }
 
     .nav-item.dropdown .dropdown-menu {
