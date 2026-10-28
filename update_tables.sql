@@ -149,3 +149,21 @@ CREATE TABLE IF NOT EXISTS `feedback_chats` (
   KEY `idx_thread_id` (`thread_id`),
   KEY `idx_sender_type_read` (`sender_type`, `is_read`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Email Verification PIN Codes Table (Contact Form Captcha Gate)
+CREATE TABLE IF NOT EXISTS `email_verifications` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(150) NOT NULL,
+  `pin_code` VARCHAR(10) NOT NULL,
+  `full_name` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(50) DEFAULT NULL,
+  `service_type` VARCHAR(150) DEFAULT 'Contact Inquiry',
+  `message` TEXT NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `is_verified` TINYINT(1) DEFAULT 0,
+  `resend_count` INT DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (`email`),
+  INDEX (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

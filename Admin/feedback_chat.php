@@ -249,9 +249,9 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
                         </div>
 
                         <div class="chat-header-actions">
-                            <!-- Send Document via Email Action Button -->
-                            <a href="#" class="btn-header-tool btn-send-email-doc" id="btn-send-doc-email" target="_blank" style="display: none;">
-                                <i class="bi bi-envelope-arrow-up-fill"></i> <span>Send Document via Email</span>
+                            <!-- Send Document via Gmail Action Button -->
+                            <a href="#" class="btn-header-tool btn-send-email-doc" id="btn-send-doc-email" target="_blank" style="display: none; background: #e8f5ee; color: #137547; border-color: #bbf7d0;" title="Open Gmail composer to send documents">
+                                <i class="bi bi-envelope-check-fill"></i> <span>Send Document via Gmail</span>
                             </a>
 
                             <!-- Manual Refresh Button -->
@@ -723,13 +723,15 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
             $('#chat-header-service').text(serviceTag);
 
             if (residentEmail) {
-                $('#chat-header-email-text').text(residentEmail);
+                $('#chat-header-email-text').html(`${escapeHtml(residentEmail)} <span style="color:#137547; font-weight:700;"><i class="bi bi-shield-check"></i> Verified</span>`);
                 $('#chat-header-email').attr('href', `mailto:${residentEmail}`).show();
 
-                // Setup "Send Document via Email" action button
-                const emailSubject = encodeURIComponent(`[Barangay Tabon] Response to your inquiry regarding ${serviceTag}`);
-                const emailBody = encodeURIComponent(`Dear ${residentName},\n\nGood day!\n\nThis is an official follow-up from Barangay Tabon regarding your inquiry for ${serviceTag}.\n\nAttached is the requested document/form for your reference.\n\nWarm regards,\nBarangay Secretary\nBarangay Tabon Information System`);
-                $('#btn-send-doc-email').attr('href', `mailto:${residentEmail}?subject=${emailSubject}&body=${emailBody}`).show();
+                // Setup "Send Document via Gmail" action button (direct Gmail web composer)
+                const emailSubject = encodeURIComponent(`[Barangay Tabon] Official Response to your request: ${serviceTag}`);
+                const emailBody = encodeURIComponent(`Dear ${residentName},\n\nGood day!\n\nThis is an official response from Barangay Tabon regarding your request for "${serviceTag}".\n\nAttached is your requested document/form. Please review the details and let us know if you need any further assistance.\n\nWarm regards,\nBarangay Secretary\nBarangay Tabon Information System`);
+                
+                const gmailComposerUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(residentEmail)}&su=${emailSubject}&body=${emailBody}`;
+                $('#btn-send-doc-email').attr('href', gmailComposerUrl).show();
             } else {
                 $('#chat-header-email').hide();
                 $('#btn-send-doc-email').hide();
