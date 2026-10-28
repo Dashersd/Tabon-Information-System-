@@ -60,8 +60,11 @@ $mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
 
 echo json_encode([
     'status'     => 'success',
-    'message'    => 'PIN Code has been sent to your Gmail.',
+    'message'    => !empty($mailResult['mail_sent']) 
+        ? 'PIN Code has been sent to your Gmail.' 
+        : 'PIN Code generated. (Testing PIN: ' . $pin_code . ')',
+    'mail_sent'  => !empty($mailResult['mail_sent']),
     'email'      => $email,
     'expires_in' => 180,
-    'dev_pin'    => $pin_code // Available for local development testing
+    'dev_pin'    => $pin_code
 ]);

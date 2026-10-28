@@ -1,5 +1,9 @@
 <?php
-// api/mail_helper.php - Email Dispatch Helper for Barangay Tabon
+// api/mail_helper.php - Email Dispatch Helper for Barangay Tabon with PHPMailer & Gmail SMTP Support
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 function send_barangay_pin_email($to_email, $to_name, $pin_code) {
     $subject = "Barangay Tabon Verification PIN: " . $pin_code;
@@ -57,35 +61,83 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
     </html>
     ";
 
-    $headers = [];
-    $headers[] = 'MIME-Version: 1.0';
-    $headers[] = 'Content-type: text/html; charset=UTF-8';
-    $headers[] = 'From: Barangay Tabon <barangaytabon@gmail.com>';
-    $headers[] = 'Reply-To: barangaytabon@gmail.com';
-    $headers[] = 'X-Mailer: PHP/' . phpversion();
+    // Load SMTP Configuration
+    $smtp_config = [];
+    if (file_exists(__DIR__ . '/smtp_config.php')) {
+        $smtp_config = require __DIR__ . '/smtp_config.php';
+    }
 
-    $header_str = implode("\r\n", $headers);
-    
-    // Attempt standard PHP mail()
-    $mail_sent = @mail($to_email, $subject, $html_body, $header_str);
+    $mail_sent = false;
+    $smtp_used = false;
+    $error_msg = '';
 
-    // Development & local logging fallback (ensures testing is seamless on local XAMPP)
+    // 1. If SMTP is enabled and credentials are provided, use PHPMailer for real Gmail delivery
+    if (!empty($smtp_config['smtp_enabled']) && !empty($smtp_config['smtp_username']) && !empty($smtp_config['smtp_password'])) {
+        try {
+            require_once __DIR__ . '/phpmailer/Exception.php';
+            require_once __DIR__ . '/phpmailer/PHPMailer.php';
+            require_once __DIR__ . '/phpmailer/SMTP.php';
+
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host       = $smtp_config['smtp_host'] ?: 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $smtp_config['smtp_username'];
+            $mail->Password   = $smtp_config['smtp_password'];
+            $mail->SMTPSecure = ($smtp_config['smtp_secure'] === 'ssl') ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = (int)($smtp_config['smtp_port'] ?: 587);
+            $mail->CharSet    = 'UTF-8';
+
+            $fromEmail = !empty($smtp_config['from_email']) ? $smtp_config['from_email'] : $smtp_config['smtp_username'];
+            $fromName  = !empty($smtp_config['from_name']) ? $smtp_config['from_name'] : 'Barangay Tabon';
+            $mail->setFrom($fromEmail, $fromName);
+            $mail->addAddress($to_email, $to_name);
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $html_body;
+            $mail->AltBody = "Barangay Tabon Verification PIN: " . $pin_code . " (Expires in 3 minutes)";
+
+            $mail->send();
+            $mail_sent = true;
+            $smtp_used = true;
+        } catch (Exception $e) {
+            $error_msg = $mail->ErrorInfo ?: $e->getMessage();
+            $mail_sent = false;
+        }
+    } else {
+        // Fallback: standard mail() attempt
+        $headers = [];
+        $headers[] = 'MIME-Version: 1.0';
+        $headers[] = 'Content-type: text/html; charset=UTF-8';
+        $headers[] = 'From: Barangay Tabon <barangaytabon@gmail.com>';
+        $headers[] = 'Reply-To: barangaytabon@gmail.com';
+        $headers[] = 'X-Mailer: PHP/' . phpversion();
+
+        $header_str = implode("\r\n", $headers);
+        $mail_sent = @mail($to_email, $subject, $html_body, $header_str);
+    }
+
+    // Always log locally for development inspection
     $log_dir = __DIR__ . '/../Admin/uploads';
     if (!is_dir($log_dir)) {
         @mkdir($log_dir, 0777, true);
     }
-    $log_entry = sprintf("[%s] TO: %s (%s) | PIN: %s | EXPIRES: 3 mins | SENT: %s\n",
+    $status_label = $mail_sent ? 'SENT_VIA_SMTP' : ($error_msg ? 'SMTP_FAILED: ' . $error_msg : 'DEV_MODE_LOG');
+    $log_entry = sprintf("[%s] TO: %s (%s) | PIN: %s | STATUS: %s\n",
         date('Y-m-d H:i:s'),
         $to_email,
         $to_name,
         $pin_code,
-        $mail_sent ? 'YES' : 'DEV_LOG'
+        $status_label
     );
     @file_put_contents($log_dir . '/email_pins_dev.log', $log_entry, FILE_APPEND);
 
     return [
-        'success' => true,
+        'success'   => true,
         'mail_sent' => $mail_sent,
-        'pin' => $pin_code
+        'smtp_used' => $smtp_used,
+        'pin'       => $pin_code,
+        'error'     => $error_msg
     ];
 }

@@ -44,11 +44,14 @@ $update->execute();
 $update->close();
 
 // Dispatch email
-send_barangay_pin_email($email, $record['full_name'], $new_pin);
+$mailResult = send_barangay_pin_email($email, $record['full_name'], $new_pin);
 
 echo json_encode([
     'status'     => 'success',
-    'message'    => 'A new PIN Code has been sent to your Gmail.',
+    'message'    => !empty($mailResult['mail_sent']) 
+        ? 'A new PIN Code has been sent to your Gmail.' 
+        : 'New PIN Code generated. (Testing PIN: ' . $new_pin . ')',
+    'mail_sent'  => !empty($mailResult['mail_sent']),
     'email'      => $email,
     'expires_in' => 180,
     'dev_pin'    => $new_pin
