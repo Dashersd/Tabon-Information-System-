@@ -705,3 +705,75 @@ textarea.form-input {
         gap: 6px;
     }
 }
+
+
+/* ========================================================= */
+/* SERVICE TYPE DROPDOWN STYLING                            */
+/* ========================================================= */
+.field-wrapper {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    font-family: var(--font-body);
+}
+
+.select-group {
+    position: relative;
+    width: 100%;
+}
+
+.form-select {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1.5px solid #137547;
+    border-radius: 12px;
+    padding: 14px 44px 14px 20px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: #1e293b;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+
+.form-select:focus {
+    border-color: #093d25;
+    box-shadow: 0 0 0 3px rgba(19, 117, 71, 0.15);
+}
+
+.form-select option {
+    color: #1e293b;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.form-select option:disabled {
+    color: #94a3b8;
+}
+
+.select-group .select-arrow {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+    font-size: 13px;
+    transition: transform 0.2s ease;
+}
+
+.select-group:focus-within .select-arrow {
+    color: #137547;
+}
