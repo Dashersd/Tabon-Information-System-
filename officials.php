@@ -1,3 +1,61 @@
+<?php
+require_once 'db_connect.php';
+
+$officials_map = [];
+try {
+    $off_res = $conn->query("SELECT * FROM `officials` WHERE `status` = 'active' ORDER BY `id` ASC");
+    if ($off_res && $off_res->num_rows > 0) {
+        while ($r = $off_res->fetch_assoc()) {
+            $k = !empty($r['official_key']) ? $r['official_key'] : ('off_' . $r['id']);
+            $r['web_photo'] = (strpos($r['photo'], 'uploads/') === 0 ? 'Admin/' . $r['photo'] : $r['photo']);
+            $officials_map[$k] = $r;
+        }
+    }
+} catch (Exception $e) {}
+
+// Fallback from JSON if DB empty
+if (empty($officials_map)) {
+    $json_f = __DIR__ . '/Admin/data/barangay_officials.json';
+    if (file_exists($json_f)) {
+        $j_arr = json_decode(file_get_contents($json_f), true);
+        if (!empty($j_arr)) {
+            foreach ($j_arr as $r) {
+                $k = !empty($r['official_key']) ? $r['official_key'] : ('off_' . $r['id']);
+                $r['web_photo'] = (strpos($r['photo'], 'uploads/') === 0 ? 'Admin/' . $r['photo'] : $r['photo']);
+                $officials_map[$k] = $r;
+            }
+        }
+    }
+}
+
+function get_pub_official($key, $fallback_name, $fallback_title, $fallback_desc, $map) {
+    if (isset($map[$key])) {
+        return [
+            'name' => $map[$key]['name'],
+            'title' => strtoupper($map[$key]['position']),
+            'image' => !empty($map[$key]['web_photo']) ? $map[$key]['web_photo'] : 'Officials/Captain.jpg',
+            'desc' => !empty($map[$key]['message']) ? $map[$key]['message'] : $fallback_desc
+        ];
+    }
+    return [
+        'name' => $fallback_name,
+        'title' => $fallback_title,
+        'image' => 'Officials/Captain.jpg',
+        'desc' => $fallback_desc
+    ];
+}
+
+$cap = get_pub_official('captain', 'Hon. Reynaldo D. Santos', 'BARANGAY CAPTAIN', 'Dedicated to leading Barangay Tabon towards sustainable development and progressive community programs.', $officials_map);
+$sec = get_pub_official('secretary', 'Hon. Maria Cristina S. Flores', 'BARANGAY SECRETARY', 'Managing official records, barangay resolutions, and administrative coordination.', $officials_map);
+$tre = get_pub_official('treasurer', 'Hon. Joseph L. Reyes', 'BARANGAY TREASURER', 'Custodian of barangay funds, financial accounting, and community budget planning.', $officials_map);
+$kag1 = get_pub_official('kagawad_1', 'Hon. Mark Anthony T. Cruz', 'BARANGAY KAGAWAD', 'Committee Chair on Peace and Order. Ensuring the safety and security of all residents.', $officials_map);
+$kag2 = get_pub_official('kagawad_2', 'Hon. Alma B. Navarro', 'BARANGAY KAGAWAD', 'Committee Chair on Health and Sanitation. Focused on providing accessible healthcare for everyone.', $officials_map);
+$kag3 = get_pub_official('kagawad_3', 'Hon. Allan P. Santos', 'BARANGAY KAGAWAD', 'Committee Chair on Infrastructure. Managing barangay road works and public facilities.', $officials_map);
+$kag4 = get_pub_official('kagawad_4', 'Hon. Liza M. Torres', 'BARANGAY KAGAWAD', 'Committee Chair on Education. Advocating for better learning programs and youth development.', $officials_map);
+$kag5 = get_pub_official('kagawad_5', 'Hon. Ramon C. Dela Cruz', 'BARANGAY KAGAWAD', 'Committee Chair on Sports and Youth. Promoting active lifestyle and youth empowerment.', $officials_map);
+$kag6 = get_pub_official('kagawad_6', 'Hon. Nelcy D. Ongub', 'BARANGAY KAGAWAD', 'Committee Chair on Women and Family. Supporting women\'s rights and family welfare.', $officials_map);
+$kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'Committee Chair on Environment. Leading clean-up drives and eco-friendly initiatives.', $officials_map);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,126 +152,74 @@
             <div class="org-row row-captain">
                 <div class="official-card" 
                      onclick="openModal(this)"
-                     data-name="Hon. Reynaldo D. Santos"
-                     data-title="BARANGAY CAPTAIN"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Dedicated to leading Barangay Tabon towards sustainable development and progressive community programs.">
+                     data-name="<?= htmlspecialchars($cap['name']) ?>"
+                     data-title="<?= htmlspecialchars($cap['title']) ?>"
+                     data-image="<?= htmlspecialchars($cap['image']) ?>"
+                     data-desc="<?= htmlspecialchars($cap['desc']) ?>">
                     <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Captain" onerror="this.src='https://via.placeholder.com/150';">
+                        <img src="<?= htmlspecialchars($cap['image']) ?>?t=<?= time() ?>" alt="Captain" onerror="this.src='Officials/Captain.jpg';">
                     </div>
                     <div class="card-info">
-                        <div class="official-name">Hon. Reynaldo D. Santos</div>
-                        <div class="official-title">BARANGAY CAPTAIN</div>
+                        <div class="official-name"><?= htmlspecialchars($cap['name']) ?></div>
+                        <div class="official-title"><?= htmlspecialchars($cap['title']) ?></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Kagawad Row 1 (2 people) -->
+            <!-- Administration (Secretary & Treasurer) -->
             <div class="org-row row-kagawad-1">
                 <div class="official-card"
                      onclick="openModal(this)"
-                     data-name="Hon. Mark Anthony T. Cruz"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Peace and Order. Ensuring the safety and security of all residents.">
+                     data-name="<?= htmlspecialchars($sec['name']) ?>"
+                     data-title="<?= htmlspecialchars($sec['title']) ?>"
+                     data-image="<?= htmlspecialchars($sec['image']) ?>"
+                     data-desc="<?= htmlspecialchars($sec['desc']) ?>">
                     <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
+                        <img src="<?= htmlspecialchars($sec['image']) ?>?t=<?= time() ?>" alt="Secretary" onerror="this.src='Officials/Captain.jpg';">
                     </div>
                     <div class="card-info">
-                        <div class="official-name">Hon. Mark Anthony T. Cruz</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
+                        <div class="official-name"><?= htmlspecialchars($sec['name']) ?></div>
+                        <div class="official-title"><?= htmlspecialchars($sec['title']) ?></div>
                     </div>
                 </div>
                 <div class="official-card"
                      onclick="openModal(this)"
-                     data-name="Hon. Maria Cristina S. Flores"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Health and Sanitation. Focused on providing accessible healthcare for everyone.">
+                     data-name="<?= htmlspecialchars($tre['name']) ?>"
+                     data-title="<?= htmlspecialchars($tre['title']) ?>"
+                     data-image="<?= htmlspecialchars($tre['image']) ?>"
+                     data-desc="<?= htmlspecialchars($tre['desc']) ?>">
                     <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
+                        <img src="<?= htmlspecialchars($tre['image']) ?>?t=<?= time() ?>" alt="Treasurer" onerror="this.src='Officials/Captain.jpg';">
                     </div>
                     <div class="card-info">
-                        <div class="official-name">Hon. Maria Cristina S. Flores</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
+                        <div class="official-name"><?= htmlspecialchars($tre['name']) ?></div>
+                        <div class="official-title"><?= htmlspecialchars($tre['title']) ?></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Kagawad Row 2 (5 people) -->
+            <!-- Barangay Kagawads (1 to 7) -->
             <div class="org-row row-kagawad-2">
+                <?php 
+                $kagawad_list = [$kag1, $kag2, $kag3, $kag4, $kag5, $kag6, $kag7];
+                foreach ($kagawad_list as $kag): 
+                ?>
                 <div class="official-card"
                      onclick="openModal(this)"
-                     data-name="Hon. Joseph L. Reyes"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Infrastructure. Managing barangay road works and public facilities.">
+                     data-name="<?= htmlspecialchars($kag['name']) ?>"
+                     data-title="<?= htmlspecialchars($kag['title']) ?>"
+                     data-image="<?= htmlspecialchars($kag['image']) ?>"
+                     data-desc="<?= htmlspecialchars($kag['desc']) ?>">
                     <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
+                        <img src="<?= htmlspecialchars($kag['image']) ?>?t=<?= time() ?>" alt="Kagawad" onerror="this.src='Officials/Captain.jpg';">
                     </div>
                     <div class="card-info">
-                        <div class="official-name">Hon. Joseph L. Reyes</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
+                        <div class="official-name"><?= htmlspecialchars($kag['name']) ?></div>
+                        <div class="official-title"><?= htmlspecialchars($kag['title']) ?></div>
                     </div>
                 </div>
-                <div class="official-card"
-                     onclick="openModal(this)"
-                     data-name="Hon. Alma B. Navarro"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Education. Advocating for better learning programs and youth development.">
-                    <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
-                    </div>
-                    <div class="card-info">
-                        <div class="official-name">Hon. Alma B. Navarro</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
-                    </div>
-                </div>
-                <div class="official-card"
-                     onclick="openModal(this)"
-                     data-name="Hon. Allan P. Santos"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Sports and Youth. Promoting active lifestyle and youth empowerment.">
-                    <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
-                    </div>
-                    <div class="card-info">
-                        <div class="official-name">Hon. Allan P. Santos</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
-                    </div>
-                </div>
-                <div class="official-card"
-                     onclick="openModal(this)"
-                     data-name="Hon. Liza M. Torres"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Women and Family. Supporting women's rights and family welfare.">
-                    <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
-                    </div>
-                    <div class="card-info">
-                        <div class="official-name">Hon. Liza M. Torres</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
-                    </div>
-                </div>
-                <div class="official-card"
-                     onclick="openModal(this)"
-                     data-name="Hon. Ramon C. Dela Cruz"
-                     data-title="BARANGAY KAGAWAD"
-                     data-image="Officials/Captain.jpg"
-                     data-desc="Committee Chair on Environment. Leading clean-up drives and eco-friendly initiatives.">
-                    <div class="card-img-wrapper">
-                        <img src="Officials/Captain.jpg" alt="Kagawad" onerror="this.src='https://via.placeholder.com/150';">
-                    </div>
-                    <div class="card-info">
-                        <div class="official-name">Hon. Ramon C. Dela Cruz</div>
-                        <div class="official-title">BARANGAY KAGAWAD</div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
-
         </div>
 
     </main>

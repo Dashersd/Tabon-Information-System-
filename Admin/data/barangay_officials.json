@@ -1,0 +1,112 @@
+[
+    {
+        "id": "1",
+        "official_key": "captain",
+        "name": "Hon. Reynaldo D. Santos",
+        "position": "Barangay Captain",
+        "photo": "Officials\/Captain.jpg",
+        "message": "To our residents, partners, and every member of our community, thank you for your trust, cooperation, and unwavering support. At Barangay Tabon, we remain committed to delivering honest and transparent public service that promotes safety, unity, and progress for all. Together, let us continue building a barangay where every family feels heard, respected, and supported.",
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:26:27"
+    },
+    {
+        "id": "2",
+        "official_key": "secretary",
+        "name": "Hon. Maria Cristina S. Flores",
+        "position": "Barangay Secretary",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "3",
+        "official_key": "treasurer",
+        "name": "Hon. Joseph L. Reyes",
+        "position": "Barangay Treasurer",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "4",
+        "official_key": "kagawad_1",
+        "name": "Hon. Mark Anthony T. Cruz",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "5",
+        "official_key": "kagawad_2",
+        "name": "Hon. Alma B. Navarro",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "6",
+        "official_key": "kagawad_3",
+        "name": "Hon. Allan P. Santos",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "7",
+        "official_key": "kagawad_4",
+        "name": "Hon. Liza M. Torres",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "8",
+        "official_key": "kagawad_5",
+        "name": "Hon. Ramon C. Dela Cruz",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "9",
+        "official_key": "kagawad_6",
+        "name": "Hon. Nelcy D. Ongub",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    },
+    {
+        "id": "10",
+        "official_key": "kagawad_7",
+        "name": "Hon. Janito Lipa",
+        "position": "Barangay Kagawad",
+        "photo": "Officials\/Captain.jpg",
+        "message": null,
+        "status": "active",
+        "created_at": "2026-10-28 10:23:33",
+        "updated_at": "2026-10-28 10:23:33"
+    }
+]

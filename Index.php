@@ -76,6 +76,27 @@ if (!empty($home_about['image_path'])) {
 }
 $home_about_cache = !empty($home_about['updated_at']) ? strtotime($home_about['updated_at']) : time();
 
+// Fetch captain details for Captain Spotlight
+$home_captain = [
+    'name' => 'Hon. Reynaldo D. Santos',
+    'position' => 'BARANGAY CAPTAIN',
+    'photo' => 'Officials/Captain.jpg',
+    'message' => 'To our residents, partners, and every member of our community, thank you for your trust, cooperation, and unwavering support. At Barangay Tabon, we remain committed to delivering honest and transparent public service that promotes safety, unity, and progress for all. Together, let us continue building a barangay where every family feels heard, respected, and supported.'
+];
+try {
+    $c_stmt = $conn->query("SELECT * FROM `officials` WHERE `official_key` = 'captain' LIMIT 1");
+    if ($c_stmt && $c_stmt->num_rows > 0) {
+        $c_row = $c_stmt->fetch_assoc();
+        if (!empty($c_row['name'])) $home_captain['name'] = $c_row['name'];
+        if (!empty($c_row['position'])) $home_captain['position'] = $c_row['position'];
+        if (!empty($c_row['message'])) $home_captain['message'] = $c_row['message'];
+        if (!empty($c_row['photo'])) {
+            $home_captain['photo'] = (strpos($c_row['photo'], 'uploads/') === 0 ? 'Admin/' . $c_row['photo'] : $c_row['photo']);
+        }
+    }
+} catch (Exception $e) {}
+
+
 
 function get_home_announcement_date($when_date, $created_at) {
     $ts = !empty($when_date) ? strtotime($when_date) : null;
@@ -233,13 +254,13 @@ function get_home_announcement_date($when_date, $created_at) {
     <section class="officials-spotlight-section">
         <div class="captain-spotlight-card fade-in-up animate-on-scroll">
             <div class="captain-spotlight-img-box">
-                <img src="Officials/Captain.jpg" alt="Barangay Captain" class="captain-spotlight-photo" onerror="this.src='Barangay Logo/Logo.png';">
+                <img src="<?= htmlspecialchars($home_captain['photo']) ?>?v=<?= time() ?>" alt="Barangay Captain" class="captain-spotlight-photo" onerror="this.src='Officials/Captain.jpg';">
             </div>
             <div class="captain-spotlight-details">
-                <span class="captain-badge-title">BARANGAY CAPTAIN</span>
-                <h2 class="captain-fullname">Hon. Reynaldo D. Santos</h2>
+                <span class="captain-badge-title"><?= htmlspecialchars(strtoupper($home_captain['position'])) ?></span>
+                <h2 class="captain-fullname"><?= htmlspecialchars($home_captain['name']) ?></h2>
                 <p class="captain-quote-text">
-                    "To our residents, partners, and every member of our community, thank you for your trust, cooperation, and unwavering support. At Barangay Tabon, we remain committed to delivering honest and transparent public service that promotes safety, unity, and progress for all. Together, let us continue building a barangay where every family feels heard, respected, and supported."
+                    "<?= htmlspecialchars($home_captain['message']) ?>"
                 </p>
                 <a href="officials.php" class="btn-captain-view-officials">
                     <span>View Barangay Officials</span>
