@@ -1,12 +1,42 @@
 <?php
 session_start();
+require_once 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_POST['password'])) {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
 
-    if (($email === 'admin' || $email === 'admin@example.com') && $password === '123') {
+    $authenticated = false;
+
+    // Check database users table
+    try {
+        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `name` = ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("ss", $email, $email);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($res && $user = $res->fetch_assoc()) {
+                if (password_verify($password, $user['password']) || $password === $user['password']) {
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_id'] = $user['id'];
+                    $_SESSION['admin_name'] = $user['name'];
+                    $_SESSION['admin_email'] = $user['email'];
+                    $authenticated = true;
+                }
+            }
+        }
+    } catch (Exception $e) {}
+
+    // Fallback default admin credentials
+    if (!$authenticated && ($email === 'admin' || $email === 'admin@example.com') && $password === '123') {
         $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_id'] = 1;
+        $_SESSION['admin_name'] = 'System Administrator';
+        $_SESSION['admin_email'] = 'admin@example.com';
+        $authenticated = true;
+    }
+
+    if ($authenticated) {
         header("Location: Admin/controlpanel.php");
         exit();
     } else {
