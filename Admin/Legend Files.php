@@ -5,7 +5,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit();
 }
 
-$jsonFile = 'data/legend.json';
+$jsonFile = __DIR__ . '/data/legend.json';
 $households = [];
 if (file_exists($jsonFile)) {
     $households = json_decode(file_get_contents($jsonFile), true) ?? [];
@@ -22,6 +22,8 @@ $records = array_filter($households, function($hh) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legend Files - Brgy Tabon</title>
+    <!-- Bootstrap Icons v1.11.3 CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/admin_common.css">
     <link rel="stylesheet" href="css/Legend Files.css">
@@ -130,7 +132,13 @@ $records = array_filter($households, function($hh) {
                         <?php foreach ($records as $record): ?>
                         <tr>
                             <td><?= htmlspecialchars($record['houseNumber']) ?></td>
-                            <td><img src="<?= htmlspecialchars($record['markerImage']) ?>" style="width:30px; height:30px; object-fit:contain;"></td>
+                            <td>
+                                <?php if (!empty($record['markerImage']) && strpos($record['markerImage'], 'bi-') === 0): ?>
+                                    <i class="bi <?= htmlspecialchars($record['markerImage']) ?>" style="font-size:22px; color:#4f46e5;"></i>
+                                <?php else: ?>
+                                    <img src="<?= htmlspecialchars($record['markerImage'] ?? '') ?>" style="width:30px; height:30px; object-fit:contain;" onerror="this.style.display='none';">
+                                <?php endif; ?>
+                            </td>
                             <td><?= htmlspecialchars($record['topPos']) ?>%, <?= htmlspecialchars($record['leftPos']) ?>%</td>
                             <td><?= htmlspecialchars($record['dateAdded']) ?></td>
                             <td>

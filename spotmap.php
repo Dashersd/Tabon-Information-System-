@@ -3,11 +3,26 @@ require_once 'db_connect.php';
 $purok1 = [];
 $purok2 = [];
 $purok3 = [];
+$public_legends = [];
 try {
     $stmt1 = $pdo->prepare("SELECT * FROM purok1_locations"); $stmt1->execute(); $purok1 = $stmt1->fetchAll(PDO::FETCH_ASSOC);
     $stmt2 = $pdo->prepare("SELECT * FROM purok2_locations"); $stmt2->execute(); $purok2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     $stmt3 = $pdo->prepare("SELECT * FROM purok3_locations"); $stmt3->execute(); $purok3 = $stmt3->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {}
+    
+    $stmt_leg = $conn->query("SELECT * FROM `sm_legends` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC");
+    if ($stmt_leg && $stmt_leg->num_rows > 0) {
+        while ($r = $stmt_leg->fetch_assoc()) {
+            $public_legends[] = $r;
+        }
+    }
+} catch (Exception $e) {}
+
+if (empty($public_legends)) {
+    $json_l = __DIR__ . '/Admin/data/legend.json';
+    if (file_exists($json_l)) {
+        $public_legends = json_decode(file_get_contents($json_l), true) ?? [];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +32,9 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Tabon - Spot Map</title>
     
+    <!-- Bootstrap Icons v1.11.3 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <!-- FontAwesome CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -108,9 +126,25 @@ try {
                         <div class="info-card">
                             <h3 class="card-title"><i class="fa-regular fa-map" style="color: #fca311;"></i> Map Legend</h3>
                             <div class="legend-grid">
-                                <div class="legend-item" onclick="showLegendToast('Barangay Hall')"><i class="fa-solid fa-building" style="color:#4a6cf7;"></i> Barangay Hall</div>
-                                <div class="legend-item" onclick="showLegendToast('School')"><i class="fa-solid fa-book-open" style="color:#28a745;"></i> School</div>
-                                <div class="legend-item" onclick="showLegendToast('Court')"><i class="fa-solid fa-basketball" style="color:#fca311;"></i> Court</div>
+                                <?php if (!empty($public_legends)): ?>
+                                    <?php foreach ($public_legends as $leg): 
+                                        $is_custom = (strpos($leg['icon_path'] ?? '', 'uploads/') === 0);
+                                        $icon_color = !empty($leg['color_hex']) ? $leg['color_hex'] : '#4f46e5';
+                                    ?>
+                                        <div class="legend-item" onclick="showLegendToast('<?= htmlspecialchars(addslashes($leg['name'])) ?>')">
+                                            <?php if ($is_custom): ?>
+                                                <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" style="width:16px; height:16px; object-fit:contain; vertical-align:middle; margin-right:4px;">
+                                            <?php else: ?>
+                                                <i class="bi <?= htmlspecialchars($leg['icon_path']) ?>" style="color:<?= htmlspecialchars($icon_color) ?>; margin-right:4px;"></i>
+                                            <?php endif; ?>
+                                            <?= htmlspecialchars($leg['name']) ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="legend-item" onclick="showLegendToast('Barangay Hall')"><i class="fa-solid fa-building" style="color:#4a6cf7;"></i> Barangay Hall</div>
+                                    <div class="legend-item" onclick="showLegendToast('School')"><i class="fa-solid fa-book-open" style="color:#28a745;"></i> School</div>
+                                    <div class="legend-item" onclick="showLegendToast('Court')"><i class="fa-solid fa-basketball" style="color:#fca311;"></i> Court</div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
