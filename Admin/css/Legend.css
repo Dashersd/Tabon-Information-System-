@@ -1393,3 +1393,20 @@
         align-items: flex-start;
     }
 }
+
+
+.saved-marker-tooltip .delete-pin-btn {
+    pointer-events: auto;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 3px;
+    border-radius: 4px;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+}
+
+.saved-marker-tooltip .delete-pin-btn:hover {
+    background: rgba(239, 68, 68, 0.35);
+    transform: scale(1.2);
+}

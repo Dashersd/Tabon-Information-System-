@@ -136,9 +136,7 @@ if (empty($public_legends)) {
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <div class="legend-item" onclick="showLegendToast('Barangay Tabon Hall', '', 'bi-building-fill', '#4f46e5')"><i class="bi bi-building-fill" style="color:#4a6cf7;"></i> Barangay Tabon Hall</div>
-                                    <div class="legend-item" onclick="showLegendToast('Tabon Elementary School', '', 'bi-book-half', '#10b981')"><i class="bi bi-book-half" style="color:#28a745;"></i> Tabon Elementary School</div>
-                                    <div class="legend-item" onclick="showLegendToast('Barangay Gymnasium / Court', '', 'bi-dribbble', '#f59e0b')"><i class="bi bi-dribbble" style="color:#fca311;"></i> Gymnasium / Court</div>
+                                    <div style="grid-column: 1 / -1; color: #94a3b8; font-size: 13.5px; font-style: italic; padding: 12px 4px;">No landmarks currently added.</div>
                                 <?php endif; ?>
                             </div>
                         </div>

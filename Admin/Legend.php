@@ -104,29 +104,39 @@ function syncLegendJson($conn, $json_file_path) {
                 }
             }
         }
+        $conn->query("DELETE FROM `sm_legend_spots` WHERE `legend_id` NOT IN (SELECT `id` FROM `sm_legends`)");
         file_put_contents($json_file_path, json_encode($export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     } catch (Exception $e) {
         // Fail silently
     }
 }
 
-// Seed default landmarks if sm_legends table is empty
-$count_check = $conn->query("SELECT COUNT(*) AS total FROM `sm_legends`");
-$row_cnt = $count_check ? $count_check->fetch_assoc()['total'] : 0;
-if ($row_cnt == 0) {
-    $defaults = [
-        ['Barangay Tabon Hall', 'bi-building-fill', '#4f46e5', 48.20, 51.50, 40, 40, 1, 'Images/Tabon Barangay hall.jpg'],
-        ['Tabon Elementary School', 'bi-book-half', '#10b981', 38.60, 42.10, 40, 40, 2, null],
-        ['Barangay Gymnasium / Court', 'bi-dribbble', '#f59e0b', 54.10, 58.40, 40, 40, 3, null],
-        ['Barangay Health Center', 'bi-heart-pulse-fill', '#ef4444', 46.80, 47.90, 40, 40, 4, null],
-        ['Community Chapel', 'bi-bell-fill', '#8b5cf6', 61.30, 35.70, 40, 40, 5, null],
-        ['Barangay Security Outpost', 'bi-shield-check', '#0284c7', 32.50, 59.80, 40, 40, 6, null]
-    ];
-    $stmt_seed = $conn->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `top_position`, `left_position`, `marker_width`, `marker_height`, `display_order`, `image_path`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-    foreach ($defaults as $d) {
-        $stmt_seed->bind_param("sssddiiss", $d[0], $d[1], $d[2], $d[3], $d[4], $d[5], $d[6], $d[7], $d[8]);
-        $stmt_seed->execute();
+// Auto-seed default landmarks ONLY once on initial system setup (never re-seed after manual deletion)
+$conn->query("CREATE TABLE IF NOT EXISTS `sm_settings` (
+    `setting_key` varchar(50) NOT NULL PRIMARY KEY,
+    `setting_value` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+$seed_check = $conn->query("SELECT `setting_value` FROM `sm_settings` WHERE `setting_key` = 'legends_seeded'");
+if (!$seed_check || $seed_check->num_rows == 0) {
+    $count_check = $conn->query("SELECT COUNT(*) AS total FROM `sm_legends`");
+    $row_cnt = $count_check ? $count_check->fetch_assoc()['total'] : 0;
+    if ($row_cnt == 0) {
+        $defaults = [
+            ['Barangay Tabon Hall', 'bi-building-fill', '#4f46e5', 48.20, 51.50, 40, 40, 1, 'Images/Tabon Barangay hall.jpg'],
+            ['Tabon Elementary School', 'bi-book-half', '#10b981', 38.60, 42.10, 40, 40, 2, null],
+            ['Barangay Gymnasium / Court', 'bi-dribbble', '#f59e0b', 54.10, 58.40, 40, 40, 3, null],
+            ['Barangay Health Center', 'bi-heart-pulse-fill', '#ef4444', 46.80, 47.90, 40, 40, 4, null],
+            ['Community Chapel', 'bi-bell-fill', '#8b5cf6', 61.30, 35.70, 40, 40, 5, null],
+            ['Barangay Security Outpost', 'bi-shield-check', '#0284c7', 32.50, 59.80, 40, 40, 6, null]
+        ];
+        $stmt_seed = $conn->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `top_position`, `left_position`, `marker_width`, `marker_height`, `display_order`, `image_path`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+        foreach ($defaults as $d) {
+            $stmt_seed->bind_param("sssddiiss", $d[0], $d[1], $d[2], $d[3], $d[4], $d[5], $d[6], $d[7], $d[8]);
+            $stmt_seed->execute();
+        }
     }
+    $conn->query("INSERT INTO `sm_settings` (`setting_key`, `setting_value`) VALUES ('legends_seeded', '1') ON DUPLICATE KEY UPDATE `setting_value` = '1'");
     syncLegendJson($conn, $json_cache_file);
 }
 
@@ -307,23 +317,40 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         exit();
     }
 
-    // Action: Delete Legend
+            // Action: Delete Legend
     if ($action === 'delete_legend') {
         $id = intval($_POST['id'] ?? 0);
         if ($id > 0) {
+            // Delete associated custom uploaded files
+            $fetch_row = $conn->query("SELECT `icon_path`, `image_path` FROM `sm_legends` WHERE `id` = $id");
+            if ($fetch_row && $row_data = $fetch_row->fetch_assoc()) {
+                if (!empty($row_data['image_path']) && strpos($row_data['image_path'], 'uploads/landmarks/') === 0) {
+                    $img_full = __DIR__ . '/' . $row_data['image_path'];
+                    if (file_exists($img_full)) @unlink($img_full);
+                }
+                if (!empty($row_data['icon_path']) && strpos($row_data['icon_path'], 'uploads/legends/') === 0) {
+                    $ico_full = __DIR__ . '/' . $row_data['icon_path'];
+                    if (file_exists($ico_full)) @unlink($ico_full);
+                }
+            }
             $conn->query("DELETE FROM `sm_legends` WHERE `id` = $id");
             $conn->query("DELETE FROM `sm_legend_spots` WHERE `legend_id` = $id");
             syncLegendJson($conn, $json_cache_file);
         }
         if ($is_ajax) {
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'success', 'message' => 'Legend removed successfully.']);
+            echo json_encode([
+                'status' => 'success', 
+                'message' => 'Landmark completely deleted from map and system.',
+                'id' => $id
+            ]);
             exit();
         }
         header("Location: Legend.php?msg=deleted");
         exit();
     }
 }
+
 
 // Fetch all legends for map & table display
 $legends_res = $conn->query("SELECT * FROM `sm_legends` ORDER BY `display_order` ASC, `id` ASC");
@@ -529,6 +556,9 @@ function get_legend_photo_url($path) {
                             <?php if (!empty($leg_photo)): ?>
                                 <span class="photo-pill"><i class="bi bi-image"></i> Photo</span>
                             <?php endif; ?>
+                            <span class="delete-pin-btn" onclick="event.stopPropagation(); deleteLegendItem(<?= $leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>')" title="Delete landmark from map">
+                                <i class="bi bi-x-circle-fill" style="color: #f87171; font-size: 13px; margin-left: 4px;"></i>
+                            </span>
                         </div>
 
                         <!-- Stylized Map Pin -->
@@ -864,7 +894,7 @@ function get_legend_photo_url($path) {
                                     $bg_col = !empty($leg['color_hex']) ? $leg['color_hex'] : '#6366f1';
                                     $leg_json = htmlspecialchars(json_encode($leg), ENT_QUOTES, 'UTF-8');
                                 ?>
-                                <tr id="table-row-<?= $leg['id'] ?>" data-name="<?= htmlspecialchars(strtolower($leg['name'])) ?>">
+                                <tr id="table-row-<?= $leg['id'] ?>" data-id="<?= $leg['id'] ?>" data-name="<?= htmlspecialchars(strtolower($leg['name'])) ?>">
                                     <td><strong><?= (int)$leg['display_order'] ?></strong></td>
                                     <td>
                                         <div class="table-marker-icon" style="background-color: <?= $bg_col ?>;">
@@ -932,13 +962,9 @@ function get_legend_photo_url($path) {
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form method="POST" action="Legend.php" style="display:inline;" onsubmit="return confirmDeleteLegend(event, this, '<?= htmlspecialchars(addslashes($leg['name'])) ?>')">
-                                                <input type="hidden" name="action" value="delete_legend">
-                                                <input type="hidden" name="id" value="<?= $leg['id'] ?>">
-                                                <button type="submit" class="btn-table-action delete" title="Delete Legend">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn-table-action delete" title="Delete Landmark" onclick="deleteLegendItem(<?= $leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1125,9 +1151,17 @@ function get_legend_photo_url($path) {
                     <p>There is no building photo uploaded for this landmark yet.</p>
                 </div>
             </div>
-            <div class="modal-footer" style="background:#1e293b; border-color: rgba(255,255,255,0.1); justify-content: space-between;">
+                        <div class="modal-footer" style="background:#1e293b; border-color: rgba(255,255,255,0.1); justify-content: space-between;">
                 <span id="lightboxMetaCoords" style="color: #94a3b8; font-family: monospace; font-size: 12px; display: flex; align-items: center;"></span>
-                <button type="button" class="btn-modal-cancel" style="background: rgba(255,255,255,0.1); color: #ffffff; border-color: transparent;" onclick="closeLandmarkPhotoModal()">Close</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" id="lightboxEditBtn" class="btn-modal-save" style="background:#4f46e5; padding: 6px 14px; font-size: 13px;">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                    <button type="button" id="lightboxDeleteBtn" class="btn-modal-cancel" style="background: #ef4444; color: #ffffff; border-color: #ef4444; padding: 6px 14px; font-size: 13px;">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                    <button type="button" class="btn-modal-cancel" style="background: rgba(255,255,255,0.1); color: #ffffff; border-color: transparent;" onclick="closeLandmarkPhotoModal()">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1404,6 +1438,9 @@ function get_legend_photo_url($path) {
 
         // --- Edit Modal Logic ---
         function openEditModal(leg) {
+            if (typeof leg === 'number' || typeof leg === 'string') {
+                leg = ALL_LEGENDS.find(l => l.id == leg) || leg;
+            }
             document.getElementById('editLegendId').value = leg.id;
             document.getElementById('editNameInput').value = leg.name;
             document.getElementById('editTopPositionInput').value = leg.top_position;
@@ -1550,6 +1587,21 @@ function get_legend_photo_url($path) {
                 emptyState.style.display = 'block';
             }
 
+                        // Connect modal Edit & Delete buttons
+            const editBtn = document.getElementById('lightboxEditBtn');
+            const delBtn = document.getElementById('lightboxDeleteBtn');
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    closeLandmarkPhotoModal();
+                    openEditModal(id);
+                };
+            }
+            if (delBtn) {
+                delBtn.onclick = function() {
+                    deleteLegendItem(id, leg.name);
+                };
+            }
+
             document.getElementById('landmarkPhotoModal').classList.add('show');
         }
 
@@ -1580,13 +1632,93 @@ function get_legend_photo_url($path) {
             });
         }
 
-        // --- Delete Confirmation ---
-        function confirmDeleteLegend(e, form, name) {
-            if (!confirm(`Are you sure you want to permanently remove landmark "${name}" from the spot map?`)) {
-                e.preventDefault();
-                return false;
+                        // --- Complete Landmark Deletion (Map Canvas & Table Sync) ---
+        function deleteLegendItem(id, name) {
+            if (!confirm(`Are you sure you want to completely delete landmark "${name}" from the spot map?\n\nThis will remove the pin from the Admin aerial map, the table, and the public spot map.`)) {
+                return;
             }
-            return true;
+
+            const formData = new FormData();
+            formData.append('action', 'delete_legend');
+            formData.append('id', id);
+            formData.append('is_ajax', '1');
+
+            fetch('Legend.php', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 1. Remove marker pin from aerial map in Admin/Legend.php
+                    const markers = document.querySelectorAll('#marker-' + id + ', .saved-legend-marker[data-id="' + id + '"]');
+                    markers.forEach(m => {
+                        m.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
+                        m.style.transform = 'translate(-50%, -100%) scale(0)';
+                        m.style.opacity = '0';
+                        setTimeout(() => m.remove(), 300);
+                    });
+
+                    // 2. Remove row from Existing Spot Map Legends table
+                    const rows = document.querySelectorAll('#table-row-' + id + ', #legend-row-' + id + ', tr[data-id="' + id + '"]');
+                    rows.forEach(r => {
+                        r.style.transition = 'opacity 0.3s ease';
+                        r.style.opacity = '0';
+                        setTimeout(() => {
+                            r.remove();
+                            const tbody = document.querySelector('#legendsTable tbody');
+                            if (tbody && tbody.querySelectorAll('tr[id^="table-row-"], tr[data-id]').length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 35px 20px; color:#94a3b8; font-style: italic;">No landmarks currently added. Click on the map canvas to place a new landmark.</td></tr>';
+                            }
+                        }, 300);
+                    });
+
+                    // 3. Close photo modal if open
+                    closeLandmarkPhotoModal();
+
+                    // 4. Update ALL_LEGENDS array
+                    const idx = ALL_LEGENDS.findIndex(l => l.id == id);
+                    if (idx !== -1) ALL_LEGENDS.splice(idx, 1);
+
+                    // 5. Update stat pills
+                    updateStatsDisplay();
+
+                    showToast(`Landmark "${name}" was completely deleted from the map and table.`);
+                } else {
+                    submitDeleteFallback(id);
+                }
+            })
+            .catch(err => {
+                submitDeleteFallback(id);
+            });
+        }
+
+        function submitDeleteFallback(id) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'Legend.php';
+            const act = document.createElement('input');
+            act.type = 'hidden'; act.name = 'action'; act.value = 'delete_legend';
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden'; idInput.name = 'id'; idInput.value = id;
+            form.appendChild(act);
+            form.appendChild(idInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateStatsDisplay() {
+            const totalCount = ALL_LEGENDS.length;
+            const activeCount = ALL_LEGENDS.filter(l => l.is_active == 1).length;
+
+            const statPills = document.querySelectorAll('.legend-header-stats .stat-pill');
+            if (statPills.length >= 2) {
+                const totalStrong = statPills[0].querySelector('strong');
+                if (totalStrong) totalStrong.textContent = totalCount;
+                const activeStrong = statPills[1].querySelector('strong');
+                if (activeStrong) activeStrong.textContent = activeCount;
+            }
         }
 
         // --- Toast System ---

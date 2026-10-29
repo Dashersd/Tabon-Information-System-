@@ -476,19 +476,7 @@ $next_order = count($services) + 1;
                         <div class="form-group">
                             <label for="addServiceIcon">Service Icon <span class="required">*</span></label>
                             <select id="addServiceIcon" name="serviceIcon" class="form-control" required>
-                                <option value="bi-file-earmark-text">📄 Document / Clearance</option>
-                                <option value="bi-house-heart">🏠 Indigency / Welfare</option>
-                                <option value="bi-briefcase">💼 Business / Permit</option>
-                                <option value="bi-person-badge">🪪 Residency / ID Card</option>
-                                <option value="bi-card-heading">📜 Certificate / Credential</option>
-                                <option value="bi-shield-check">🛡️ Protection / Blotter</option>
-                                <option value="bi-activity">🩺 Health Clinic / Medical</option>
-                                <option value="bi-heart-pulse">❤️ Emergency / Senior Care</option>
-                                <option value="bi-people">👥 Community / Youth</option>
-                                <option value="bi-cash-coin">🪙 Cedula / Financial</option>
-                                <option value="bi-building">🏢 Building / Construction</option>
-                                <option value="bi-mortarboard">🎓 Education / Scholarship</option>
-                                <option value="bi-tools">🛠️ Maintenance / Infrastructure</option>
+                                <option value="bi-person-badge" selected>🪪 Residency / ID Card</option>
                             </select>
                         </div>
 
@@ -590,19 +578,7 @@ $next_order = count($services) + 1;
                         <div class="form-group">
                             <label for="editServiceIcon">Service Icon <span class="required">*</span></label>
                             <select id="editServiceIcon" name="serviceIcon" class="form-control" required>
-                                <option value="bi-file-earmark-text">📄 Document / Clearance</option>
-                                <option value="bi-house-heart">🏠 Indigency / Welfare</option>
-                                <option value="bi-briefcase">💼 Business / Permit</option>
-                                <option value="bi-person-badge">🪪 Residency / ID Card</option>
-                                <option value="bi-card-heading">📜 Certificate / Credential</option>
-                                <option value="bi-shield-check">🛡️ Protection / Blotter</option>
-                                <option value="bi-activity">🩺 Health Clinic / Medical</option>
-                                <option value="bi-heart-pulse">❤️ Emergency / Senior Care</option>
-                                <option value="bi-people">👥 Community / Youth</option>
-                                <option value="bi-cash-coin">🪙 Cedula / Financial</option>
-                                <option value="bi-building">🏢 Building / Construction</option>
-                                <option value="bi-mortarboard">🎓 Education / Scholarship</option>
-                                <option value="bi-tools">🛠️ Maintenance / Infrastructure</option>
+                                <option value="bi-person-badge" selected>🪪 Residency / ID Card</option>
                             </select>
                         </div>
 
