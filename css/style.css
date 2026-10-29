@@ -381,8 +381,8 @@ nav {
     align-items: center;
     gap: 8px;
     padding: 6px 14px;
-    background: #eaf5ed;
-    color: #1a4d33;
+    background: #dcecf7;
+    color: #1a4971;
     border-radius: 50px;
     font-size: 12px;
     font-weight: 700;
@@ -395,7 +395,7 @@ nav {
     font-family: var(--font-heading);
     font-size: 38px;
     font-weight: 700;
-    color: #0c3823;
+    color: #000000;
     margin: 0 0 10px 0;
     line-height: 1.2;
     letter-spacing: -0.5px;
@@ -417,7 +417,7 @@ nav {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: #0c3823;
+    background: #000000;
     color: #ffffff;
     padding: 13px 26px;
     border-radius: 12px;
@@ -425,7 +425,7 @@ nav {
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 14px rgba(12, 56, 35, 0.18);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
     white-space: nowrap;
 }
 
@@ -434,10 +434,10 @@ nav {
 }
 
 .btn-view-all-services:hover {
-    background: #1a7b4f;
+    background: #222222;
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 123, 79, 0.28);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .btn-view-all-services:hover i {
@@ -474,7 +474,7 @@ nav {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #1a7b4f, #fbb117);
+    background: linear-gradient(90deg, #1a4971, #000000);
     opacity: 0;
     transition: opacity 0.35s ease;
 }
@@ -482,7 +482,7 @@ nav {
 .home-service-card:hover {
     transform: translateY(-6px);
     border-color: #cbd5e1;
-    box-shadow: 0 16px 36px rgba(12, 56, 35, 0.09);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.09);
 }
 
 .home-service-card:hover::before {
@@ -501,8 +501,8 @@ nav {
     width: 52px;
     height: 52px;
     border-radius: 14px;
-    background: #eaf5ed;
-    color: #1a7b4f;
+    background: #dcecf7;
+    color: #1a4971;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -512,7 +512,7 @@ nav {
 }
 
 .home-service-card:hover .home-service-icon-box {
-    background: #1a7b4f;
+    background: #000000;
     color: #ffffff;
     transform: scale(1.08) rotate(4deg);
 }
@@ -558,7 +558,7 @@ nav {
 }
 
 .home-service-card:hover .home-service-name {
-    color: #1a7b4f;
+    color: #1a4971;
 }
 
 .home-service-desc {
@@ -585,7 +585,7 @@ nav {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #1a7b4f;
+    color: #000000;
     font-weight: 700;
     font-size: 13.5px;
     text-decoration: none;
@@ -598,7 +598,7 @@ nav {
 }
 
 .btn-card-action:hover {
-    color: #df9809;
+    color: #1a4971;
 }
 
 .btn-card-action:hover i {

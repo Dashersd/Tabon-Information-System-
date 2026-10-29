@@ -1,8 +1,8 @@
 /* css/service.css - Barangay Tabon Services Page Styles */
 
 :root {
-    --primary-green: #1a4d33;
-    --dark-green: #093d25;
+    --primary-green: #1a4971;
+    --dark-green: #000000;
     --accent-gold: #f59e0b;
     --accent-gold-light: #fef3c7;
     --text-dark: #0f172a;
@@ -29,7 +29,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 16px;
-    background: #e6f4ea;
+    background: #dcecf7;
     color: var(--primary-green);
     border-radius: 50px;
     font-size: 0.85rem;
@@ -86,7 +86,7 @@
 
 .service-search-box input:focus {
     border-color: var(--primary-green);
-    box-shadow: 0 0 0 4px rgba(26, 77, 51, 0.12);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.12);
 }
 
 .service-search-box i {
@@ -126,7 +126,7 @@
     background: var(--dark-green);
     color: #ffffff;
     border-color: var(--dark-green);
-    box-shadow: 0 3px 10px rgba(9, 61, 37, 0.25);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* Services Grid */
@@ -167,13 +167,13 @@
     width: 58px;
     height: 58px;
     border-radius: 14px;
-    background: #e6f4ea;
+    background: #dcecf7;
     color: var(--primary-green);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    box-shadow: 0 4px 10px rgba(26, 77, 51, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 }
 
@@ -194,7 +194,7 @@
 .badge-indigency { background: #fef3c7; color: #d97706; }
 .badge-residency { background: #ede9fe; color: #7c3aed; }
 .badge-business { background: #fee2e2; color: #dc2626; }
-.badge-jobseeker { background: #dcfce7; color: #16a34a; }
+.badge-jobseeker { background: #fef3c7; color: #92400e; }
 .badge-peace { background: #f1f5f9; color: #475569; }
 
 .service-title {
@@ -321,7 +321,7 @@
     font-weight: 800;
     font-size: 1.1rem;
     margin: 0 auto 16px auto;
-    box-shadow: 0 4px 10px rgba(9, 61, 37, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .step-title {
@@ -339,7 +339,7 @@
 
 /* Schedule and Helpline Banner */
 .service-desk-banner {
-    background: linear-gradient(135deg, #093d25 0%, #1a4d33 100%);
+    background: linear-gradient(135deg, #000000 0%, #1a4971 100%);
     color: #ffffff;
     border-radius: 20px;
     padding: 40px;
@@ -348,7 +348,7 @@
     align-items: center;
     gap: 30px;
     flex-wrap: wrap;
-    box-shadow: 0 10px 30px rgba(9, 61, 37, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .desk-info h3 {
@@ -358,7 +358,7 @@
 }
 
 .desk-info p {
-    color: #d1fae5;
+    color: #e2e8f0;
     font-size: 0.95rem;
     margin: 0;
     max-width: 600px;
@@ -492,23 +492,23 @@
 
 .service-item-card.service-highlight,
 .services-grid .service-card.service-highlight {
-    border-color: #1a4d33 !important;
-    box-shadow: 0 0 0 4px rgba(26, 77, 51, 0.22), 0 16px 36px rgba(0, 0, 0, 0.12) !important;
+    border-color: #1a4971 !important;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.22), 0 16px 36px rgba(0, 0, 0, 0.12) !important;
     transform: translateY(-5px) !important;
     animation: servicePulse 2s ease-in-out infinite alternate;
 }
 
 @keyframes servicePulse {
-    0% { box-shadow: 0 0 0 3px rgba(26, 77, 51, 0.2), 0 12px 28px rgba(0, 0, 0, 0.08); }
-    100% { box-shadow: 0 0 0 6px rgba(26, 77, 51, 0.35), 0 18px 40px rgba(26, 77, 51, 0.15); }
+    0% { box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2), 0 12px 28px rgba(0, 0, 0, 0.08); }
+    100% { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.35), 0 18px 40px rgba(0, 0, 0, 0.15); }
 }
 
 .service-icon-box {
     width: 58px;
     height: 58px;
     border-radius: 14px;
-    background: #e6f4ea;
-    color: #093d25;
+    background: #dcecf7;
+    color: #000000;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -555,8 +555,8 @@
 }
 
 .meta-pill.fee {
-    background: #dcfce7;
-    color: #15803d;
+    background: #fef3c7;
+    color: #1a4971;
 }
 
 .service-desc {
@@ -569,7 +569,7 @@
 
 .requirements-preview {
     background: #f8fafc;
-    border-left: 4px solid #093d25;
+    border-left: 4px solid #000000;
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 0.86rem;
@@ -580,7 +580,7 @@
 }
 
 .requirements-preview strong {
-    color: #093d25;
+    color: #000000;
     display: block;
     margin-bottom: 4px;
     font-weight: 700;
@@ -595,7 +595,7 @@
 
 .btn-request {
     flex: 1;
-    background: #093d25;
+    background: #000000;
     color: #ffffff !important;
     text-align: center;
     padding: 12px 18px;
@@ -610,9 +610,9 @@
 }
 
 .btn-request:hover {
-    background: #062b1a;
+    background: #222222;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(9, 61, 37, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .btn-details {
@@ -679,7 +679,7 @@
 }
 
 .modal-banner {
-    background: #093d25;
+    background: #000000;
     color: #ffffff;
     padding: 18px 24px;
     display: flex;
@@ -722,7 +722,7 @@
 .modal-info-item strong {
     display: block;
     font-size: 0.82rem;
-    color: #093d25;
+    color: #000000;
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;

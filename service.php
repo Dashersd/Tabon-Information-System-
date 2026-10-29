@@ -185,7 +185,7 @@ if ($res) {
                 <div class="modal-info-item" id="detailModalDocItem" style="display:none;">
                     <strong>Form / Document Template</strong>
                     <p style="margin:4px 0 0 0;">
-                        <a id="detailModalDocLink" href="#" target="_blank" download style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#e8f5ee; color:#137547; border:1px solid #bbf7d0; border-radius:6px; font-weight:600; font-size:0.88rem; text-decoration:none;">
+                        <a id="detailModalDocLink" href="#" target="_blank" download style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#dcecf7; color:#1a4971; border:1px solid #bfdbfe; border-radius:6px; font-weight:600; font-size:0.88rem; text-decoration:none;">
                             <i class="bi bi-file-earmark-arrow-down"></i> Download Attached Template
                         </a>
                     </p>
