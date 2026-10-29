@@ -12,7 +12,7 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
     $safe_name = htmlspecialchars($to_name ?: 'Resident', ENT_QUOTES, 'UTF-8');
     $safe_pin  = htmlspecialchars($pin_code, ENT_QUOTES, 'UTF-8');
     
-    // Clean, professional HTML body designed to pass modern SpamAssassin & Google AI filters
+    // Clean, modern HTML body with 100% INLINE styles for full compatibility with Gmail Web & Mobile
     $html_body = "
     <!DOCTYPE html>
     <html lang='en'>
@@ -21,60 +21,81 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <title>Barangay Tabon Verification Code</title>
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px 12px; color: #1e293b; }
-            .email-container { max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
-            .email-header { background: linear-gradient(135deg, #0f172a 0%, #1a4971 100%); padding: 28px 24px; text-align: center; color: #ffffff; }
-            .email-header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
-            .email-header p { margin: 6px 0 0 0; font-size: 13px; opacity: 0.92; }
-            .email-body { padding: 32px 28px; text-align: center; }
-            .email-body h2 { font-size: 18px; color: #1a4971; margin-top: 0; margin-bottom: 12px; font-weight: 700; }
-            .email-body p { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0; }
-            .pin-display-box { background-color: #dcecf7; border: 2px dashed #1a4971; border-radius: 12px; padding: 20px; margin: 24px auto; max-width: 290px; }
-            .pin-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; margin: 0; }
-            .expiry-badge { display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-top: 12px; }
-            .security-note { font-size: 12px; color: #64748b; margin-top: 24px; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 16px; }
-            .email-footer { background-color: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5; }
-            .email-footer p { margin: 4px 0; }
+            body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; }
+            table { border-collapse: collapse; }
         </style>
     </head>
-    <body>
-        <div class='email-container'>
-            <div class='email-header'>
-                <h1>BARANGAY TABON</h1>
-                <p>Information & Resident Service System</p>
-            </div>
-            <div class='email-body'>
-                <h2>Identity Verification OTP</h2>
-                <p>Hello <strong>{$safe_name}</strong>,</p>
-                <p>You recently submitted an inquiry or document request through the Barangay Tabon Information System. Please use the single-use 6-digit verification code below to confirm your request:</p>
-                
-                <div class='pin-display-box'>
-                    <div class='pin-code'>{$safe_pin}</div>
-                    <div class='expiry-badge'>⏱ Expires in 3 Minutes</div>
-                </div>
+    <body style='margin: 0; padding: 24px 12px; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; color: #1e293b;'>
+        <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
+            <tr>
+                <td align='center'>
+                    <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='max-width: 520px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;'>
+                        
+                        <!-- Header (Solid Black) -->
+                        <tr>
+                            <td align='center' style='background-color: #000000; background: #000000; padding: 30px 24px; color: #ffffff;'>
+                                <h1 style='margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #ffffff;'>BARANGAY TABON</h1>
+                                <p style='margin: 6px 0 0 0; font-size: 13px; color: #cbd5e1;'>Information &amp; Resident Service System</p>
+                            </td>
+                        </tr>
 
-                <div class='security-note'>
-                    <strong>Security Notice:</strong> Never share this verification code with anyone. Barangay Tabon personnel will never ask for your OTP. If you did not make this request, you can safely disregard this email.
-                </div>
-            </div>
-            <div class='email-footer'>
-                <p><strong>Barangay Tabon Hall</strong></p>
-                <p>Municipality of Lapuyan, Zamboanga del Sur</p>
-                <p style='color: #94a3b8; font-size: 11px; margin-top: 8px;'>This is an automated security transmission. Please do not reply directly to this email.</p>
-            </div>
-        </div>
+                        <!-- Body Content -->
+                        <tr>
+                            <td align='center' style='padding: 34px 28px;'>
+                                <h2 style='font-size: 19px; color: #000000; margin: 0 0 14px 0; font-weight: 700;'>Identity Verification OTP</h2>
+                                <p style='font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 16px 0; text-align: center;'>
+                                    Hello <strong>{$safe_name}</strong>,
+                                </p>
+                                <p style='font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0; text-align: center;'>
+                                    You recently submitted an inquiry or document request through the Barangay Tabon Information System. Please enter the single-use 6-digit OTP below to verify your request:
+                                </p>
+                                
+                                <!-- OTP Code Box (Solid Black Border, Clean Background) -->
+                                <table role='presentation' cellpadding='0' cellspacing='0' border='0' style='background-color: #f8fafc; border: 2px dashed #000000; border-radius: 12px; margin: 0 auto 24px auto; width: 290px;'>
+                                    <tr>
+                                        <td align='center' style='padding: 22px 16px;'>
+                                            <div style='font-family: \"Courier New\", Courier, monospace; font-size: 38px; font-weight: 800; letter-spacing: 8px; color: #000000; margin: 0; line-height: 1;'>
+                                                {$safe_pin}
+                                            </div>
+                                            <div style='display: inline-block; background-color: #000000; color: #ffffff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-top: 14px; letter-spacing: 0.3px;'>
+                                                &#9201; Expires in 3 Minutes
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <!-- Security Notice -->
+                                <div style='font-size: 12px; color: #64748b; margin-top: 10px; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 18px; text-align: center;'>
+                                    <strong style='color: #000000;'>Security Notice:</strong> Never share this OTP with anyone. Barangay Tabon personnel will never ask for your code. If you did not make this request, you can safely disregard this email.
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td align='center' style='background-color: #f8fafc; padding: 20px 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5;'>
+                                <p style='margin: 0; font-weight: 700; color: #0f172a;'>Barangay Tabon Hall</p>
+                                <p style='margin: 4px 0 0 0;'>Municipality of Lapuyan, Zamboanga del Sur</p>
+                                <p style='margin: 8px 0 0 0; color: #94a3b8; font-size: 11px;'>This is an automated security transmission. Please do not reply directly to this email.</p>
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+            </tr>
+        </table>
     </body>
     </html>
     ";
 
     // Matching rich Plain-Text AltBody (Prevents HTML-only spam penalties)
     $plain_body = "BARANGAY TABON - INFORMATION & RESIDENT SERVICES\n\n"
-                . "Identity Verification PIN\n\n"
+                . "Identity Verification OTP\n\n"
                 . "Hello {$safe_name},\n\n"
                 . "You recently submitted an inquiry or document request through the Barangay Tabon Information System.\n"
-                . "Your 6-digit verification PIN is: {$pin_code}\n\n"
+                . "Your 6-digit verification OTP is: {$pin_code}\n\n"
                 . "This code will expire in 3 minutes.\n\n"
-                . "Security Notice: Never share this code with anyone. If you did not initiate this request, you can safely ignore this email.\n\n"
+                . "Security Notice: Never share this OTP with anyone. If you did not initiate this request, you can safely ignore this email.\n\n"
                 . "Barangay Tabon Hall\nMunicipality of Lapuyan, Zamboanga del Sur";
 
     // Load SMTP Configuration
@@ -107,7 +128,6 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
 
             // CRITICAL FIX FOR SPAM:
             // Prevent using local PC name (e.g. LAPTOP-EDQQ093G) in Message-ID.
-            // Using gmail.com ensures Message-ID matches the authenticated Gmail sender domain!
             $mail->Hostname = 'gmail.com';
 
             // Remove generic X-Mailer header that spam filters trigger on
@@ -156,7 +176,7 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
         @mkdir($log_dir, 0777, true);
     }
     $status_label = $mail_sent ? 'SENT_VIA_SMTP' : ($error_msg ? 'SMTP_FAILED: ' . $error_msg : 'DEV_MODE_LOG');
-    $log_entry = sprintf("[%s] TO: %s (%s) | PIN: %s | STATUS: %s\n",
+    $log_entry = sprintf("[%s] TO: %s (%s) | OTP: %s | STATUS: %s\n",
         date('Y-m-d H:i:s'),
         $to_email,
         $to_name,
