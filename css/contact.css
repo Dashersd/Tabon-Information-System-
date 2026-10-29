@@ -526,13 +526,18 @@ textarea.form-input {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #dcecf7;
-    color: #1a4971;
+    background: #f1f5f9;
+    color: #000000 !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
     margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.pin-modal-badge i {
+    color: #000000 !important;
 }
 
 .pin-modal-title {
