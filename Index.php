@@ -1,5 +1,6 @@
 <?php
 require_once 'db_connect.php';
+date_default_timezone_set('Asia/Manila');
 
 // Fetch gallery photos for 3D carousel
 $carousel_images = [];
@@ -126,6 +127,8 @@ function get_home_announcement_date($when_date, $created_at) {
 
     <!-- External Stylesheet -->
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <!-- The Art of Detail (Service Section) Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
@@ -181,14 +184,29 @@ function get_home_announcement_date($when_date, $created_at) {
         </nav>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero Section with Background Video -->
     <div class="hero-wrapper">
         <section class="hero-section">
+            <!-- Background Video with Dark Overlay -->
+            <div class="hero-video-bg">
+                <video id="heroBgVideo" autoplay muted loop playsinline poster="Images/Tabon%20Barangay%20hall.jpg" onloadedmetadata="this.playbackRate = 0.65;">
+                    <source src="Video/Homepage.mp4" type="video/mp4">
+                </video>
+                <div class="hero-video-overlay"></div>
+            </div>
             <div class="hero-content">
                 <h1 class="hero-title fade-in-left">Building a Stronger<br>and United Community</h1>
-                <p class="hero-subtitle fade-in-left delay-1">
-                    The Barangay Tabon is committed to<br>providing quality public service, transparent governance,<br>and a better future for every Tabonon.
-                </p>
+                <!-- Live Official Timestamp Widget -->
+                <div class="hero-timestamp fade-in-left delay-1" id="heroTimestampBox">
+                    <span class="hero-timestamp-badge">
+                        <i class="fa-solid fa-clock"></i> Philippine Standard Time
+                    </span>
+                    <div class="hero-timestamp-display" id="heroLiveClock">
+                        <span class="hero-live-date"><?= date('l, F d, Y') ?></span>
+                        <span class="hero-live-sep">&bull;</span>
+                        <span class="hero-live-time"><?= date('h:i:s A') ?></span>
+                    </div>
+                </div>
                 <a href="#services-section" class="btn-explore fade-in-up delay-2">
                     <i class="fa-solid fa-building"></i>
                     <span>Explore Our Services</span>
@@ -317,122 +335,116 @@ function get_home_announcement_date($when_date, $created_at) {
         </div>
     </section>
 
-    <!-- Main Content Area -->
-    <main class="main-content" id="main-content">
-
-        <!-- Services Section -->
-        <section class="home-services-wrapper" id="services-section">
-            <div class="home-services-header">
-                <div class="home-services-header-text">
-                    <span class="home-services-badge fade-in-up animate-on-scroll">
-                        <i class="fa-solid fa-hand-holding-hand"></i> Frontline Citizen Services
-                    </span>
-                    <h2 class="home-services-title fade-in-up animate-on-scroll delay-1">Barangay Tabon Services</h2>
-                    <p class="home-services-subtitle fade-in-up animate-on-scroll delay-2">
-                        Fast, accessible, and transparent frontline public assistance, community clearances, and certifications.
+    <!-- Services Section (Expanded) -->
+        <?php 
+        $art_data = file_exists(__DIR__ . '/includes/data.php') ? require __DIR__ . '/includes/data.php' : [];
+        if (!empty($art_data)): 
+        ?>
+        <section class="services-wrapper" id="services-section">
+            <h2 class="announcements-title fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">Our Services</h2>
+            <div class="announcements-divider fade-in-up animate-on-scroll" style="animation-delay: 0.2s;"></div>
+            <p class="announcements-subtitle fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">
+                Explore the frontline services, certificates, and assistance offered in our barangay.
+            </p>
+            <section class="art-of-detail-section" aria-label="Services">
+            <div class="art-container">
+                <!-- Left: Content Column & Accordion -->
+                <div class="art-content-col">
+                    <span class="art-eyebrow"><?= htmlspecialchars($art_data['eyebrow'] ?? '') ?></span>
+                    <h2 class="art-headline">
+                        <?= htmlspecialchars($art_data['headline']['line1'] ?? 'Prompt, honest') ?><br>
+                        <?= htmlspecialchars($art_data['headline']['accent_prefix'] ?? 'public ') ?><em><?= htmlspecialchars($art_data['headline']['accent_word'] ?? 'service') ?></em><?= htmlspecialchars($art_data['headline']['accent_suffix'] ?? '.') ?>
+                    </h2>
+                    <p class="art-intro-p">
+                        <?= htmlspecialchars($art_data['intro'] ?? '') ?>
                     </p>
-                </div>
-                <div class="home-services-header-action fade-in-up animate-on-scroll delay-2">
-                    <a href="service.php" class="btn-view-all-services">
-                        <span>View All Services</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
 
-            <!-- Services Grid -->
-            <div class="home-services-grid">
-                <?php if (!empty($home_services)): ?>
-                    <?php $delay = 0.1; foreach ($home_services as $hs): ?>
-                        <?php 
-                            $rawIcon = trim($hs['icon'] ?? '');
-                            if (empty($rawIcon)) {
-                                $iconClass = 'fa-solid fa-file-lines';
-                            } elseif (strpos($rawIcon, 'bi-') === 0) {
-                                $iconClass = 'bi ' . $rawIcon;
-                            } elseif (strpos($rawIcon, 'fa-') !== false) {
-                                $iconClass = $rawIcon;
-                            } else {
-                                $iconClass = 'bi bi-' . $rawIcon;
-                            }
-                            $serviceFee = !empty($hs['fee']) ? $hs['fee'] : 'Free';
-                            $serviceProcTime = !empty($hs['processing_time']) ? $hs['processing_time'] : 'Same Day';
-                            $serviceDesc = !empty($hs['description']) ? $hs['description'] : 'Official barangay document and citizen service provided by Barangay Tabon.';
-                        ?>
-                        <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: <?= number_format($delay, 1) ?>s;" onclick="window.location.href='service.php?id=<?= (int)$hs['id'] ?>#service-<?= (int)$hs['id'] ?>'" role="button" tabindex="0">
-                            <div class="home-service-card-top">
-                                <div class="home-service-icon-box">
-                                    <i class="<?= htmlspecialchars($iconClass) ?>"></i>
+                    <!-- Services Accordion -->
+                    <div class="art-accordion" role="region" aria-label="Services Accordion">
+                        <?php foreach ($art_data['items'] as $index => $item): ?>
+                            <?php 
+                                $isFirst = ($index === 0);
+                                $panelId = 'art-panel-' . htmlspecialchars($item['number']);
+                                $btnId = 'art-btn-' . htmlspecialchars($item['number']);
+                            ?>
+                            <div class="art-accordion-item <?= $isFirst ? 'is-active' : '' ?>" data-item-index="<?= $index ?>">
+                                <button type="button" 
+                                        id="<?= $btnId ?>" 
+                                        class="art-accordion-trigger" 
+                                        aria-expanded="<?= $isFirst ? 'true' : 'false' ?>" 
+                                        aria-controls="<?= $panelId ?>" 
+                                        data-caption="<?= htmlspecialchars($item['caption']) ?>">
+                                    <div class="art-trigger-start">
+                                        <span class="art-item-number"><?= htmlspecialchars($item['number']) ?></span>
+                                        <span class="art-item-title"><?= htmlspecialchars($item['title']) ?></span>
+                                    </div>
+                                    <svg class="art-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                                <div id="<?= $panelId ?>" 
+                                     class="art-accordion-body" 
+                                     role="region" 
+                                     aria-labelledby="<?= $btnId ?>">
+                                    <div class="art-accordion-inner">
+                                        <p><?= htmlspecialchars($item['description']) ?></p>
+                                        <div class="art-service-meta">
+                                            <div class="art-meta-tags">
+                                                <?php if (!empty($item['fee'])): ?>
+                                                    <span class="art-pill-badge fee"><i class="fa-solid fa-coins"></i> <?= htmlspecialchars($item['fee']) ?></span>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['processing_time'])): ?>
+                                                    <span class="art-pill-badge time"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars($item['processing_time']) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <a href="service.php" class="art-view-req-btn">
+                                                <span>View Requirements</span> <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="home-service-badges">
-                                    <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> <?= htmlspecialchars($serviceFee) ?></span>
-                                    <span class="service-pill time"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars($serviceProcTime) ?></span>
-                                </div>
                             </div>
-                            <h3 class="home-service-name"><?= htmlspecialchars($hs['name']) ?></h3>
-                            <p class="home-service-desc"><?= htmlspecialchars($serviceDesc) ?></p>
-                            <div class="home-service-card-footer">
-                                <a href="service.php?id=<?= (int)$hs['id'] ?>#service-<?= (int)$hs['id'] ?>" class="btn-card-action" onclick="event.stopPropagation();">
-                                    <span><?= htmlspecialchars(!empty($hs['button_text']) ? $hs['button_text'] : 'Request Document') ?></span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Right: Media Column with Tall Image & Gradient Overlay -->
+                <div class="art-media-col">
+                    <div class="art-image-frame">
+                        <div class="art-slides-container">
+                            <?php foreach ($art_data['items'] as $index => $item): ?>
+                                <img src="<?= htmlspecialchars($item['image']) ?>" 
+                                     alt="<?= htmlspecialchars($item['alt']) ?>" 
+                                     class="art-image-slide <?= $index === 0 ? 'is-active' : '' ?>" 
+                                     data-slide-index="<?= $index ?>" 
+                                     loading="<?= $index === 0 ? 'eager' : 'lazy' ?>" 
+                                     draggable="false" 
+                                     oncontextmenu="return false;">
+                            <?php endforeach; ?>
                         </div>
-                    <?php $delay += 0.08; endforeach; ?>
-                <?php else: ?>
-                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.1s;" onclick="window.location.href='service.php'">
-                        <div class="home-service-card-top">
-                            <div class="home-service-icon-box"><i class="fa-solid fa-stamp"></i></div>
-                            <div class="home-service-badges">
-                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> ₱50.00</span>
-                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> 10-15 Mins</span>
-                            </div>
-                        </div>
-                        <h3 class="home-service-name">Barangay Clearance</h3>
-                        <p class="home-service-desc">Official certification required for job applications, postal ID, and general legal verification.</p>
-                        <div class="home-service-card-footer">
-                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Document</span> <i class="fa-solid fa-arrow-right"></i></a>
+
+                        <!-- Clean Status Bar at bottom, not blocking document -->
+                        <div class="art-image-statusbar">
+                            <span class="art-caption-left"><?= htmlspecialchars($art_data['items'][0]['caption'] ?? '') ?></span>
+                            <span class="art-caption-badge"><i class="fa-solid fa-shield-halved"></i> VIEW ONLY</span>
                         </div>
                     </div>
-                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.2s;" onclick="window.location.href='service.php'">
-                        <div class="home-service-card-top">
-                            <div class="home-service-icon-box"><i class="fa-solid fa-hands-holding-child"></i></div>
-                            <div class="home-service-badges">
-                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> Free</span>
-                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> Same Day</span>
-                            </div>
-                        </div>
-                        <h3 class="home-service-name">Certificate of Indigency</h3>
-                        <p class="home-service-desc">Issued to low-income residents for medical, educational, burial, or legal assistance from DSWD.</p>
-                        <div class="home-service-card-footer">
-                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Assistance</span> <i class="fa-solid fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                    <div class="home-service-card fade-in-up animate-on-scroll" style="animation-delay: 0.3s;" onclick="window.location.href='service.php'">
-                        <div class="home-service-card-top">
-                            <div class="home-service-icon-box"><i class="fa-solid fa-address-card"></i></div>
-                            <div class="home-service-badges">
-                                <span class="service-pill fee"><i class="fa-solid fa-peso-sign"></i> Free</span>
-                                <span class="service-pill time"><i class="fa-regular fa-clock"></i> Same Day</span>
-                            </div>
-                        </div>
-                        <h3 class="home-service-name">Certificate of Residency</h3>
-                        <p class="home-service-desc">Formal verification confirming continuous bonafide residency within Barangay Tabon.</p>
-                        <div class="home-service-card-footer">
-                            <a href="service.php" class="btn-card-action" onclick="event.stopPropagation();"><span>Request Document</span> <i class="fa-solid fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                </div>
             </div>
         </section>
+        </section>
+    <?php endif; ?>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content">
 
         <!-- Latest Announcements Section -->
         <div class="announcements-wrapper" id="announcements">
             <h2 class="announcements-title fade-in-up animate-on-scroll" style="animation-delay: 0.1s;">Latest Announcements</h2>
             <div class="announcements-divider fade-in-up animate-on-scroll" style="animation-delay: 0.2s;"></div>
             <p class="announcements-subtitle fade-in-up animate-on-scroll" style="animation-delay: 0.3s;">
-                Keep track of upcoming events, meetings, and important notices in our barangay. 
-                <a href="announcement.php" style="color:var(--secondary-black); font-weight:700; text-decoration:underline; margin-left:6px;">View All Announcements &rarr;</a>
+                Keep track of upcoming events, meetings, and important notices in our barangay.
+
             </p>
             
             <div class="announcements-grid">
@@ -543,6 +555,14 @@ function get_home_announcement_date($when_date, $created_at) {
                     </div>
                 <?php endif; ?>
             </div>
+        
+            <!-- View All Announcements Button Action -->
+            <div class="announcements-bottom-action fade-in-up animate-on-scroll" style="animation-delay: 0.5s;">
+                <a href="announcement.php" class="btn-view-all-announcements">
+                    <span>View All Announcements</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
         
         <!-- Spot Map Section -->
@@ -607,6 +627,52 @@ function get_home_announcement_date($when_date, $created_at) {
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="js/main.js?v=<?= time() ?>"></script>
+    <!-- The Art of Detail Interactive Script -->
+    <script src="assets/js/main.js?v=<?= time() ?>"></script>
+    <!-- Normal speed controller for Hero Background Video -->
+    <script>
+    (function() {
+        var v = document.getElementById('heroBgVideo');
+        if (v) {
+            var setNormalSpeed = function() { v.playbackRate = 0.65; };
+            setNormalSpeed();
+            v.addEventListener('play', setNormalSpeed);
+            v.addEventListener('loadeddata', setNormalSpeed);
+            v.addEventListener('canplay', setNormalSpeed);
+        }
+    })();
+    </script>
+    <!-- Live Clock Script for Philippine Standard Time -->
+    <script>
+    (function() {
+        function updateHeroLiveClock() {
+            var clockEl = document.getElementById('heroLiveClock');
+            if (!clockEl) return;
+            var now = new Date();
+            try {
+                var dateStr = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: '2-digit',
+                    timeZone: 'Asia/Manila'
+                });
+                var timeStr = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true,
+                    timeZone: 'Asia/Manila'
+                });
+                clockEl.innerHTML = '<span class="hero-live-date">' + dateStr + '</span>' +
+                                   '<span class="hero-live-sep">&bull;</span>' +
+                                   '<span class="hero-live-time">' + timeStr + '</span>';
+            } catch (err) {}
+        }
+        setInterval(updateHeroLiveClock, 1000);
+        updateHeroLiveClock();
+    })();
+    </script>
 </body>
 </html>
 

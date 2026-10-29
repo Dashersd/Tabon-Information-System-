@@ -408,9 +408,9 @@ function get_legend_photo_url($path) {
                     <a class="dropdown-btn active"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container" style="display: block;">
                         <a href="Legend.php" class="active" style="color: #ffffff; font-weight: 600;">Legend</a>
-                        <a href="Purok 1.php">Purok 1</a>
-                        <a href="Purok 2.php">Purok 2</a>
-                        <a href="Purok 3.php">Purok 3</a>
+                        <a href="Purok 1.php">Purok Mesaya</a>
+                        <a href="Purok 2.php">Purok Metamed</a>
+                        <a href="Purok 3.php">Purok Melitebangay</a>
                     </div>
                 </li>
                 <li>

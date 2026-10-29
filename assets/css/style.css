@@ -1,0 +1,544 @@
+/* ==========================================================================
+   THE ART OF DETAIL - BARANGAY TABON COLOR SCHEME
+   Visual Design System:
+     Background: Clean White (#ffffff) & Light Surface (#f8fafc)
+     Primary Brand Green: Emerald Barangay Green (#146c43)
+     Deep Brand Green: Dark Green (#0c3823)
+     Accent Gold: Warm Tabon Gold (#fbb117 / #b7791f)
+     Text Primary: Deep Heading Slate / Green (#0c3823 / #000000)
+     Text Muted: Modern Slate Grey (#556980)
+     Dividers: Hairline (#e2e8f0)
+     Fonts: Playfair Display / Newsreader & Montserrat / Inter
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Google Fonts & Brand Design Tokens
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --art-bg: #ffffff;
+    --art-bg-surface: #f8fafc;
+    --art-bg-accent-subtle: rgba(20, 108, 67, 0.04);
+    --art-text-heading: #0c3823;
+    --art-text-main: #000000;
+    --art-text-muted: #556980;
+    --art-brand-green: #146c43;
+    --art-brand-green-hover: #0e5031;
+    --art-brand-gold: #fbb117;
+    --art-brand-gold-text: #b7791f;
+    --art-divider: #e2e8f0;
+    --art-border-subtle: #edf2f7;
+    --art-font-serif: 'Playfair Display', 'Newsreader', Georgia, serif;
+    --art-font-sans: 'Montserrat', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --art-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. Section Container (Embedded in Tabon Main Content)
+   -------------------------------------------------------------------------- */
+.art-of-detail-section {
+    text-align: left;
+    background-color: var(--art-bg);
+    color: var(--art-text-main);
+    font-family: var(--art-font-sans);
+    position: relative;
+    width: 100%;
+    margin: 0 0 65px 0;
+    border-radius: 24px;
+    border: 1px solid var(--art-divider);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.art-of-detail-section *,
+.art-of-detail-section *::before,
+.art-of-detail-section *::after {
+    box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   3. Top Bar (Tabon Clean Surface & Divider)
+   -------------------------------------------------------------------------- */
+.art-topbar {
+    width: 100%;
+    background-color: var(--art-bg-surface);
+    border-bottom: 1px solid var(--art-divider);
+    padding: 0.95rem clamp(1.25rem, 4vw, 3rem);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.art-topbar-left {
+    font-family: var(--art-font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--art-brand-green);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.art-topbar-right {
+    font-family: var(--art-font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--art-text-muted);
+    margin: 0;
+    line-height: 1.2;
+    text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   4. Main Content Grid Layout
+   -------------------------------------------------------------------------- */
+.art-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 4vw, 4.25rem) clamp(2rem, 4.5vw, 5rem);
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(2.5rem, 4.5vw, 5.5rem);
+    align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   5. Left Column: Image Stage & Tabon Gradient Overlay
+   -------------------------------------------------------------------------- */
+.art-media-col {
+    width: 100%;
+}
+
+.art-image-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.05;
+    overflow: hidden;
+    background-color: #0c3823;
+    border-radius: 18px;
+    border: 1px solid var(--art-divider);
+    box-shadow: 0 14px 34px rgba(12, 56, 35, 0.12);
+}
+
+.art-image-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    user-select: none;
+    -webkit-user-drag: none;
+    opacity: 0;
+    transform: scale(1.08);
+    filter: brightness(0.5);
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 1.6s var(--art-ease-out),
+                filter 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+    will-change: opacity, transform, filter;
+}
+
+.art-image-slide.is-active {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+}
+
+.art-image-overlay {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 2.75rem 1.75rem 1.5rem;
+    background: linear-gradient(to top, rgba(12, 56, 35, 0.95) 0%, rgba(12, 56, 35, 0.48) 55%, transparent 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.art-caption-left {
+    font-family: var(--art-font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.3;
+    transition: opacity 0.25s ease;
+}
+
+.art-caption-left.is-fading {
+    opacity: 0;
+}
+
+.art-caption-right {
+    font-family: var(--art-font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--art-brand-gold);
+    text-align: right;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   6. Right Column: Typography & Text Introduction
+   -------------------------------------------------------------------------- */
+.art-content-col {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.art-eyebrow {
+    font-family: var(--art-font-sans);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--art-brand-green);
+    margin: 0 0 1rem 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.art-headline {
+    font-family: var(--art-font-serif);
+    font-size: clamp(2.35rem, 4vw, 3.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: var(--art-text-heading);
+    margin: 0 0 1.25rem 0;
+}
+
+.art-headline em {
+    font-style: italic;
+    color: var(--art-brand-green);
+    font-weight: 600;
+}
+
+.art-intro-p {
+    font-family: var(--art-font-sans);
+    font-size: 1.08rem;
+    line-height: 1.7;
+    text-align: left;
+    color: var(--art-text-muted);
+    max-width: 560px;
+    margin: 0 0 2.25rem 0;
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   7. Accordion Component (CSS Grid 0fr -> 1fr Animation)
+   -------------------------------------------------------------------------- */
+.art-accordion {
+    border-top: 1px solid var(--art-divider);
+    width: 100%;
+}
+
+.art-accordion-item {
+    border-bottom: 1px solid var(--art-divider);
+    border-radius: 8px;
+    transition: background-color 0.25s ease;
+}
+
+.art-accordion-item.is-active {
+    background-color: var(--art-bg-accent-subtle);
+}
+
+.art-accordion-trigger {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 1.65rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    position: relative;
+    border-radius: 8px;
+    transition: color 0.25s ease, opacity 0.25s ease;
+}
+
+.art-accordion-trigger:hover {
+    color: var(--art-brand-green);
+}
+
+.art-accordion-trigger:focus-visible {
+    outline: 2px solid var(--art-brand-green);
+    outline-offset: 2px;
+}
+
+.art-trigger-start {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+}
+
+.art-item-number {
+    font-family: var(--art-font-sans);
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--art-brand-green);
+    font-variant-numeric: tabular-nums;
+}
+
+.art-item-title {
+    font-family: var(--art-font-serif);
+    font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+    font-weight: 700;
+    color: var(--art-text-heading);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    transition: color 0.25s ease;
+}
+
+.art-accordion-item.is-active .art-item-title {
+    color: var(--art-brand-green);
+}
+
+.art-chevron {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--art-text-muted);
+    transition: transform 0.55s var(--art-ease-out), color 0.3s ease;
+    margin-left: 1rem;
+}
+
+.art-accordion-item.is-active .art-chevron {
+    transform: rotate(180deg);
+    color: var(--art-brand-green);
+}
+
+/* Accordion Grid Animation Container */
+.art-accordion-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.55s var(--art-ease-out);
+}
+
+.art-accordion-item.is-active .art-accordion-body {
+    grid-template-rows: 1fr;
+}
+
+.art-accordion-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.art-accordion-inner p {
+    font-family: var(--art-font-sans);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    text-align: left;
+    color: var(--art-text-muted);
+    margin: 0;
+    padding: 0 0.75rem 0.25rem 3.25rem;
+    max-width: 560px;
+    font-weight: 400;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.45s ease 0.15s, transform 0.45s ease 0.15s;
+}
+
+.art-accordion-item.is-active .art-accordion-inner p {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   7b. Template Badge & Service Meta
+   -------------------------------------------------------------------------- */
+.art-caption-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fbb117;
+    background: rgba(12, 56, 35, 0.75);
+    border: 1px solid rgba(251, 177, 23, 0.4);
+    padding: 4px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+
+.art-service-meta {
+    margin: 14px 0 1.75rem 3.25rem;
+    text-align: left;
+    padding-top: 14px;
+    border-top: 1px solid #eef2f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 560px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.45s ease 0.2s, transform 0.45s ease 0.2s;
+}
+
+.art-accordion-item.is-active .art-service-meta {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.art-meta-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.art-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+}
+
+.art-pill-badge i {
+    font-size: 11px;
+}
+
+.art-pill-badge.fee {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.art-pill-badge.time {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.art-view-req-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 22px;
+    background: #0c3823;
+    color: #ffffff !important;
+    border-radius: 50px;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(12, 56, 35, 0.15);
+    white-space: nowrap;
+}
+
+.art-view-req-btn:hover {
+    background: #146c43;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(20, 108, 67, 0.25);
+    color: #ffffff !important;
+}
+
+.art-view-req-btn i {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+.art-view-req-btn:hover i {
+    transform: translateX(3px);
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsive Adaptations (< 820px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 820px) {
+    .art-of-detail-section {
+        margin: 35px 0 50px 0;
+        border-radius: 18px;
+    }
+
+    .art-container {
+        grid-template-columns: 1fr;
+        gap: 2.25rem;
+        padding-top: 1.75rem;
+        padding-bottom: 2.5rem;
+    }
+
+    .art-image-frame {
+        aspect-ratio: 1 / 1.25;
+        min-height: 420px;
+        border-radius: 14px;
+    }
+
+    .art-media-col {
+        order: -1;
+    }
+
+    .art-content-col {
+        padding-top: 0.5rem;
+    }
+
+    .art-intro-p {
+        max-width: 100%;
+        margin-bottom: 1.75rem;
+    }
+
+    .art-accordion-inner p {
+        padding-left: 2.5rem;
+        max-width: 100%;
+    }
+
+    .art-service-meta {
+        margin-left: 2.5rem;
+        max-width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .art-view-req-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 18px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   9. Accessibility: Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .art-accordion-body,
+    .art-accordion-inner p,
+    .art-chevron,
+    .art-image-slide,
+    .art-caption-left {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+    }
+}

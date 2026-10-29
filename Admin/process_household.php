@@ -10,11 +10,11 @@ require_once '../db_connect.php';
 // Helper to resolve table and page
 function resolvePurokDetails($purokInput) {
     $input = strtolower(str_replace([' ', '_'], '', trim($purokInput)));
-    if ($input === 'purok1') {
+    if ($input === 'purok1' || $input === 'purokmesaya' || $input === 'mesaya') {
         return ['table' => 'purok1_locations', 'name' => 'Purok 1', 'page' => 'Purok 1.php', 'resident_page' => 'Resident 1.php'];
-    } elseif ($input === 'purok2') {
+    } elseif ($input === 'purok2' || $input === 'purokmetamed' || $input === 'metamed') {
         return ['table' => 'purok2_locations', 'name' => 'Purok 2', 'page' => 'Purok 2.php', 'resident_page' => 'Resident 2.php'];
-    } elseif ($input === 'purok3') {
+    } elseif ($input === 'purok3' || $input === 'purokmelitebangay' || $input === 'melitebangay') {
         return ['table' => 'purok3_locations', 'name' => 'Purok 3', 'page' => 'Purok 3.php', 'resident_page' => 'Resident 3.php'];
     }
     return null;

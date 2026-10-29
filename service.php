@@ -183,14 +183,46 @@ if ($res) {
                     <p id="detailModalTime"></p>
                 </div>
                 <div class="modal-info-item" id="detailModalDocItem" style="display:none;">
-                    <strong>Form / Document Template</strong>
+                    <strong>Sample Document Template (View Only)</strong>
                     <p style="margin:4px 0 0 0;">
-                        <a id="detailModalDocLink" href="#" target="_blank" download style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#dcecf7; color:#1a4971; border:1px solid #bfdbfe; border-radius:6px; font-weight:600; font-size:0.88rem; text-decoration:none;">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Download Attached Template
-                        </a>
+                        <button type="button" id="detailModalDocBtn" onclick="openPublicTemplatePreview()" style="display:inline-flex; align-items:center; gap:8px; padding:8px 18px; background:#e8f5ee; color:#146c43; border:1.5px solid #86efac; border-radius:8px; font-weight:700; font-size:0.9rem; cursor:pointer; transition:all 0.2s ease;">
+                            <i class="bi bi-eye"></i> View Sample Template
+                        </button>
+                    </p>
+                    <small style="display:block; margin-top:4px; font-size:0.78rem; color:#64748b;"><i class="bi bi-shield-lock"></i> Official reference preview • Protected from download</small>
                     </p>
                 </div>
                 <a href="contact.php" id="detailModalLink" class="btn-request" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">Proceed to Request</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public View-Only Sample Template Modal -->
+    <div id="publicTemplateModal" class="service-modal" onclick="closePublicTemplateModal()">
+        <div class="modal-dialog" onclick="event.stopPropagation()" style="max-width: 640px; padding: 0; overflow: hidden; border-radius: 16px;">
+            <div class="modal-banner" style="background:#0c3823; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="bi bi-file-earmark-image" style="color:#fbb117; font-size:1.25rem;"></i>
+                    <div>
+                        <h3 id="publicTemplateTitle" style="color:#ffffff; margin:0; font-size:1.05rem; font-weight:700;">Sample Template Preview</h3>
+                        <span style="font-size:0.75rem; color:#a7f3d0; text-transform:uppercase; letter-spacing:0.5px;">View-Only Reference • Cannot be downloaded</span>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closePublicTemplateModal()" style="color:#ffffff; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; text-align: center; background: #f8fafc;">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: #fef3c7; color: #92400e; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; border: 1px solid #fde68a;">
+                    <i class="bi bi-shield-lock-fill"></i> Official Barangay Tabon Template Sample (Preview Only)
+                </div>
+                <div style="max-height: 480px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+                    <img id="publicTemplateImg" src="" alt="Sample Template" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 6px; pointer-events: auto; user-select: none; -webkit-user-drag: none;" draggable="false" oncontextmenu="return false;">
+                </div>
+                <p style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">
+                    <i class="bi bi-info-circle"></i> This sample image serves as a reference preview for residents. Downloading is disabled for security and document integrity.
+                </p>
+            </div>
+            <div style="padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; text-align: right;">
+                <button type="button" onclick="closePublicTemplateModal()" style="padding: 8px 20px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close Preview</button>
             </div>
         </div>
     </div>
@@ -230,6 +262,21 @@ if ($res) {
 
     <!-- Interactive Detail Modal Script -->
     <script>
+    let activePublicTemplateSrc = '';
+    let activePublicTemplateName = '';
+
+    function openPublicTemplatePreview() {
+        if (activePublicTemplateSrc) {
+            document.getElementById('publicTemplateTitle').textContent = activePublicTemplateName + ' - Sample Template';
+            document.getElementById('publicTemplateImg').src = activePublicTemplateSrc;
+            document.getElementById('publicTemplateModal').style.display = 'flex';
+        }
+    }
+
+    function closePublicTemplateModal() {
+        document.getElementById('publicTemplateModal').style.display = 'none';
+    }
+
     function openPublicDetailModal(svc) {
         document.getElementById('detailModalTitle').textContent = svc.name || 'Service Details';
         document.getElementById('detailModalDesc').textContent = svc.description || 'No description provided.';
@@ -264,7 +311,8 @@ if ($res) {
         if (docItem) {
             if (svc.document_file && svc.document_file.trim() !== '') {
                 const docLink = document.getElementById('detailModalDocLink');
-                docLink.href = 'Admin/' + svc.document_file;
+                activePublicTemplateSrc = 'Admin/' + svc.document_file;
+                activePublicTemplateName = svc.name || 'Sample Template';
                 docItem.style.display = 'block';
             } else {
                 docItem.style.display = 'none';

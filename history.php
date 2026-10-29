@@ -43,12 +43,22 @@ $img_cache_bust = !empty($about_data['updated_at']) ? strtotime($about_data['upd
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/about.css?v=<?php echo time(); ?>">
     <style>
+        .history-page .main-content {
+            max-width: 1380px;
+            padding: 20px 40px 60px 40px;
+        }
         .history-wrapper {
-            max-width: 1100px;
-            margin: 0 auto;
+            max-width: 1280px;
+            margin: 10px auto 40px auto;
+            width: 100%;
         }
         .history-page .about-text-scroll {
-            max-height: 420px;
+            max-height: 560px;
+        }
+        @media (max-width: 768px) {
+            .history-page .main-content {
+                padding: 15px 20px 40px 20px;
+            }
         }
     </style>
 </head>

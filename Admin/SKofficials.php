@@ -328,9 +328,9 @@ $tier4_keys = ['kagawad_4', 'kagawad_5', 'kagawad_6', 'kagawad_7'];
                     <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container">
                         <a href="Legend.php">Legend</a>
-                        <a href="Purok 1.php">Purok 1</a>
-                        <a href="Purok 2.php">Purok 2</a>
-                        <a href="Purok 3.php">Purok 3</a>
+                        <a href="Purok 1.php">Purok Mesaya</a>
+                        <a href="Purok 2.php">Purok Metamed</a>
+                        <a href="Purok 3.php">Purok Melitebangay</a>
                     </div>
                 </li>
                 <li>

@@ -145,9 +145,9 @@ if (empty($public_legends)) {
                         <div class="info-card">
                             <h3 class="card-title"><i class="fa-solid fa-location-dot" style="color: #fca311;"></i> 3 Puroks of Tabon</h3>
                             <div class="purok-list">
-                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 1.jpg')">Purok 1</div>
-                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 2.jpg')">Purok 2</div>
-                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 3.jpg')">Purok 3</div>
+                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 1.jpg')">Purok Mesaya</div>
+                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 2.jpg')">Purok Metamed</div>
+                                <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 3.jpg')">Purok Melitebangay</div>
                                 <div class="purok-pill aerial-btn-pill" style="background-color: #000000; color: #ffffff; border-color: #000000;" onclick="showAerialSpotMap()"><i class="fa-solid fa-map-pin"></i> Aerial Spot Map</div>
                             </div>
                         </div>
@@ -498,23 +498,23 @@ if (empty($public_legends)) {
                 }
             },
             {
-                image: 'Images/Map/Zamboanga del Sur.jpg',
+                image: 'Images/Map/Zamboanga del Sur.jpg?v=<?= filemtime(__DIR__ . "/Images/Map/Zamboanga del Sur.jpg") ?>',
                 stepLabel: 'Zamboanga del Sur &rarr; Click pin on Lapuyan',
                 pin: {
                     show: true,
-                    left: '47.3%',
-                    top: '58.3%',
+                    left: '51.2%',
+                    top: '46.5%',
                     title: 'Click pin to zoom into Lapuyan',
                     label: 'Lapuyan'
                 }
             },
             {
-                image: 'Images/Map/Lapuyan.gif',
+                image: 'Images/Map/Lapuyan.jpg?v=<?= filemtime(__DIR__ . "/Images/Map/Lapuyan.jpg") ?>',
                 stepLabel: 'Lapuyan &rarr; Click pin on Barangay Tabon',
                 pin: {
                     show: true,
-                    left: '50%',
-                    top: '50%',
+                    left: '33.8%',
+                    top: '45.8%',
                     title: 'Click pin to view Aerial Spot Map',
                     label: 'Barangay Tabon'
                 }

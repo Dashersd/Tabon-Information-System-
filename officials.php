@@ -184,11 +184,34 @@ $kag7 = get_pub_official('kagawad_7', 'Hon. Janito Lipa', 'BARANGAY KAGAWAD', 'C
                 </div>
             </div>
 
-            <!-- Barangay Kagawads (1 to 7) -->
-            <div class="org-row row-kagawad-2">
+            <!-- Barangay Kagawads Tier 1 (Kagawad 1 to 3) -->
+            <div class="org-row row-kagawad-tier-1">
                 <?php 
-                $kagawad_list = [$kag1, $kag2, $kag3, $kag4, $kag5, $kag6, $kag7];
-                foreach ($kagawad_list as $kag): 
+                $kagawads_tier1 = [$kag1, $kag2, $kag3];
+                foreach ($kagawads_tier1 as $kag): 
+                ?>
+                <div class="official-card"
+                     onclick="openModal(this)"
+                     data-name="<?= htmlspecialchars($kag['name']) ?>"
+                     data-title="<?= htmlspecialchars($kag['title']) ?>"
+                     data-image="<?= htmlspecialchars($kag['image']) ?>"
+                     data-desc="<?= htmlspecialchars($kag['desc']) ?>">
+                    <div class="card-img-wrapper">
+                        <img src="<?= htmlspecialchars($kag['image']) ?>?t=<?= time() ?>" alt="Kagawad" onerror="this.src='Officials/Captain.jpg';">
+                    </div>
+                    <div class="card-info">
+                        <div class="official-name"><?= htmlspecialchars($kag['name']) ?></div>
+                        <div class="official-title"><?= htmlspecialchars($kag['title']) ?></div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Barangay Kagawads Tier 2 (Kagawad 4 to 7) -->
+            <div class="org-row row-kagawad-tier-2">
+                <?php 
+                $kagawads_tier2 = [$kag4, $kag5, $kag6, $kag7];
+                foreach ($kagawads_tier2 as $kag): 
                 ?>
                 <div class="official-card"
                      onclick="openModal(this)"

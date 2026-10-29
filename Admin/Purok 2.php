@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 require_once '../db_connect.php';
 
-$module_name = "Purok 2";
+$module_name = "Purok Metamed";
 $target_file = "purok2";
 $table_name = "purok2_locations";
 $map_image_src = "../Images/Purok/Purok%202.jpg";
@@ -191,9 +191,9 @@ try {
                     <a class="dropdown-btn active"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container" style="display: block;">
                         <a href="Legend.php">Legend</a>
-                        <a href="Purok 1.php">Purok 1</a>
-                        <a href="Purok 2.php" class="active" style="color: #ffffff; font-weight: 600;">Purok 2</a>
-                        <a href="Purok 3.php">Purok 3</a>
+                        <a href="Purok 1.php">Purok Mesaya</a>
+                        <a href="Purok 2.php" class="active" style="color: #ffffff; font-weight: 600;">Purok Metamed</a>
+                        <a href="Purok 3.php">Purok Melitebangay</a>
                     </div>
                 </li>
                 <li>

@@ -104,11 +104,19 @@ body.officials-page {
 }
 
 .row-kagawad-1 {
-    gap: 60px;
+    gap: 24px;
+}
+
+.row-kagawad-tier-1 {
+    gap: 22px;
+}
+
+.row-kagawad-tier-2 {
+    gap: 22px;
 }
 
 .row-kagawad-2 {
-    gap: 15px;
+    gap: 22px;
 }
 
 /* Official Card styling */

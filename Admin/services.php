@@ -19,7 +19,7 @@ if ($col_check && $col_check->num_rows === 0) {
 $success_msg = '';
 $error_msg = '';
 
-// Helper: Document File Upload
+// Helper: Sample Document Template Image Upload (Images only, protected view)
 $handle_document_upload = function($file_key) {
     if (!isset($_FILES[$file_key]) || $_FILES[$file_key]['error'] !== UPLOAD_ERR_OK) {
         return null;
@@ -30,14 +30,20 @@ $handle_document_upload = function($file_key) {
     }
     $orig_name = $_FILES[$file_key]['name'];
     $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
-    $allowed = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
     if (!in_array($ext, $allowed, true)) {
-        return false; // Invalid extension
+        return false; // Only image templates allowed
+    }
+
+    // Verify it is a legitimate image
+    $img_check = @getimagesize($_FILES[$file_key]['tmp_name']);
+    if ($img_check === false) {
+        return false;
     }
 
     $clean_ext = preg_replace("/[^a-zA-Z0-9]/", "", $ext);
-    $filename = time() . '_' . uniqid() . '.' . $clean_ext;
+    $filename = 'template_' . time() . '_' . uniqid() . '.' . $clean_ext;
     $target = $upload_dir . $filename;
 
     if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target)) {
@@ -67,7 +73,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         if (isset($_FILES['serviceDocument']) && $_FILES['serviceDocument']['error'] === UPLOAD_ERR_OK) {
             $upload_res = $handle_document_upload('serviceDocument');
             if ($upload_res === false) {
-                $error_msg = "Invalid file type. Allowed formats: PDF, DOC, DOCX, JPG, PNG.";
+                $error_msg = "Invalid image file. Please upload a sample template image in JPG, PNG, or WEBP format.";
             } else {
                 $document_file = $upload_res;
             }
@@ -120,7 +126,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             if (isset($_FILES['serviceDocument']) && $_FILES['serviceDocument']['error'] === UPLOAD_ERR_OK) {
                 $upload_res = $handle_document_upload('serviceDocument');
                 if ($upload_res === false) {
-                    $error_msg = "Invalid file type. Allowed formats: PDF, DOC, DOCX, JPG, PNG.";
+                    $error_msg = "Invalid image file. Please upload a sample template image in JPG, PNG, or WEBP format.";
                 } elseif ($upload_res !== null) {
                     if (!empty($current_doc) && file_exists(__DIR__ . '/' . $current_doc)) {
                         @unlink(__DIR__ . '/' . $current_doc);
@@ -246,9 +252,9 @@ $next_order = count($services) + 1;
                     <a class="dropdown-btn"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container">
                         <a href="Legend.php">Legend</a>
-                        <a href="Purok 1.php">Purok 1</a>
-                        <a href="Purok 2.php">Purok 2</a>
-                        <a href="Purok 3.php">Purok 3</a>
+                        <a href="Purok 1.php">Purok Mesaya</a>
+                        <a href="Purok 2.php">Purok Metamed</a>
+                        <a href="Purok 3.php">Purok Melitebangay</a>
                     </div>
                 </li>
                 <li>
@@ -347,7 +353,7 @@ $next_order = count($services) + 1;
                                 <th>Service Name</th>
                                 <th>Fee & Time</th>
                                 <th>Description</th>
-                                <th style="width: 130px;">Document File</th>
+                                <th style="width: 140px;">Sample Template</th>
                                 <th style="width: 100px;">Status</th>
                                 <th class="action-th" style="text-align: center; width: 220px;">Actions</th>
                             </tr>
@@ -401,17 +407,17 @@ $next_order = count($services) + 1;
                                             </div>
                                         </td>
 
-                                        <!-- 6. Document File Link or 'No file' -->
+                                        <!-- 6. Sample Template Image Link or 'No file' -->
                                         <td>
                                             <?php 
                                             $doc_path = $service['document_file'] ?? '';
                                             if (!empty($doc_path) && file_exists(__DIR__ . '/' . $doc_path)): 
                                             ?>
-                                                <a href="<?= htmlspecialchars($doc_path) ?>" target="_blank" download class="badge-doc-file" title="Download template document">
-                                                    <i class="bi bi-file-earmark-arrow-down"></i> Ready File
-                                                </a>
+                                                <button type="button" class="badge-doc-file" onclick="openViewOnlyTemplate('<?= htmlspecialchars($doc_path, ENT_QUOTES) ?>', '<?= htmlspecialchars(addslashes($service['name']), ENT_QUOTES) ?>')" title="View sample template (Cannot be downloaded)">
+                                                    <i class="bi bi-eye"></i> View Sample
+                                                </button>
                                             <?php else: ?>
-                                                <span class="no-doc-file">No file</span>
+                                                <span class="no-doc-file">No image</span>
                                             <?php endif; ?>
                                         </td>
 
@@ -515,11 +521,17 @@ $next_order = count($services) + 1;
                         <small class="form-hint">List the required documents or qualifications needed by the resident.</small>
                     </div>
 
-                    <!-- Document Upload (Optional) -->
+                    <!-- Sample Template Image Upload (Optional) -->
                     <div class="form-group">
-                        <label for="addServiceDocument">Upload Ready-Made Document / Form Template (Optional)</label>
-                        <input type="file" id="addServiceDocument" name="serviceDocument" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        <small class="form-hint">Allowed file formats: PDF, DOC, DOCX, JPG, PNG.</small>
+                        <label for="addServiceDocument"><i class="bi bi-image" style="color: #137547;"></i> Upload Sample / Template Image (Optional)</label>
+                        <input type="file" id="addServiceDocument" name="serviceDocument" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="previewAddTemplateImage(this)">
+                        <small class="form-hint">Upload an image sample of this document (e.g. Barangay Clearance template). Allowed formats: JPG, PNG, WEBP. <em>(View-Only • Protected from download)</em></small>
+                        
+                        <!-- Live Image Preview for Add Modal -->
+                        <div id="addTemplatePreviewBox" style="display:none; margin-top:10px; padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; align-items:center; gap:12px;">
+                            <img id="addTemplatePreviewImg" src="" alt="Sample Template Preview" style="height:65px; border-radius:6px; border:1px solid #e2e8f0; object-fit:contain; pointer-events:none; user-select:none;" oncontextmenu="return false;">
+                            <span style="font-size:0.83rem; color:#15803d; font-weight:600;"><i class="bi bi-check2-circle"></i> Image selected (View-Only mode active)</span>
+                        </div>
                     </div>
 
                     <!-- 2-Column Row: Action Button Text & URL -->
@@ -616,23 +628,34 @@ $next_order = count($services) + 1;
                         <textarea id="editServiceRequirements" name="serviceRequirements" class="form-control" rows="3"></textarea>
                     </div>
 
-                    <!-- Document Upload with Current File Preview & Removal -->
+                    <!-- Sample Template Image Upload with Current Preview & Removal -->
                     <div class="form-group">
-                        <label for="editServiceDocument">Upload Ready-Made Document / Form Template (Optional)</label>
+                        <label for="editServiceDocument"><i class="bi bi-image" style="color: #137547;"></i> Sample / Template Image (Optional)</label>
                         
-                        <!-- Attached Document Container -->
-                        <div id="editCurrentDocumentContainer" class="current-doc-container" style="display: none;">
-                            <div class="current-doc-info">
-                                <i class="bi bi-file-earmark-check" style="font-size: 1.15rem;"></i>
-                                <span>Attached: <a id="editDocDownloadLink" href="#" target="_blank" download><strong id="editDocFileName">filename.pdf</strong></a></span>
+                        <!-- Attached Template Container -->
+                        <div id="editCurrentDocumentContainer" class="current-doc-container" style="display: none; align-items:center; justify-content:space-between; padding:10px 14px; background-color:#f0fdf4; border:1px dashed #86efac; border-radius:8px; margin-bottom:10px; gap:12px;">
+                            <div class="current-doc-info" style="display:flex; align-items:center; gap:10px;">
+                                <img id="editDocPreviewThumb" src="" alt="Template Thumbnail" style="height:48px; width:48px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1; pointer-events:none; user-select:none;" oncontextmenu="return false;">
+                                <div>
+                                    <strong id="editDocFileName" style="display:block; font-size:0.88rem; color:#0f172a; margin-bottom:3px;">sample.png</strong>
+                                    <button type="button" class="btn-preview-only" onclick="openCurrentEditPreview()" style="background:#e8f5ee; color:#137547; border:1px solid #86efac; padding:3px 9px; border-radius:5px; font-size:0.78rem; font-weight:700; cursor:pointer;">
+                                        <i class="bi bi-eye"></i> View Sample (View-Only)
+                                    </button>
+                                </div>
                             </div>
                             <button type="button" class="btn-remove-doc" onclick="removeCurrentDocument()">
-                                <i class="bi bi-trash"></i> Remove File
+                                <i class="bi bi-trash"></i> Remove Image
                             </button>
                         </div>
 
-                        <input type="file" id="editServiceDocument" name="serviceDocument" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        <small class="form-hint">Uploading a new file will replace any existing document.</small>
+                        <input type="file" id="editServiceDocument" name="serviceDocument" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="previewEditTemplateImage(this)">
+                        <small class="form-hint">Upload a replacement image sample template (JPG, PNG, WEBP). <em>(View-Only • Protected from download)</em></small>
+                        
+                        <!-- Live preview of newly chosen file in edit modal -->
+                        <div id="editNewTemplatePreviewBox" style="display:none; margin-top:10px; padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; align-items:center; gap:12px;">
+                            <img id="editNewTemplatePreviewImg" src="" alt="New Preview" style="height:65px; border-radius:6px; border:1px solid #e2e8f0; object-fit:contain; pointer-events:none; user-select:none;" oncontextmenu="return false;">
+                            <span style="font-size:0.83rem; color:#15803d; font-weight:600;"><i class="bi bi-check2-circle"></i> New replacement image selected</span>
+                        </div>
                     </div>
 
                     <!-- 2-Column Row: Action Button Text & URL -->
@@ -691,7 +714,95 @@ $next_order = count($services) + 1;
         </div>
     </div>
 
+    <!-- ======================================================== -->
+    <!-- MODAL 4: VIEW-ONLY SAMPLE TEMPLATE PREVIEW MODAL         -->
+    <!-- ======================================================== -->
+    <div id="viewTemplateModal" class="modal" onclick="closeModal('viewTemplateModal')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 680px; padding: 0; overflow: hidden; border-radius: 16px;">
+            <div class="modal-header" style="background: #093d25; color: #ffffff; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-file-earmark-image" style="font-size: 1.25rem; color: #fbb117;"></i>
+                    <div>
+                        <h3 id="viewTemplateModalTitle" style="font-size: 1.05rem; margin: 0; color: #ffffff; font-weight: 700;">Sample Document Template</h3>
+                        <span style="font-size: 0.76rem; color: #a7f3d0; text-transform: uppercase; letter-spacing: 0.5px;">View-Only Reference • Cannot be downloaded</span>
+                    </div>
+                </div>
+                <button type="button" class="close-modal-btn" onclick="closeModal('viewTemplateModal')" style="color: #ffffff; font-size: 1.5rem; background: none; border: none; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px; text-align: center; background: #f8fafc; position: relative;">
+                <!-- Protection Watermark Banner -->
+                <div style="margin-bottom: 12px; display: inline-flex; align-items: center; gap: 8px; background: #fef3c7; color: #92400e; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #fde68a;">
+                    <i class="bi bi-shield-lock-fill"></i> Official Barangay Tabon Template Sample (Preview Only)
+                </div>
+
+                <!-- Template Image Frame with contextmenu and drag disabled -->
+                <div style="position: relative; max-height: 520px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);">
+                    <img id="viewTemplateModalImg" 
+                         src="" 
+                         alt="Document Template Sample" 
+                         style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); -webkit-user-drag: none; user-select: none; pointer-events: auto;"
+                         draggable="false"
+                         oncontextmenu="return false;"
+                         onselectstart="return false;">
+                </div>
+                <p style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">
+                    <i class="bi bi-info-circle"></i> This sample image serves as a reference preview for residents and staff. Downloading is disabled for security and document integrity.
+                </p>
+            </div>
+            
+            <div class="modal-footer" style="padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; text-align: right;">
+                <button type="button" class="btn-secondary" onclick="closeModal('viewTemplateModal')" style="padding: 8px 22px; border-radius: 8px; background: #e2e8f0; color: #334155; font-weight: 600; border: none; cursor: pointer;">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+    let currentEditDocSrc = '';
+    let currentEditDocName = '';
+
+    function openViewOnlyTemplate(src, name) {
+        document.getElementById('viewTemplateModalTitle').textContent = (name || 'Service') + ' - Sample Template';
+        document.getElementById('viewTemplateModalImg').src = src;
+        openModal('viewTemplateModal');
+    }
+
+    function openCurrentEditPreview() {
+        if (currentEditDocSrc) {
+            openViewOnlyTemplate(currentEditDocSrc, currentEditDocName);
+        }
+    }
+
+    function previewAddTemplateImage(input) {
+        const box = document.getElementById('addTemplatePreviewBox');
+        const img = document.getElementById('addTemplatePreviewImg');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                box.style.display = 'flex';
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    function previewEditTemplateImage(input) {
+        const box = document.getElementById('editNewTemplatePreviewBox');
+        const img = document.getElementById('editNewTemplatePreviewImg');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                box.style.display = 'flex';
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
     function openModal(id) {
         const m = document.getElementById(id);
         if (m) {
@@ -749,14 +860,23 @@ $next_order = count($services) + 1;
         const fileInput = document.getElementById('editServiceDocument');
         if (fileInput) fileInput.value = '';
 
-        // Display current document if present
+        // Reset preview boxes
+        const newPreviewBox = document.getElementById('editNewTemplatePreviewBox');
+        if (newPreviewBox) newPreviewBox.style.display = 'none';
+
+        // Display current document/image if present
         const docContainer = document.getElementById('editCurrentDocumentContainer');
         if (service.document_file && service.document_file.trim() !== '') {
             const fileName = service.document_file.split('/').pop();
             document.getElementById('editDocFileName').textContent = fileName;
-            document.getElementById('editDocDownloadLink').href = service.document_file;
+            const thumb = document.getElementById('editDocPreviewThumb');
+            if (thumb) thumb.src = service.document_file;
+            currentEditDocSrc = service.document_file;
+            currentEditDocName = service.name || 'Sample Template';
             docContainer.style.display = 'flex';
         } else {
+            currentEditDocSrc = '';
+            currentEditDocName = '';
             docContainer.style.display = 'none';
         }
 
