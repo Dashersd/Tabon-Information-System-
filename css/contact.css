@@ -665,19 +665,19 @@ textarea.form-input {
     display: flex;
 }
 
-/* Verify Action Button - Matches .btn-submit exactly */
+/* Verify Action Button - Explicit Black Button with White Text */
 .btn-verify-pin {
     width: 100%;
     padding: 15px 30px;
-    background-color: var(--secondary-black);
-    color: var(--primary-white);
+    background-color: #000000 !important;
+    color: #ffffff !important;
     border: none;
     border-radius: 30px;
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
@@ -685,14 +685,20 @@ textarea.form-input {
     gap: 8px;
 }
 
+.btn-verify-pin i {
+    color: #ffffff !important;
+}
+
 .btn-verify-pin:hover:not(:disabled) {
-    background-color: var(--accent-hover);
+    background-color: #222222 !important;
+    color: #ffffff !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .btn-verify-pin:disabled {
-    background: #9ca3af;
+    background: #6b7280 !important;
+    color: #ffffff !important;
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
