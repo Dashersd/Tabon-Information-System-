@@ -33,8 +33,9 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
                         
                         <!-- Header (Solid Black) -->
                         <tr>
-                            <td align='center' style='background-color: #000000; background: #000000; padding: 26px 24px; color: #ffffff;'>
+                            <td align='center' style='background-color: #000000; background: #000000; padding: 28px 24px; color: #ffffff;'>
                                 <h1 style='margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #ffffff;'>BARANGAY TABON</h1>
+                                <p style='margin: 6px 0 0 0; font-size: 13px; color: #cbd5e1;'>Information System</p>
                             </td>
                         </tr>
 
