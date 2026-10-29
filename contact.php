@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 <div id="formAlertBanner" style="display: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 0.92rem; align-items: center; gap: 10px; line-height: 1.45;"></div>
 
                 <?php if ($msg_sent): ?>
-                    <div style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
+                    <div style="background: #dcecf7; color: #1a4971; border: 1px solid #bae6fd; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-circle-check"></i>
                         <span>The Admin has received your request and wait for 3 to 5 business days to be finished and sent to your Gmail.</span>
                     </div>

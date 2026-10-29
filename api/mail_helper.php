@@ -23,14 +23,14 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
         <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px 12px; color: #1e293b; }
             .email-container { max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
-            .email-header { background: linear-gradient(135deg, #093d25 0%, #137547 100%); padding: 28px 24px; text-align: center; color: #ffffff; }
+            .email-header { background: linear-gradient(135deg, #0f172a 0%, #1a4971 100%); padding: 28px 24px; text-align: center; color: #ffffff; }
             .email-header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
             .email-header p { margin: 6px 0 0 0; font-size: 13px; opacity: 0.92; }
             .email-body { padding: 32px 28px; text-align: center; }
-            .email-body h2 { font-size: 18px; color: #093d25; margin-top: 0; margin-bottom: 12px; font-weight: 700; }
+            .email-body h2 { font-size: 18px; color: #1a4971; margin-top: 0; margin-bottom: 12px; font-weight: 700; }
             .email-body p { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0; }
-            .pin-display-box { background-color: #f0fdf4; border: 2px dashed #16a34a; border-radius: 12px; padding: 20px; margin: 24px auto; max-width: 290px; }
-            .pin-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #093d25; margin: 0; }
+            .pin-display-box { background-color: #dcecf7; border: 2px dashed #1a4971; border-radius: 12px; padding: 20px; margin: 24px auto; max-width: 290px; }
+            .pin-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; margin: 0; }
             .expiry-badge { display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-top: 12px; }
             .security-note { font-size: 12px; color: #64748b; margin-top: 24px; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 16px; }
             .email-footer { background-color: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5; }

@@ -368,7 +368,7 @@ textarea.form-input {
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
-    border-left: 5px solid #137547;
+    border-left: 5px solid #1a4971;
     padding: 16px 20px;
     display: flex;
     align-items: flex-start;
@@ -386,11 +386,11 @@ textarea.form-input {
 }
 
 .contact-toast.toast-success {
-    border-left-color: #137547;
+    border-left-color: #1a4971;
 }
 .contact-toast.toast-success .toast-icon {
-    color: #137547;
-    background: #e8f5ee;
+    color: #1a4971;
+    background: #dcecf7;
 }
 
 .contact-toast.toast-error {
@@ -461,7 +461,7 @@ textarea.form-input {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(9, 61, 37, 0.45);
+    background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 99999;
@@ -508,8 +508,8 @@ textarea.form-input {
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: #f3f4f6;
-    color: #6b7280;
+    background: #f1f5f9;
+    color: #64748b;
     font-size: 1.2rem;
     display: flex;
     align-items: center;
@@ -518,16 +518,16 @@ textarea.form-input {
     transition: all 0.2s;
 }
 .pin-modal-close:hover {
-    background: #e5e7eb;
-    color: #111827;
+    background: #e2e8f0;
+    color: var(--secondary-black);
 }
 
 .pin-modal-badge {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #e8f5ee 0%, #d1fae5 100%);
-    color: #137547;
+    background: #dcecf7;
+    color: #1a4971;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -536,13 +536,16 @@ textarea.form-input {
 }
 
 .pin-modal-title {
-    font-size: 1.45rem;
-    font-weight: 800;
-    color: #093d25;
+    font-family: var(--font-heading);
+    font-size: 1.65rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--secondary-black);
     margin: 0 0 8px 0;
 }
 
 .pin-modal-desc {
+    font-family: var(--font-body);
     font-size: 0.9rem;
     color: #4b5563;
     line-height: 1.5;
@@ -550,7 +553,7 @@ textarea.form-input {
 }
 
 .pin-modal-desc strong {
-    color: #111827;
+    color: var(--secondary-black);
     word-break: break-all;
 }
 
@@ -565,28 +568,29 @@ textarea.form-input {
 .pin-digit-box {
     width: 52px;
     height: 62px;
-    border: 2px solid #e5e7eb;
+    border: 1.5px solid rgba(113, 128, 150, 0.3);
     border-radius: 12px;
     text-align: center;
     font-size: 26px;
     font-weight: 700;
-    color: #093d25;
-    background-color: #f9fafb;
+    color: var(--secondary-black);
+    background-color: #f8fafc;
     outline: none;
     transition: all 0.2s ease;
     font-family: 'Courier New', Courier, monospace;
 }
 
 .pin-digit-box:focus {
-    border-color: #137547;
+    border-color: var(--secondary-black);
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(19, 117, 71, 0.12);
+    box-shadow: 0 0 0 3px rgba(26, 73, 113, 0.15);
     transform: translateY(-2px);
 }
 
 .pin-digit-box.filled {
-    border-color: #137547;
-    background-color: #e8f5ee;
+    border-color: #1a4971;
+    background-color: #dcecf7;
+    color: #1a4971;
 }
 
 /* Timer and Resend Row */
@@ -597,14 +601,14 @@ textarea.form-input {
     margin-bottom: 24px;
     padding: 10px 16px;
     background: #f8fafc;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
 }
 
 .pin-timer-badge {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #093d25;
+    color: var(--secondary-black);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -621,7 +625,7 @@ textarea.form-input {
 .btn-resend-link {
     background: none;
     border: none;
-    color: #137547;
+    color: #1a4971;
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
@@ -632,6 +636,7 @@ textarea.form-input {
 }
 
 .btn-resend-link:hover:not(:disabled) {
+    color: var(--secondary-black);
     text-decoration: underline;
 }
 
@@ -660,19 +665,20 @@ textarea.form-input {
     display: flex;
 }
 
-/* Verify Action Button */
+/* Verify Action Button - Matches .btn-submit exactly */
 .btn-verify-pin {
     width: 100%;
-    padding: 14px 20px;
-    background: linear-gradient(135deg, #15803d 0%, #093d25 100%);
-    color: #ffffff;
+    padding: 15px 30px;
+    background-color: var(--secondary-black);
+    color: var(--primary-white);
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 700;
+    border-radius: 30px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(9, 61, 37, 0.25);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -680,9 +686,9 @@ textarea.form-input {
 }
 
 .btn-verify-pin:hover:not(:disabled) {
-    background: #062b1a;
+    background-color: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(9, 61, 37, 0.35);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .btn-verify-pin:disabled {
@@ -708,7 +714,7 @@ textarea.form-input {
 
 
 /* ========================================================= */
-/* SERVICE TYPE DROPDOWN STYLING                            */
+/* SERVICE TYPE DROPDOWN STYLING (MATCHES FORM INPUTS)       */
 /* ========================================================= */
 .field-wrapper {
     margin-bottom: 20px;
@@ -719,9 +725,9 @@ textarea.form-input {
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: #475569;
+    color: #4a5568;
     margin-bottom: 8px;
-    margin-left: 4px;
+    margin-left: 6px;
     font-family: var(--font-body);
 }
 
@@ -732,48 +738,50 @@ textarea.form-input {
 
 .form-select {
     width: 100%;
-    background-color: #ffffff;
-    border: 1.5px solid #137547;
-    border-radius: 12px;
-    padding: 14px 44px 14px 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(113, 128, 150, 0.2);
+    border-radius: 25px;
+    padding: 15px 45px 15px 22px;
     font-family: var(--font-body);
-    font-size: 15px;
-    color: #1e293b;
+    font-size: 14px;
+    color: var(--secondary-black);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     cursor: pointer;
     outline: none;
-    transition: all 0.25s ease;
+    transition: all 0.3s ease;
     box-sizing: border-box;
 }
 
 .form-select:focus {
-    border-color: #093d25;
-    box-shadow: 0 0 0 3px rgba(19, 117, 71, 0.15);
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--secondary-black);
+    box-shadow: 0 0 0 3px rgba(26, 73, 113, 0.1);
 }
 
 .form-select option {
-    color: #1e293b;
+    color: var(--secondary-black);
     padding: 10px;
     background-color: #ffffff;
 }
 
 .form-select option:disabled {
-    color: #94a3b8;
+    color: #a0aec0;
 }
 
 .select-group .select-arrow {
     position: absolute;
-    right: 18px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #64748b;
+    color: #718096;
     font-size: 13px;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .select-group:focus-within .select-arrow {
-    color: #137547;
+    color: var(--secondary-black);
 }
