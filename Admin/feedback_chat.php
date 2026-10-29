@@ -250,7 +250,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
 
                         <div class="chat-header-actions">
                             <!-- Send Document via Gmail Action Button -->
-                            <a href="#" class="btn-header-tool btn-send-email-doc" id="btn-send-doc-email" target="_blank" style="display: none; background: #e8f5ee; color: #137547; border-color: #bbf7d0;" title="Open Gmail composer to send documents">
+                            <a href="#" class="btn-header-tool btn-send-email-doc" id="btn-send-doc-email" target="_blank" style="display: none; background: #000000; color: #ffffff; border-color: #000000;" title="Open Gmail composer to send response/documents">
                                 <i class="bi bi-envelope-check-fill"></i> <span>Send Document via Gmail</span>
                             </a>
 
@@ -266,51 +266,20 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
                         <!-- Messages dynamically populated by JS -->
                     </div>
 
-                    <!-- Canned Quick Replies Bar -->
-                    <div class="quick-replies-bar" id="quick-replies-bar">
-                        <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Quick Replies:</span>
-                        <button type="button" class="quick-reply-chip" data-reply="Good day! How may we assist you with your barangay inquiry?">Good day! How may we assist you?</button>
-                        <button type="button" class="quick-reply-chip" data-reply="Please visit the Barangay Hall from Monday to Friday, 8:00 AM – 5:00 PM with 1 valid ID and your Cedula.">Visit Barangay Hall with 1 valid ID</button>
-                        <button type="button" class="quick-reply-chip" data-reply="Your requested document is now ready for pickup at the Barangay Secretary counter.">Ready for pickup</button>
-                        <button type="button" class="quick-reply-chip" data-reply="Thank you for reaching out to Barangay Tabon. Have a great day!">Thank you for reaching out</button>
-                    </div>
-
-                    <!-- File Attachment Preview Bar -->
-                    <div class="admin-file-preview-bar" id="admin-file-preview-bar">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="bi bi-paperclip" style="font-size: 1.1rem;"></i>
-                            <span>Attached: <strong id="preview-file-name">file.pdf</strong></span>
+                    <!-- Email Response Action Footer (Direct Gmail Reply) -->
+                    <div class="chat-email-reply-bar" id="chat-email-reply-bar" style="display: none;">
+                        <div class="email-reply-bar-meta">
+                            <div class="email-reply-bar-icon">
+                                <i class="bi bi-envelope-check-fill"></i>
+                            </div>
+                            <div class="email-reply-bar-text">
+                                <div class="email-reply-bar-title">Official Resident Response</div>
+                                <div class="email-reply-bar-sub">Resident inquiries and document requests are responded to directly via verified Gmail.</div>
+                            </div>
                         </div>
-                        <button type="button" class="btn-remove-preview-file" id="btn-remove-file" title="Remove attachment">&times;</button>
-                    </div>
-
-                    <!-- Reply Input Bar -->
-                    <div class="chat-input-area" id="chat-input-area">
-                        <!-- Hidden File Input -->
-                        <input type="file" id="admin-file-input" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.xls,.xlsx">
-
-                        <!-- Attach Button -->
-                        <button type="button" class="btn-attach-file" id="btn-attach-file" title="Attach Document / Form / Image">
-                            <i class="bi bi-paperclip"></i>
-                        </button>
-
-                        <!-- Input Field -->
-                        <div class="chat-input-box">
-                            <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Type official response... (Press Enter to send)" autocomplete="off">
-                        </div>
-
-                        <!-- Send Button -->
-                        <button type="button" class="btn-send-reply" id="btn-send-reply">
-                            <i class="bi bi-send-fill"></i> <span>Send Reply</span>
-                        </button>
-                    </div>
-
-                    <!-- 1-Day Expiration Notice Banner -->
-                    <div class="admin-expired-chat-notice" id="admin-expired-chat-notice">
-                        <i class="bi bi-hourglass-bottom"></i>
-                        <div>
-                            <strong>Chat Session Expired (Over 1 Day Old):</strong> You can no longer reply to this live chat because resident chat sessions automatically expire after 24 hours. If the resident provided an email address, you may still reach out using the <strong>Send Document via Email</strong> button above.
-                        </div>
+                        <a href="#" class="btn-email-reply-action" id="btn-footer-send-email" target="_blank">
+                            <i class="bi bi-envelope-paper-fill"></i> <span>Send Response via Gmail</span>
+                        </a>
                     </div>
 
                 </div>
@@ -732,9 +701,12 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
                 
                 const gmailComposerUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(residentEmail)}&su=${emailSubject}&body=${emailBody}`;
                 $('#btn-send-doc-email').attr('href', gmailComposerUrl).show();
+                $('#btn-footer-send-email').attr('href', gmailComposerUrl);
+                $('#chat-email-reply-bar').show();
             } else {
                 $('#chat-header-email').hide();
                 $('#btn-send-doc-email').hide();
+                $('#chat-email-reply-bar').hide();
             }
 
             // Render Messages
@@ -804,22 +776,11 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
         // 6. Dynamic Expiration Lock Handler
         function updateChatExpirationUI(isExpired) {
             if (isExpired) {
-                // Thread is > 24 hours old: lock controls
-                $('#admin-expired-chat-notice').addClass('active');
-                $('#chat-input-area').hide();
-                $('#quick-replies-bar').hide();
-                $('#admin-file-preview-bar').removeClass('active');
-                
                 $('#chat-header-status-badge')
                     .removeClass('active')
                     .addClass('expired');
-                $('#chat-header-status-text').text('Session Expired (1 Day)');
+                $('#chat-header-status-text').text('Session Archived');
             } else {
-                // Thread is active
-                $('#admin-expired-chat-notice').removeClass('active');
-                $('#chat-input-area').show();
-                $('#quick-replies-bar').show();
-
                 $('#chat-header-status-badge')
                     .removeClass('expired')
                     .addClass('active');
