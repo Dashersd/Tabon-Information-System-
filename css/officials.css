@@ -170,9 +170,9 @@ body.officials-page {
 }
 
 .official-title {
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: #1e293b;
     letter-spacing: 0.5px;
 }
 

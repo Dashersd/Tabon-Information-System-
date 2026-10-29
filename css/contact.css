@@ -121,8 +121,9 @@ body.contact-page {
 
 .info-text p {
     font-family: var(--font-body);
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 14px;
+    color: #334155;
+    font-weight: 500;
     margin: 0;
     line-height: 1.4;
 }
@@ -177,8 +178,9 @@ body.contact-page {
 
 .form-desc {
     font-family: var(--font-body);
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 14px;
+    color: #334155;
+    font-weight: 500;
     margin-bottom: 30px;
     margin-left: 53px; /* Align perfectly under the title */
 }
@@ -210,14 +212,15 @@ body.contact-page {
     border-radius: 25px;
     padding: 15px 20px 15px 50px;
     font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--text-muted);
+    font-size: 14.5px;
+    color: #0f172a;
+    font-weight: 500;
     transition: all 0.3s ease;
     box-sizing: border-box;
 }
 
 .form-input::placeholder {
-    color: #a0aec0;
+    color: #64748b;
 }
 
 .form-input:focus {

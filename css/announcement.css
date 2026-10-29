@@ -46,8 +46,9 @@
 }
 
 .announcement-hero-sub {
-    font-size: 1.05rem;
-    color: var(--text-muted);
+    font-size: 1.1rem;
+    color: #334155;
+    font-weight: 500;
     max-width: 680px;
     margin: 0 auto;
     line-height: 1.6;
@@ -80,9 +81,9 @@
 }
 
 .announcement-chip.active {
-    background: var(--dark-green);
+    background: #000000;
     color: #ffffff;
-    border-color: var(--dark-green);
+    border-color: #000000;
     box-shadow: 0 3px 10px rgba(9, 61, 37, 0.25);
 }
 
@@ -213,7 +214,8 @@
 }
 
 .detail-value {
-    color: #475569;
+    color: #1e293b;
+    font-weight: 600;
     font-weight: 500;
     flex-grow: 1;
     word-break: break-word;
