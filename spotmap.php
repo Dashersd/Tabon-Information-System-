@@ -151,7 +151,6 @@ if (empty($public_legends)) {
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 2.jpg')">Purok 2</div>
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 3.jpg')">Purok 3</div>
                                 <div class="purok-pill aerial-btn-pill" style="background-color: #000000; color: #ffffff; border-color: #000000;" onclick="showAerialSpotMap()"><i class="fa-solid fa-map-pin"></i> Aerial Spot Map</div>
-                                <div class="purok-pill" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;" onclick="resetToFullMap()">Full Map</div>
                             </div>
                         </div>
                     </div>
