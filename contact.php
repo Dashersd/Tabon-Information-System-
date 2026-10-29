@@ -60,15 +60,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
             
-            <h3 class="pin-modal-title">Gmail Verification</h3>
+            <h3 class="pin-modal-title">Gmail OTP Verification</h3>
             <p class="pin-modal-desc">
-                We sent a 6-digit verification PIN to <strong id="modalTargetEmail">your Gmail</strong>. Enter the PIN below to confirm your request:
+                We sent a 6-digit verification OTP to <strong id="modalTargetEmail">your Gmail</strong>. Please check your Inbox or Spam folder, then enter the OTP below to confirm your request:
             </p>
 
             <!-- Alert box inside modal for error/expiry messages -->
             <div class="pin-modal-alert" id="pinModalAlert">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <span id="pinModalAlertText">Invalid PIN code.</span>
+                <span id="pinModalAlertText">Invalid OTP code.</span>
             </div>
 
             <!-- 6 PIN Digit Input Boxes -->
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                     <i class="fa-regular fa-paper-plane"></i>
                     <h2>Send Us a Message</h2>
                 </div>
-                <p class="form-desc">Fill out the form below. A verification PIN will be sent to your Gmail before submission.</p>
+                <p class="form-desc">Fill out the form below. A verification OTP will be sent to your Gmail before submission.</p>
                 
                 <!-- Form Alert Status Container -->
                 <div id="formAlertBanner" style="display: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 0.92rem; align-items: center; gap: 10px; line-height: 1.45;"></div>
@@ -421,7 +421,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
 
         function handlePinExpiration() {
             pinModalAlert.className = 'pin-modal-alert active';
-            pinModalAlertText.textContent = 'Your PIN code has expired after 3 minutes. Please click "Resend Code" to receive a fresh PIN.';
+            pinModalAlertText.textContent = 'Your OTP code has expired after 3 minutes. Please click "Resend Code" to receive a fresh OTP.';
             btnVerifyPin.disabled = true;
         }
 
@@ -538,7 +538,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
             // Update UI to Loading State
             btnSubmit.disabled = true;
             btnSubmitIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnSubmitText.textContent = 'Sending Verification PIN...';
+            btnSubmitText.textContent = 'Sending Verification OTP...';
 
             const formData = new FormData();
             formData.append('fullName', fullName);
@@ -559,7 +559,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
 
                 if (data.status === 'success') {
                     // Toast 1: PIN Sent Notification
-                    showToast('info', 'PIN Code Sent to Gmail', `A 6-digit verification PIN has been sent to ${email}. Please enter it within 3 minutes.`);
+                    showToast('info', 'OTP Code Sent to Gmail', `A 6-digit verification OTP has been sent to ${email}. Please check your Inbox or Spam folder and enter it within 3 minutes.`);
 
                     // Open Modal
                     modalTargetEmail.textContent = email;
@@ -575,14 +575,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                         console.log(`%c[Barangay Tabon Dev OTP] PIN for ${email}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
                     }
                 } else {
-                    showToast('error', 'Dispatch Error', data.message || 'Could not send verification PIN.');
+                    showToast('error', 'Dispatch Error', data.message || 'Could not send verification OTP.');
                 }
             })
             .catch(err => {
                 btnSubmit.disabled = false;
                 btnSubmitIcon.className = 'fa-regular fa-paper-plane';
                 btnSubmitText.textContent = 'Send Message →';
-                showToast('error', 'Connection Error', 'Network error while requesting PIN code. Please try again.');
+                showToast('error', 'Connection Error', 'Network error while requesting OTP code. Please try again.');
                 console.error(err);
             });
         });
@@ -604,7 +604,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    showToast('info', 'New PIN Sent', `A fresh PIN code has been sent to ${activeEmail}. Timer reset to 3 minutes.`);
+                    showToast('info', 'New OTP Sent', `A fresh OTP code has been sent to ${activeEmail}. Please check your Inbox or Spam folder.`);
                     resetPinInputs();
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
@@ -616,7 +616,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                     btnResendPin.disabled = false;
                     btnResendPin.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend Code';
                     pinModalAlert.className = 'pin-modal-alert active';
-                    pinModalAlertText.textContent = data.message || 'Failed to resend PIN.';
+                    pinModalAlertText.textContent = data.message || 'Failed to resend OTP.';
                 }
             })
             .catch(err => {
@@ -632,12 +632,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
 
             if (pin.length < 6) {
                 pinModalAlert.className = 'pin-modal-alert active';
-                pinModalAlertText.textContent = 'Please enter the complete 6-digit PIN code.';
+                pinModalAlertText.textContent = 'Please enter the complete 6-digit OTP code.';
                 return;
             }
 
             btnVerifyPin.disabled = true;
-            btnVerifyPin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Code...';
+            btnVerifyPin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying OTP Code...';
 
             const formData = new FormData();
             formData.append('email', activeEmail);
@@ -692,7 +692,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 btnVerifyPin.disabled = false;
                 btnVerifyPin.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify & Submit Request';
                 pinModalAlert.className = 'pin-modal-alert active';
-                pinModalAlertText.textContent = 'Network error while verifying PIN code. Please try again.';
+                pinModalAlertText.textContent = 'Network error while verifying OTP code. Please try again.';
                 console.error(err);
             });
         });

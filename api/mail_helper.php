@@ -7,7 +7,7 @@ use PHPMailer\PHPMailer\Exception;
 
 function send_barangay_pin_email($to_email, $to_name, $pin_code) {
     // Trusted, clean subject line format (recognized by Google/Yahoo as transactional OTP)
-    $subject = "Your Barangay Tabon Verification Code: " . $pin_code;
+    $subject = "Your Barangay Tabon Verification Code (OTP): " . $pin_code;
     
     $safe_name = htmlspecialchars($to_name ?: 'Resident', ENT_QUOTES, 'UTF-8');
     $safe_pin  = htmlspecialchars($pin_code, ENT_QUOTES, 'UTF-8');
@@ -44,7 +44,7 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
                 <p>Information & Resident Service System</p>
             </div>
             <div class='email-body'>
-                <h2>Identity Verification PIN</h2>
+                <h2>Identity Verification OTP</h2>
                 <p>Hello <strong>{$safe_name}</strong>,</p>
                 <p>You recently submitted an inquiry or document request through the Barangay Tabon Information System. Please use the single-use 6-digit verification code below to confirm your request:</p>
                 
@@ -54,7 +54,7 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
                 </div>
 
                 <div class='security-note'>
-                    <strong>Security Notice:</strong> Never share this verification code with anyone. Barangay Tabon personnel will never ask for your PIN. If you did not make this request, you can safely disregard this email.
+                    <strong>Security Notice:</strong> Never share this verification code with anyone. Barangay Tabon personnel will never ask for your OTP. If you did not make this request, you can safely disregard this email.
                 </div>
             </div>
             <div class='email-footer'>

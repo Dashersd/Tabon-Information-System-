@@ -1,5 +1,5 @@
 <?php
-// api/verify_email_pin.php - Validates PIN, enforces 3-min expiry, and saves to feedback_chats
+// api/verify_email_pin.php - Validates OTP, enforces 3-min expiry, and saves to feedback_chats
 header('Content-Type: application/json; charset=UTF-8');
 require_once __DIR__ . '/../db_connect.php';
 
@@ -12,7 +12,7 @@ $email    = trim($_POST['email'] ?? '');
 $pin_code = trim($_POST['pin_code'] ?? '');
 
 if (empty($email) || empty($pin_code)) {
-    echo json_encode(['status' => 'error', 'message' => 'Please provide both your email and the 6-digit PIN code.']);
+    echo json_encode(['status' => 'error', 'message' => 'Please provide both your email and the 6-digit OTP code.']);
     exit();
 }
 
@@ -44,7 +44,7 @@ if ($now > $expiry_timestamp) {
     echo json_encode([
         'status'  => 'error',
         'code'    => 'EXPIRED',
-        'message' => 'Your PIN Code has expired after 3 minutes. Please click "Resend Code" to receive a fresh PIN.'
+        'message' => 'Your OTP Code has expired after 3 minutes. Please click "Resend Code" to receive a fresh OTP.'
     ]);
     exit();
 }
@@ -54,7 +54,7 @@ if (trim($record['pin_code']) !== trim($pin_code)) {
     echo json_encode([
         'status'  => 'error',
         'code'    => 'INVALID',
-        'message' => 'Invalid PIN Code. Please verify the 6-digit code received in your Gmail.'
+        'message' => 'Invalid OTP Code. Please verify the 6-digit code received in your Gmail (check Inbox and Spam folder).'
     ]);
     exit();
 }

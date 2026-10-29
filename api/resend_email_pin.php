@@ -49,8 +49,8 @@ $mailResult = send_barangay_pin_email($email, $record['full_name'], $new_pin);
 echo json_encode([
     'status'     => 'success',
     'message'    => !empty($mailResult['mail_sent']) 
-        ? 'A new PIN Code has been sent to your Gmail.' 
-        : 'New PIN Code generated. (Testing PIN: ' . $new_pin . ')',
+        ? 'A new OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.' 
+        : 'New OTP Code generated. (Testing OTP: ' . $new_pin . ')',
     'mail_sent'  => !empty($mailResult['mail_sent']),
     'email'      => $email,
     'expires_in' => 180,
