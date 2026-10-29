@@ -105,7 +105,40 @@
 .legend-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px 15px;
+    gap: 16px 14px;
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    scroll-behavior: smooth;
+}
+
+.legend-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.legend-grid::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.legend-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.legend-grid::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.legend-item.active-legend-item {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    font-weight: 600;
 }
 
 .purok-list {

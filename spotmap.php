@@ -126,7 +126,7 @@ if (empty($public_legends)) {
                                         $icon_color = !empty($leg['color_hex']) ? $leg['color_hex'] : '#4f46e5';
                                         $leg_photo = get_public_legend_photo($leg['image_path'] ?? '');
                                     ?>
-                                        <div class="legend-item" title="Click to view & locate on aerial map" onclick="focusPublicLandmark(<?= (int)$leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>', '<?= htmlspecialchars(addslashes($leg_photo)) ?>', '<?= htmlspecialchars(addslashes($leg['icon_path'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($icon_color)) ?>')">
+                                        <div class="legend-item" data-id="<?= (int)$leg['id'] ?>" title="Click to view & locate on aerial map" onclick="focusPublicLandmark(<?= (int)$leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>', '<?= htmlspecialchars(addslashes($leg_photo)) ?>', '<?= htmlspecialchars(addslashes($leg['icon_path'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($icon_color)) ?>')">
                                             <?php if ($is_custom): ?>
                                                 <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" style="width:18px; height:18px; object-fit:contain; vertical-align:middle; margin-right:6px;">
                                             <?php else: ?>
@@ -462,6 +462,17 @@ if (empty($public_legends)) {
             }, 3000);
 
             showLegendToast(name, photo, icon, color);
+
+            const id = el.getAttribute('data-id');
+            if (id) {
+                const sidebarItem = document.querySelector(`.legend-item[data-id="${id}"]`);
+                if (sidebarItem) {
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active-legend-item'));
+                    sidebarItem.classList.add('active-legend-item');
+                    sidebarItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    setTimeout(() => sidebarItem.classList.remove('active-legend-item'), 3000);
+                }
+            }
         }
 
         // Step-by-Step Interactive Zoom Configuration (Pins only)
