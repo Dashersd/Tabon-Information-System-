@@ -17,6 +17,14 @@ try {
     }
 } catch (Exception $e) {}
 
+// Helper to resolve landmark display photo URL
+function get_public_legend_photo($path) {
+    if (empty($path)) return "";
+    if (strpos($path, "http://") === 0 || strpos($path, "https://") === 0) return $path;
+    if (strpos($path, "uploads/") === 0) return "Admin/" . ltrim($path, "/");
+    return ltrim($path, "/");
+}
+
 if (empty($public_legends)) {
     $json_l = __DIR__ . '/Admin/data/legend.json';
     if (file_exists($json_l)) {
@@ -116,20 +124,21 @@ if (empty($public_legends)) {
                                     <?php foreach ($public_legends as $leg): 
                                         $is_custom = (strpos($leg['icon_path'] ?? '', 'uploads/') === 0);
                                         $icon_color = !empty($leg['color_hex']) ? $leg['color_hex'] : '#4f46e5';
+                                        $leg_photo = get_public_legend_photo($leg['image_path'] ?? '');
                                     ?>
-                                        <div class="legend-item" onclick="showLegendToast('<?= htmlspecialchars(addslashes($leg['name'])) ?>')">
+                                        <div class="legend-item" title="Click to view & locate on aerial map" onclick="focusPublicLandmark(<?= (int)$leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>', '<?= htmlspecialchars(addslashes($leg_photo)) ?>', '<?= htmlspecialchars(addslashes($leg['icon_path'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($icon_color)) ?>')">
                                             <?php if ($is_custom): ?>
-                                                <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" style="width:16px; height:16px; object-fit:contain; vertical-align:middle; margin-right:4px;">
+                                                <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" style="width:18px; height:18px; object-fit:contain; vertical-align:middle; margin-right:6px;">
                                             <?php else: ?>
-                                                <i class="bi <?= htmlspecialchars($leg['icon_path']) ?>" style="color:<?= htmlspecialchars($icon_color) ?>; margin-right:4px;"></i>
+                                                <i class="bi <?= htmlspecialchars($leg['icon_path']) ?>" style="color:<?= htmlspecialchars($icon_color) ?>; margin-right:6px;"></i>
                                             <?php endif; ?>
-                                            <?= htmlspecialchars($leg['name']) ?>
+                                            <span><?= htmlspecialchars($leg['name']) ?></span>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <div class="legend-item" onclick="showLegendToast('Barangay Hall')"><i class="fa-solid fa-building" style="color:#4a6cf7;"></i> Barangay Hall</div>
-                                    <div class="legend-item" onclick="showLegendToast('School')"><i class="fa-solid fa-book-open" style="color:#28a745;"></i> School</div>
-                                    <div class="legend-item" onclick="showLegendToast('Court')"><i class="fa-solid fa-basketball" style="color:#fca311;"></i> Court</div>
+                                    <div class="legend-item" onclick="showLegendToast('Barangay Tabon Hall', '', 'bi-building-fill', '#4f46e5')"><i class="bi bi-building-fill" style="color:#4a6cf7;"></i> Barangay Tabon Hall</div>
+                                    <div class="legend-item" onclick="showLegendToast('Tabon Elementary School', '', 'bi-book-half', '#10b981')"><i class="bi bi-book-half" style="color:#28a745;"></i> Tabon Elementary School</div>
+                                    <div class="legend-item" onclick="showLegendToast('Barangay Gymnasium / Court', '', 'bi-dribbble', '#f59e0b')"><i class="bi bi-dribbble" style="color:#fca311;"></i> Gymnasium / Court</div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -141,7 +150,8 @@ if (empty($public_legends)) {
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 1.jpg')">Purok 1</div>
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 2.jpg')">Purok 2</div>
                                 <div class="purok-pill" onclick="changeMapImage('Images/Purok/Purok 3.jpg')">Purok 3</div>
-                                <div class="purok-pill" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;" onclick="changeMapImage('Images/Map/Philippines.png')">Full Map</div>
+                                <div class="purok-pill aerial-btn-pill" style="background-color: #000000; color: #ffffff; border-color: #000000;" onclick="showAerialSpotMap()"><i class="fa-solid fa-map-pin"></i> Aerial Spot Map</div>
+                                <div class="purok-pill" style="background-color: #f1f5f9; border-color: #cbd5e1; color: #475569;" onclick="resetToFullMap()">Full Map</div>
                             </div>
                         </div>
                     </div>
@@ -157,6 +167,50 @@ if (empty($public_legends)) {
                             <div class="pin-badge"><i class="fa-solid fa-magnifying-glass-plus"></i> <span id="pin-badge-text">Mindanao</span></div>
                             <div class="pin-marker-pulse"></div>
                             <i class="fa-solid fa-location-dot pin-icon"></i>
+                        </div>
+
+                        <!-- Aerial Legend Landmarks Markers Layer -->
+                        <div id="legend-markers" class="legend-markers-layer" style="display: none;">
+                            <?php foreach ($public_legends as $leg): 
+                                $leg_photo = get_public_legend_photo($leg['image_path'] ?? '');
+                                $is_custom = (strpos($leg['icon_path'] ?? '', 'uploads/') === 0);
+                                $icon_color = !empty($leg['color_hex']) ? $leg['color_hex'] : '#4f46e5';
+                                $w = !empty($leg['marker_width']) ? (int)$leg['marker_width'] : 40;
+                                $h = !empty($leg['marker_height']) ? (int)$leg['marker_height'] : 40;
+                                $top = (float)($leg['top_position'] ?? 50);
+                                $left = (float)($leg['left_position'] ?? 50);
+                                $name_safe = htmlspecialchars($leg['name'] ?? 'Landmark');
+                            ?>
+                                <div class="saved-legend-marker public-legend-marker" 
+                                     id="public-marker-<?= (int)$leg['id'] ?>"
+                                     style="top: <?= $top ?>%; left: <?= $left ?>%;"
+                                     data-id="<?= (int)$leg['id'] ?>"
+                                     data-name="<?= $name_safe ?>"
+                                     data-icon="<?= htmlspecialchars($leg['icon_path'] ?? '') ?>"
+                                     data-color="<?= htmlspecialchars($icon_color) ?>"
+                                     data-photo="<?= htmlspecialchars($leg_photo) ?>"
+                                     onclick="openPublicLandmarkModal(this)"
+                                     title="<?= $name_safe ?>">
+                                    
+                                    <!-- Tooltip Label -->
+                                    <div class="saved-marker-tooltip">
+                                        <span><?= $name_safe ?></span>
+                                        <?php if (!empty($leg_photo)): ?>
+                                            <span class="photo-pill"><i class="bi bi-image"></i> Photo</span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <!-- Stylized Map Pin -->
+                                    <div class="saved-marker-pin" style="background-color: <?= $icon_color ?>; width: <?= $w ?>px; height: <?= $h ?>px;">
+                                        <?php if ($is_custom): ?>
+                                            <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" alt="<?= $name_safe ?>">
+                                        <?php else: ?>
+                                            <i class="bi <?= htmlspecialchars($leg['icon_path']) ?>"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="saved-marker-pointer" style="border-top-color: <?= $icon_color ?>;"></div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
 
                         <!-- Purok 1 Markers -->
@@ -231,9 +285,16 @@ if (empty($public_legends)) {
     <div id="legendToast" class="legend-toast-overlay" onclick="closeLegendToast()">
         <div class="legend-toast-content" onclick="event.stopPropagation()">
             <span class="close-toast" onclick="closeLegendToast()">&times;</span>
-            <h3 id="toastTitle">Location Image</h3>
+            <h3 id="toastTitle" style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">Location Image</h3>
             <div class="toast-image-container">
-                <img id="toastImage" src="" alt="Random Location Image">
+                <img id="toastImage" src="" alt="Landmark Image" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:12px;">
+                <div id="toastFallback" style="display:none; flex-direction:column; align-items:center; justify-content:center; width:100%; min-height:360px; color:#64748b; background:#f8fafc; border-radius:12px; text-align:center; padding:30px;">
+                    <div id="toastFallbackIcon" style="width:72px; height:72px; border-radius:50%; background:#e0e7ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:14px;">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h4 id="toastFallbackTitle" style="margin:0 0 6px; color:#1e293b; font-size:18px; font-weight:700;">Landmark Photo Coming Soon</h4>
+                    <p style="margin:0; font-size:14px; color:#64748b;">Barangay Tabon Official Aerial Landmark</p>
+                </div>
             </div>
         </div>
     </div>
@@ -327,16 +388,81 @@ if (empty($public_legends)) {
         function closeHouseholdDetails() {
             document.getElementById('householdModal').classList.remove('active');
         }
-        function showLegendToast(title) {
-            document.getElementById('toastTitle').innerText = title;
-            // Generate a random image using picsum for demonstration
-            const randomId = Math.floor(Math.random() * 1000);
-            document.getElementById('toastImage').src = `https://picsum.photos/id/${randomId}/600/400`;
-            document.getElementById('legendToast').classList.add('active');
+        function showLegendToast(name, photo, icon, color) {
+            const titleEl = document.getElementById('toastTitle');
+            const imgEl = document.getElementById('toastImage');
+            const fallbackEl = document.getElementById('toastFallback');
+            const fallbackIcon = document.getElementById('toastFallbackIcon');
+            const modal = document.getElementById('legendToast');
+
+            if (titleEl) titleEl.innerText = name || 'Landmark Location';
+
+            if (photo && photo.trim() !== '') {
+                if (imgEl) {
+                    imgEl.src = photo;
+                    imgEl.style.display = 'block';
+                }
+                if (fallbackEl) fallbackEl.style.display = 'none';
+            } else {
+                if (imgEl) {
+                    imgEl.src = '';
+                    imgEl.style.display = 'none';
+                }
+                if (fallbackEl) {
+                    fallbackEl.style.display = 'flex';
+                    if (fallbackIcon) {
+                        fallbackIcon.style.backgroundColor = (color || '#4f46e5') + '22';
+                        fallbackIcon.style.color = color || '#4f46e5';
+                        if (icon && icon.startsWith('bi-')) {
+                            fallbackIcon.innerHTML = `<i class="bi ${icon}"></i>`;
+                        } else if (icon && icon.startsWith('uploads/')) {
+                            fallbackIcon.innerHTML = `<img src="Admin/${icon}" style="width:36px; height:36px; object-fit:contain;">`;
+                        } else {
+                            fallbackIcon.innerHTML = `<i class="bi bi-geo-alt-fill"></i>`;
+                        }
+                    }
+                }
+            }
+            if (modal) modal.classList.add('active');
         }
 
         function closeLegendToast() {
-            document.getElementById('legendToast').classList.remove('active');
+            const modal = document.getElementById('legendToast');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function focusPublicLandmark(id, name, photo, icon, color) {
+            // Ensure Aerial view is displayed
+            if (currentStepIndex !== 4) {
+                applyMapStep(4);
+            }
+            
+            // Highlight the clicked pin with ping animation
+            const pinEl = document.getElementById('public-marker-' + id);
+            if (pinEl) {
+                document.querySelectorAll('.saved-legend-marker').forEach(m => m.classList.remove('highlight-ping'));
+                pinEl.classList.add('highlight-ping');
+                setTimeout(() => {
+                    pinEl.classList.remove('highlight-ping');
+                }, 3500);
+            }
+
+            showLegendToast(name, photo, icon, color);
+        }
+
+        function openPublicLandmarkModal(el) {
+            const name = el.getAttribute('data-name') || 'Landmark';
+            const photo = el.getAttribute('data-photo') || '';
+            const icon = el.getAttribute('data-icon') || '';
+            const color = el.getAttribute('data-color') || '#4f46e5';
+
+            document.querySelectorAll('.saved-legend-marker').forEach(m => m.classList.remove('highlight-ping'));
+            el.classList.add('highlight-ping');
+            setTimeout(() => {
+                el.classList.remove('highlight-ping');
+            }, 3000);
+
+            showLegendToast(name, photo, icon, color);
         }
 
         // Step-by-Step Interactive Zoom Configuration (Pins only)
@@ -381,13 +507,13 @@ if (empty($public_legends)) {
                     show: true,
                     left: '50%',
                     top: '50%',
-                    title: 'Click pin to view 3D Spot Map',
+                    title: 'Click pin to view Aerial Spot Map',
                     label: 'Barangay Tabon'
                 }
             },
             {
-                image: 'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png',
-                stepLabel: 'Barangay Tabon 3D Spot Map (Interactive)',
+                image: 'public/image/Maruing Map/Aerial View.png',
+                stepLabel: 'Barangay Tabon Aerial Spot Map',
                 pin: {
                     show: false
                 }
@@ -405,7 +531,12 @@ if (empty($public_legends)) {
 
             if (mapImg && step) {
                 mapImg.src = step.image;
-                mapImg.style.cursor = 'default'; // Map background is NOT clickable
+                mapImg.style.cursor = 'default';
+                mapImg.onerror = function() {
+                    if (this.src.includes('Aerial%20View') || this.src.includes('Aerial View')) {
+                        this.src = 'Images/ChatGPT Image Oct 1, 2026, 07_50_28 AM.png';
+                    }
+                };
             }
 
             if (pin) {
@@ -426,9 +557,19 @@ if (empty($public_legends)) {
             const p1 = document.getElementById('purok1-markers');
             const p2 = document.getElementById('purok2-markers');
             const p3 = document.getElementById('purok3-markers');
+            const legMarkers = document.getElementById('legend-markers');
             if (p1) p1.style.display = 'none';
             if (p2) p2.style.display = 'none';
             if (p3) p3.style.display = 'none';
+
+            // Show legend markers ONLY when on the Aerial Spot Map step (index 4)
+            if (legMarkers) {
+                if (index === 4) {
+                    legMarkers.style.display = 'block';
+                } else {
+                    legMarkers.style.display = 'none';
+                }
+            }
         }
 
         // ONLY clicking the PIN advances the sequence
@@ -447,16 +588,22 @@ if (empty($public_legends)) {
             applyMapStep(0);
         }
 
+        function showAerialSpotMap() {
+            applyMapStep(4);
+        }
+
         function changeMapImage(imageUrl) {
             const mapImg = document.getElementById('mainSpotMapImage');
             const pin = document.getElementById('barangay-pin');
             const p1 = document.getElementById('purok1-markers');
             const p2 = document.getElementById('purok2-markers');
             const p3 = document.getElementById('purok3-markers');
+            const legMarkers = document.getElementById('legend-markers');
 
             if (p1) p1.style.display = 'none';
             if (p2) p2.style.display = 'none';
             if (p3) p3.style.display = 'none';
+            if (legMarkers) legMarkers.style.display = 'none';
 
             if (imageUrl === 'Images/Map/Philippines.png') {
                 applyMapStep(0);
@@ -475,6 +622,14 @@ if (empty($public_legends)) {
                 if (p3) p3.style.display = 'block';
             }
         }
+
+        // Automatically load aerial map if requested via query or hash
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('view') === 'aerial' || window.location.hash === '#aerial') {
+                showAerialSpotMap();
+            }
+        });
     </script>
     <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
