@@ -310,6 +310,40 @@ $tier4_keys = ['kagawad_4', 'kagawad_5', 'kagawad_6', 'kagawad_7'];
     <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/barangayofficials.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/SKofficials.css?v=<?= time() ?>">
+    <style>
+/* admin/Admin CSS/SKofficials.css */
+@import url('barangayofficials.css');
+
+/* SK-Specific Theme Accents */
+.sk-badge {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    display: inline-block;
+    margin-left: 8px;
+    letter-spacing: 0.5px;
+}
+
+/* Chairperson Card Accent */
+.org-card[data-id="chairperson"] {
+    border-top: 3px solid #2563eb;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+}
+
+.org-card[data-id="chairperson"] .org-name-badge {
+    background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+    border-color: #60a5fa;
+}
+
+.org-card[data-id="chairperson"]:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.2);
+}
+
+    </style>
 </head>
 <body>
 

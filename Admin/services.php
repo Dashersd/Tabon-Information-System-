@@ -233,7 +233,518 @@ $next_order = count($services) + 1;
     
     <!-- Admin Common & Services Stylesheet -->
     <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
-    <link rel="stylesheet" href="Admin CSS/services.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="Admin CSS/services.css?v=<?= time() ?>">
+    <style>
+/* Admin/Admin CSS/services.css - Barangay Services Management Styling */
+
+.admin-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.admin-header-row h2 {
+    font-size: 1.6rem;
+    color: #093d25;
+    font-weight: 700;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.btn-action.btn-add {
+    background-color: #093d25;
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(9, 61, 37, 0.15);
+}
+
+.btn-action.btn-add:hover {
+    background-color: #062b1a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(9, 61, 37, 0.24);
+}
+
+.admin-container {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f1f5f9;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th, 
+.admin-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.admin-table th {
+    font-weight: 700;
+    color: #475569;
+    background-color: #f8fafc;
+    font-size: 0.86rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.admin-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 44x44px Icon Cell */
+.table-icon-cell {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background-color: #e8f5ee;
+    color: #137547;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.service-name-text {
+    color: #093d25;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: block;
+}
+
+.meta-fee-time {
+    font-size: 0.85rem;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.meta-fee-time div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta-fee-time .fee-icon {
+    color: #137547;
+    font-size: 0.95rem;
+}
+
+.meta-fee-time .time-icon {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.service-desc-text {
+    max-width: 260px;
+    color: #475569;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+/* Document Badge */
+.badge-doc-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background-color: #e8f5ee;
+    color: #137547;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.badge-doc-file:hover {
+    background-color: #137547;
+    color: #ffffff;
+    border-color: #137547;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(19, 117, 71, 0.2);
+}
+
+.no-doc-file {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* Status Badges */
+.badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+}
+
+.badge.active {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge.inactive {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Action Buttons */
+.action-buttons-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn-sm {
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.btn-edit:hover {
+    background-color: #bfdbfe;
+    transform: translateY(-1px);
+}
+
+.btn-toggle {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 7px 11px;
+}
+
+.btn-toggle:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-delete:hover {
+    background-color: #fecaca;
+    transform: translateY(-1px);
+}
+
+/* Alerts */
+.alert {
+    padding: 13px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.alert-danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 650px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: modalSlideIn 0.25s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-24px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #ffffff;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #093d25;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.close-modal-btn:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+
+.modal-body {
+    padding: 24px;
+    max-height: 72vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8fafc;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-submit {
+    background-color: #093d25;
+    color: #ffffff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-submit:hover {
+    background-color: #062b1a;
+    box-shadow: 0 4px 12px rgba(9, 61, 37, 0.2);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.form-group label .required {
+    color: #ef4444;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    background-color: #ffffff;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #137547;
+    box-shadow: 0 0 0 3px rgba(19, 117, 71, 0.15);
+}
+
+.form-hint {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Current Document Container in Edit Modal */
+.current-doc-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background-color: #f0fdf4;
+    border: 1px dashed #86efac;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    gap: 10px;
+}
+
+.current-doc-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #15803d;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.current-doc-info a {
+    color: #15803d;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.btn-remove-doc {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-remove-doc:hover {
+    background-color: #fca5a5;
+    color: #7f1d1d;
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    .modal-content {
+        max-width: 95%;
+    }
+}
+
+    </style>
 </head>
 <body>
 
