@@ -810,3 +810,123 @@ textarea.form-control {
         align-items: flex-start;
     }
 }
+
+/* Form Grid 3 columns */
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .form-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* User Accounts Directory Table */
+.accounts-table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.accounts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.accounts-table th, .accounts-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.accounts-table th {
+    background-color: #f8fafc;
+    color: var(--slate-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.accounts-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.badge-role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-role-admin {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-role-super {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge-role-staff {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-delete-user {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-user:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.btn-add-account-toggle {
+    background: #223c3b;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-add-account-toggle:hover {
+    background: #2f5352;
+}
+
+.new-account-box {
+    background: #f8fafc;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: none;
+}

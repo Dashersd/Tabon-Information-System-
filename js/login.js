@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     const cardShell = document.getElementById('cardShell');
     const formContent = document.getElementById('formContent');
     const transitionGlyph = document.getElementById('transitionGlyph');
@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isAnimating = false;
     
     // Initialize with Sign In view
-    loadView('signin', true);
+    const startView = window.INITIAL_VIEW || 'signin';
+    loadView(startView, true);
     
     function loadView(viewType, animate = true) {
         if (isAnimating) return;

@@ -1,46 +1,182 @@
 <?php
-session_start();
-require_once 'db_connect.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/db_connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_POST['password'])) {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+// Ensure username column exists in users table
+$col_chk = $conn->query("SHOW COLUMNS FROM `users` LIKE 'username'");
+if ($col_chk && $col_chk->num_rows === 0) {
+    $conn->query("ALTER TABLE `users` ADD COLUMN `username` VARCHAR(100) NULL AFTER `id`");
+    $conn->query("UPDATE `users` SET `username` = 'admin' WHERE `id` = 1");
+}
 
-    $authenticated = false;
+// Seed default admin in users table if table is completely empty
+$chk_admin = $conn->query("SELECT id FROM `users` LIMIT 1");
+if ($chk_admin && $chk_admin->num_rows === 0) {
+    $default_pw_hash = password_hash('123', PASSWORD_DEFAULT);
+    $conn->query("INSERT INTO `users` (`id`, `username`, `name`, `email`, `password`, `role`) 
+                  VALUES (1, 'admin', 'System Administrator', 'admin@example.com', '$default_pw_hash', 'admin')");
+}
 
-    // Check database users table
-    try {
-        $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `name` = ? LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("ss", $email, $email);
-            $stmt->execute();
-            $res = $stmt->get_result();
-            if ($res && $user = $res->fetch_assoc()) {
-                if (password_verify($password, $user['password']) || $password === $user['password']) {
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_id'] = $user['id'];
-                    $_SESSION['admin_name'] = $user['name'];
-                    $_SESSION['admin_email'] = $user['email'];
-                    $authenticated = true;
+// -------------------------------------------------------------
+// 1. LOGOUT HANDLER
+// -------------------------------------------------------------
+if (isset($_GET['logout'])) {
+    if (isset($_SESSION['admin_id'])) {
+        $uid = (int)$_SESSION['admin_id'];
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $log_stmt = $conn->prepare("INSERT INTO `activity_logs` (`user_id`, `action`, `details`, `ip_address`) VALUES (?, 'Admin Logout', 'Administrator signed out of session', ?)");
+        if ($log_stmt) {
+            $log_stmt->bind_param("is", $uid, $ip);
+            $log_stmt->execute();
+        }
+    }
+    $_SESSION = [];
+    if (session_id() != "" || isset($_COOKIE[session_name()])) {
+        setcookie(session_name(), '', time() - 2592000, '/');
+    }
+    session_destroy();
+    header("Location: login.php?msg=logged_out");
+    exit();
+}
+
+// Redirect if already logged in
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    header("Location: Admin/controlpanel.php");
+    exit();
+}
+
+$error = null;
+$signup_error = null;
+$success_msg = null;
+$entered_login = '';
+
+if (isset($_GET['msg']) && $_GET['msg'] === 'logged_out') {
+    $success_msg = "You have been logged out successfully.";
+}
+
+// -------------------------------------------------------------
+// 2. SIGN IN / LOGIN PROCESSING
+// -------------------------------------------------------------
+if ($_SERVER["REQUEST_METHOD"] === "POST" && (!isset($_POST['action_type']) || $_POST['action_type'] === 'signin')) {
+    $entered_login = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+
+    if (empty($entered_login) || empty($password)) {
+        $error = "Please enter both username/email and password.";
+    } else {
+        $authenticated = false;
+
+        // Query user by email, username, or name
+        try {
+            $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `username` = ? OR `name` = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param("sss", $entered_login, $entered_login, $entered_login);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res && $user = $res->fetch_assoc()) {
+                    if (password_verify($password, $user['password']) || $password === $user['password']) {
+                        // Automatically rehash plain text password if legacy
+                        if ($password === $user['password'] && !password_get_info($user['password'])['algo']) {
+                            $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                            $up = $conn->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
+                            $up->bind_param("si", $new_hash, $user['id']);
+                            $up->execute();
+                        }
+
+                        $_SESSION['admin_logged_in'] = true;
+                        $_SESSION['admin_id'] = (int)$user['id'];
+                        $_SESSION['admin_name'] = $user['name'];
+                        $_SESSION['admin_username'] = $user['username'] ?? 'admin';
+                        $_SESSION['admin_email'] = $user['email'];
+                        $_SESSION['admin_role'] = $user['role'] ?? 'admin';
+
+                        // Log Activity
+                        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                        $act = $conn->prepare("INSERT INTO `activity_logs` (`user_id`, `action`, `details`, `ip_address`) VALUES (?, 'Admin Login', 'Administrator authenticated successfully', ?)");
+                        if ($act) {
+                            $act->bind_param("is", $user['id'], $ip);
+                            $act->execute();
+                        }
+
+                        $authenticated = true;
+                    }
                 }
             }
+        } catch (Exception $e) {}
+
+        if ($authenticated) {
+            header("Location: Admin/controlpanel.php");
+            exit();
+        } else {
+            $error = "Invalid username/email or password.";
         }
-    } catch (Exception $e) {}
-
-    // Fallback default admin credentials
-    if (!$authenticated && ($email === 'admin' || $email === 'admin@example.com') && $password === '123') {
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_id'] = 1;
-        $_SESSION['admin_name'] = 'System Administrator';
-        $_SESSION['admin_email'] = 'admin@example.com';
-        $authenticated = true;
     }
+}
 
-    if ($authenticated) {
-        header("Location: Admin/controlpanel.php");
-        exit();
+// -------------------------------------------------------------
+// 3. SIGN UP / REGISTRATION PROCESSING
+// -------------------------------------------------------------
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action_type']) && $_POST['action_type'] === 'signup') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    if (empty($name) || empty($email) || empty($password)) {
+        $signup_error = "Please fill in all required registration fields.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $signup_error = "Please provide a valid email address.";
+    } elseif ($password !== $confirm_password) {
+        $signup_error = "Passwords do not match.";
+    } elseif (strlen($password) < 6) {
+        $signup_error = "Password must be at least 6 characters long.";
     } else {
-        $error = "Invalid email or password.";
+        // Check if email already registered
+        $chk = $conn->prepare("SELECT id FROM `users` WHERE `email` = ? LIMIT 1");
+        $chk->bind_param("s", $email);
+        $chk->execute();
+        if ($chk->get_result()->num_rows > 0) {
+            $signup_error = "This email address is already registered.";
+        } else {
+            $username = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', explode('@', $email)[0]));
+            if (empty($username)) $username = 'admin_' . time();
+            
+            // Check username uniqueness
+            $u_chk = $conn->prepare("SELECT id FROM `users` WHERE `username` = ? LIMIT 1");
+            $u_chk->bind_param("s", $username);
+            $u_chk->execute();
+            if ($u_chk->get_result()->num_rows > 0) {
+                $username .= rand(10, 99);
+            }
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $ins = $conn->prepare("INSERT INTO `users` (`name`, `username`, `email`, `password`, `role`) VALUES (?, ?, ?, ?, 'admin')");
+            $ins->bind_param("ssss", $name, $username, $email, $hash);
+
+            if ($ins->execute()) {
+                $new_id = $ins->insert_id;
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_id'] = $new_id;
+                $_SESSION['admin_name'] = $name;
+                $_SESSION['admin_username'] = $username;
+                $_SESSION['admin_email'] = $email;
+                $_SESSION['admin_role'] = 'admin';
+
+                $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                $act = $conn->prepare("INSERT INTO `activity_logs` (`user_id`, `action`, `details`, `ip_address`) VALUES (?, 'Account Registered', 'New administrator account created via portal', ?)");
+                if ($act) {
+                    $act->bind_param("is", $new_id, $ip);
+                    $act->execute();
+                }
+
+                header("Location: Admin/controlpanel.php");
+                exit();
+            } else {
+                $signup_error = "Registration error: " . $conn->error;
+            }
+        }
     }
 }
 ?>
@@ -50,10 +186,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
     <link rel="icon" type="image/png" href="Barangay Logo/Logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Tabon - Login</title>
+    <title>Barangay Tabon - Login Portal</title>
     <!-- Montserrat Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/login.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/login.css?v=<?= time() ?>">
 </head>
 <body class="login-page">
     <div class="card-shell" id="cardShell">
@@ -85,27 +221,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
         </div>
 
         <div class="form-content" id="formContent">
-            <!-- Content will be populated by JS initially -->
+            <!-- Content populated by JS -->
         </div>
     </div>
 
-    <!-- Templates for the forms -->
+    <!-- Template for Sign In Form -->
     <template id="tpl-signin">
         <form id="signInForm" action="login.php" method="POST">
+            <input type="hidden" name="action_type" value="signin">
             <div class="header">
                 <h1><span class="text-white">Welcome </span><span class="text-accent">Back</span></h1>
-                <p class="subheading">Enter your credentials to access your secure account</p>
+                <p class="subheading">Enter your administrator credentials to access your portal</p>
             </div>
 
-            <?php if(isset($error)): ?>
-                <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
+            <?php if (!empty($success_msg)): ?>
+                <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; text-align: center;">
+                    <?= htmlspecialchars($success_msg) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($error)): ?>
+                <div class="error-msg" style="display: block; margin-bottom: 16px;">
+                    <?= htmlspecialchars($error) ?>
+                </div>
             <?php endif; ?>
 
             <div class="input-group">
                 <label>Email or Username</label>
                 <div class="input-wrapper">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    <input type="text" name="email" placeholder="admin or name@example.com" required>
+                    <input type="text" name="email" placeholder="admin or name@example.com" value="<?= htmlspecialchars($entered_login) ?>" required autofocus>
                 </div>
             </div>
 
@@ -123,9 +268,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
 
             <div class="row-opts">
                 <label class="remember-me">
-                    <input type="checkbox"> <span>Remember me</span>
+                    <input type="checkbox" checked> <span>Keep me signed in</span>
                 </label>
-                <a href="#" class="forgot-link">Forgot password?</a>
+                <a href="../index.php" class="forgot-link">Back to Website</a>
             </div>
 
             <button type="submit" name="login" class="primary-btn">
@@ -134,39 +279,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
                 <div class="sweep"></div>
             </button>
 
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-
-            <div class="social-row">
-                <button type="button" class="social-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44-3.79 0-7.06-2.75-7.06-7.27s3.27-7.27 7.06-7.27c1.78 0 3.39.63 4.59 1.63l2.09-2.09C17.15 2.65 14.85 1.5 12.18 1.5 6.3 1.5 1.5 6.3 1.5 12.18s4.8 10.68 10.68 10.68c5.8 0 10.02-4.04 10.02-9.98 0-.61-.07-1.2-.15-1.78z"/></svg>
-                    Google
-                </button>
-                <button type="button" class="social-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 13.57c-.02-2.12 1.74-3.15 1.82-3.2-1-1.46-2.56-1.65-3.12-1.68-1.33-.13-2.6.78-3.27.78-.68 0-1.71-.75-2.81-.73-1.43.02-2.75.83-3.48 2.11-1.5 2.6-.39 6.45 1.08 8.57.72 1.04 1.56 2.19 2.69 2.15 1.09-.04 1.52-.71 2.84-.71 1.3 0 1.7.71 2.84.69 1.16-.02 1.9-.1 2.58-1.12.82-1.2 1.16-2.37 1.17-2.43-.02-.01-2.27-.87-2.31-3.43zm-2.03-6.6c.59-.72 1-1.72.89-2.72-.86.04-1.92.58-2.52 1.29-.54.62-1.02 1.65-.89 2.63.97.08 1.93-.49 2.52-1.2z"/></svg>
-                    Apple
-                </button>
-            </div>
-
             <div class="footer-text">
-                Don't have an account? <button type="button" class="link-btn toggle-view-btn" data-target="signup">Sign Up</button>
+                Need to register an admin account? <button type="button" class="link-btn toggle-view-btn" data-target="signup">Create Account</button>
             </div>
         </form>
     </template>
 
+    <!-- Template for Sign Up Form -->
     <template id="tpl-signup">
-        <form id="signUpForm" action="#" method="POST">
+        <form id="signUpForm" action="login.php" method="POST">
+            <input type="hidden" name="action_type" value="signup">
             <div class="header">
                 <h1><span class="text-white">Create </span><span class="text-accent">Account</span></h1>
-                <p class="subheading">Join us today to access your secure workspace.</p>
+                <p class="subheading">Register a new administrator account for Barangay Tabon</p>
             </div>
+
+            <?php if (!empty($signup_error)): ?>
+                <div class="error-msg" id="signupError" style="display: block; margin-bottom: 16px;">
+                    <?= htmlspecialchars($signup_error) ?>
+                </div>
+            <?php else: ?>
+                <div class="error-msg" id="signupError" style="display:none;"></div>
+            <?php endif; ?>
 
             <div class="input-group">
                 <label>Full Name</label>
                 <div class="input-wrapper">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <input type="text" name="name" placeholder="Full name (e.g. John Anderson)" required>
+                    <input type="text" name="name" placeholder="Full name (e.g. John Dela Cruz)" required>
                 </div>
             </div>
 
@@ -183,7 +323,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
                     <label>Password</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <input type="password" name="password" placeholder="Enter your password" required>
+                        <input type="password" name="password" placeholder="Min. 6 characters" minlength="6" required>
                         <button type="button" class="toggle-password" tabindex="-1">
                             <svg class="icon eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                             <svg class="icon eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -194,7 +334,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
                     <label>Confirm Password</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <input type="password" name="confirm_password" placeholder="Confirm your password" required>
+                        <input type="password" name="confirm_password" placeholder="Repeat password" minlength="6" required>
                         <button type="button" class="toggle-password" tabindex="-1">
                             <svg class="icon eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                             <svg class="icon eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -203,41 +343,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email']) && isset($_PO
                 </div>
             </div>
 
-            <div class="error-msg" id="signupError" style="display:none; color: #f472b6;"></div>
-
-            <div class="row-opts">
-                <label class="remember-me">
-                    <input type="checkbox" required> <span>I agree to the Terms & Privacy Policy</span>
-                </label>
-            </div>
-
             <button type="submit" class="primary-btn">
-                <span style="display:flex;align-items:center;justify-content:center;gap:8px;">Create Account 
+                <span style="display:flex;align-items:center;justify-content:center;gap:8px;">Create Administrator Account 
                 <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
                 <div class="sweep"></div>
             </button>
 
-            <div class="divider">
-                <span>OR CONTINUE WITH</span>
-            </div>
-
-            <div class="social-row">
-                <button type="button" class="social-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44-3.79 0-7.06-2.75-7.06-7.27s3.27-7.27 7.06-7.27c1.78 0 3.39.63 4.59 1.63l2.09-2.09C17.15 2.65 14.85 1.5 12.18 1.5 6.3 1.5 1.5 6.3 1.5 12.18s4.8 10.68 10.68 10.68c5.8 0 10.02-4.04 10.02-9.98 0-.61-.07-1.2-.15-1.78z"/></svg>
-                    Google
-                </button>
-                <button type="button" class="social-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 13.57c-.02-2.12 1.74-3.15 1.82-3.2-1-1.46-2.56-1.65-3.12-1.68-1.33-.13-2.6.78-3.27.78-.68 0-1.71-.75-2.81-.73-1.43.02-2.75.83-3.48 2.11-1.5 2.6-.39 6.45 1.08 8.57.72 1.04 1.56 2.19 2.69 2.15 1.09-.04 1.52-.71 2.84-.71 1.3 0 1.7.71 2.84.69 1.16-.02 1.9-.1 2.58-1.12.82-1.2 1.16-2.37 1.17-2.43-.02-.01-2.27-.87-2.31-3.43zm-2.03-6.6c.59-.72 1-1.72.89-2.72-.86.04-1.92.58-2.52 1.29-.54.62-1.02 1.65-.89 2.63.97.08 1.93-.49 2.52-1.2z"/></svg>
-                    Apple
-                </button>
-            </div>
-
             <div class="footer-text">
-                Already have an account? <button type="button" class="link-btn toggle-view-btn" data-target="signin">Sign In</button>
+                Already have an administrator account? <button type="button" class="link-btn toggle-view-btn" data-target="signin">Sign In</button>
             </div>
         </form>
     </template>
 
-    <script src="js/login.js"></script>
+    <script>
+        window.INITIAL_VIEW = '<?= !empty($signup_error) ? "signup" : "signin" ?>';
+    </script>
+    <script src="js/login.js?v=<?= time() ?>"></script>
 </body>
 </html>
