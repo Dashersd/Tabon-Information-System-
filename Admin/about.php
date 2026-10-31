@@ -189,7 +189,7 @@ if (!empty($raw_img)) {
                 </li>
                 <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
                 <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
-                <li><a href="feedbackchat.php"><i class="fa-solid fa-comments"></i> Feedback Chat</a></li>
+                <li><a href="feedback.php"><i class="fa-solid fa-comments"></i> Feedback Chat</a></li>
                 <li><a href="adminsettings.php"><i class="fa-solid fa-gear"></i> Admin Settings</a></li>
                 
                 <br>

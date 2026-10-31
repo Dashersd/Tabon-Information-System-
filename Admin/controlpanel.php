@@ -285,7 +285,7 @@ if (!function_exists('format_time_ago')) {
                 <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
                 <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li>
-                    <a href="feedbackchat.php">
+                    <a href="feedback.php">
                         <i class="fa-solid fa-comments"></i> Feedback Chat
                         <?php if ($unread_feedback_count > 0): ?>
                             <span style="margin-left: auto; background: #f59e0b; color: #fff; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 700;">
@@ -435,7 +435,7 @@ if (!function_exists('format_time_ago')) {
                 <div class="widget-panel">
                     <div class="widget-header">
                         <h2><i class="fa-solid fa-comments"></i> Recent Resident Inquiries</h2>
-                        <a href="feedbackchat.php" class="widget-header-link">Open Feedback Messenger &rarr;</a>
+                        <a href="feedback.php" class="widget-header-link">Open Feedback Messenger &rarr;</a>
                     </div>
                     <div class="widget-body">
                         <?php if (empty($recent_inquiries)): ?>
@@ -461,7 +461,7 @@ if (!function_exists('format_time_ago')) {
                                             <span class="badge <?= $inq['is_read'] ? 'badge-read' : 'badge-unread' ?>">
                                                 <?= $inq['is_read'] ? 'Resolved / Read' : 'New Unread' ?>
                                             </span>
-                                            <a href="feedbackchat.php?thread=<?= urlencode($inq['thread_id']) ?>" class="btn-reply-chat">
+                                            <a href="feedback.php?thread=<?= urlencode($inq['thread_id']) ?>" class="btn-reply-chat">
                                                 Reply in Chat <i class="fa-solid fa-chevron-right"></i>
                                             </a>
                                         </div>
