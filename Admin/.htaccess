@@ -1,4 +1,6 @@
-# Admin Directory Compatibility Rewrite
+# Admin Directory Configuration
+DirectoryIndex controlpanel.php index.php index.html
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^css/(.*)$ "Admin CSS/$1" [NC,L]
