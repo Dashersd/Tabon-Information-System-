@@ -103,6 +103,7 @@ $sk7 = get_pub_sk_official('kagawad_7', 'Hon. Mc Felco T Bugao', 'SK KAGAWAD 7',
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
             </div>
+            <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" onerror="this.src='https://via.placeholder.com/65';">
         </div>
 
         <nav>
@@ -135,11 +136,6 @@ $sk7 = get_pub_sk_official('kagawad_7', 'Hon. Mc Felco T Bugao', 'SK KAGAWAD 7',
             </a>
             <a href="contact.php" class="nav-item">
                 <span>Contact Us</span>
-            </a>
-
-            <a href="login.php" class="btn-login">
-                <i class="fa-regular fa-user"></i>
-                <span>Sign In / Login</span>
             </a>
         </nav>
     </header>
@@ -282,7 +278,7 @@ $sk7 = get_pub_sk_official('kagawad_7', 'Hon. Mc Felco T Bugao', 'SK KAGAWAD 7',
             <div class="footer-links">
                 <h4>Menu</h4>
                 <ul>
-                    <li><a href="Index.php">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li><a href="about.php">About</a></li>
                     <li><a href="officials.php">Officials</a></li>
                     <li><a href="gallery.php">Gallery</a></li>

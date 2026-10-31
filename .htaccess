@@ -1,0 +1,45 @@
+# ========================================================
+# Barangay Tabon Information System - Apache Configuration
+# Optimized for InfinityFree, Shared Hosting & Linux CPanel
+# ========================================================
+
+# 1. Default Directory Index (Handles both index.php and Index.php)
+DirectoryIndex index.php Index.php index.html index.htm
+
+# 2. Disable Directory Listing for Security
+Options -Indexes
+
+# 3. Default Charset
+AddDefaultCharset UTF-8
+
+# 4. Correct MIME Types for Modern Media & Videos
+<IfModule mod_mime.c>
+    AddType video/mp4 .mp4
+    AddType video/webm .webm
+    AddType video/ogg .ogv
+    AddType image/webp .webp
+    AddType image/svg+xml .svg .svgz
+    AddType font/woff2 .woff2
+    AddType font/woff .woff
+</IfModule>
+
+# 5. URL Rewriting & Compatibility
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Ensure Index.php and index.php are treated identically
+    RewriteRule ^Index\.php$ index.php [NC,L]
+</IfModule>
+
+# 6. Protect Sensitive Files & Directories
+<FilesMatch "(\.sql|\.log|\.env|\.git.*)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# 7. Enable Compression for Faster Page Loads
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/javascript application/json
+</IfModule>
+

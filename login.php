@@ -270,7 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action_type']) && $_P
                 <label class="remember-me">
                     <input type="checkbox" checked> <span>Keep me signed in</span>
                 </label>
-                <a href="../index.php" class="forgot-link">Back to Website</a>
+                <a href="index.php" class="forgot-link">Back to Website</a>
             </div>
 
             <button type="submit" name="login" class="primary-btn">

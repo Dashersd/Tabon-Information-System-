@@ -63,6 +63,7 @@ if (empty($public_legends)) {
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
             </div>
+            <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" onerror="this.src='https://via.placeholder.com/65';">
         </div>
 
         <nav>
@@ -95,11 +96,6 @@ if (empty($public_legends)) {
             </a>
             <a href="contact.php" class="nav-item">
                 <span>Contact Us</span>
-            </a>
-            
-            <a href="login.php" class="btn-login">
-                <i class="fa-regular fa-user"></i>
-                <span>Sign In / Login</span>
             </a>
         </nav>
     </header>

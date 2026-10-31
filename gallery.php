@@ -48,242 +48,25 @@ if ($media_res) {
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
     
-    <!-- External Stylesheets -->
+    <!-- Preloader & External Stylesheets -->
+    <link rel="stylesheet" href="css/preloader.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/gallery.css?v=<?php echo time(); ?>">
-
-    <style>
-        .gallery-main-wrapper {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 40px 24px 60px 24px;
-        }
-        .title-section {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-        .title-section h1 {
-            font-size: 2.3rem;
-            color: #223c3b;
-            font-weight: 800;
-            margin: 0 0 10px 0;
-            font-family: 'Playfair Display', serif;
-        }
-        .title-section p {
-            color: #64748b;
-            font-size: 1.05rem;
-            max-width: 650px;
-            margin: 0 auto;
-        }
-
-        /* Category Filter Chips */
-        .filter-tabs-wrapper {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
-        .filter-chip-btn {
-            background: #ffffff;
-            color: #475569;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 30px;
-            padding: 9px 22px;
-            font-weight: 600;
-            font-size: 0.92rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            font-family: 'Montserrat', sans-serif;
-        }
-        .filter-chip-btn:hover {
-            background: #2c6e49;
-            color: #ffffff;
-            border-color: #2c6e49;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(44, 110, 73, 0.2);
-        }
-        .filter-chip-btn.active {
-            background: #223c3b;
-            color: #ffffff;
-            border-color: #223c3b;
-            box-shadow: 0 4px 12px rgba(34, 60, 59, 0.25);
-        }
-
-        /* Public Gallery Grid */
-        .public-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-        }
-        .grid-item {
-            border-radius: 16px;
-            overflow: hidden;
-            background: #ffffff;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-        }
-        .grid-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-        }
-        .grid-thumb-box {
-            position: relative;
-            width: 100%;
-            height: 220px;
-            overflow: hidden;
-            background: #f1f5f9;
-        }
-        .grid-thumb-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.4s ease;
-        }
-        .grid-item:hover .grid-thumb-box img {
-            transform: scale(1.08);
-        }
-        .grid-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(34, 60, 59, 0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .grid-item:hover .grid-overlay {
-            opacity: 1;
-        }
-        .grid-overlay i {
-            color: #ffffff;
-            font-size: 2rem;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
-        }
-        .item-info {
-            padding: 16px 18px;
-            background: #ffffff;
-            margin-top: auto;
-        }
-        .item-tag {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #0f766e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            margin-bottom: 4px;
-        }
-        .item-caption {
-            font-size: 0.98rem;
-            font-weight: 700;
-            color: #1e293b;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .item-date {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-top: 6px;
-        }
-
-        /* Empty State */
-        .empty-gallery-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            grid-column: 1 / -1;
-        }
-        .empty-gallery-state i {
-            font-size: 3.5rem;
-            color: #cbd5e1;
-            margin-bottom: 14px;
-            display: block;
-        }
-        .empty-gallery-state h3 {
-            margin: 0 0 6px 0;
-            color: #1e293b;
-            font-size: 1.25rem;
-        }
-        .empty-gallery-state p {
-            margin: 0;
-            color: #64748b;
-        }
-
-        /* Lightbox Modal */
-        .lightbox-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.94);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .lightbox-container {
-            max-width: 92vw;
-            max-height: 90vh;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .lightbox-img {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            object-fit: contain;
-        }
-        .lightbox-caption {
-            color: #ffffff;
-            font-size: 1.1rem;
-            margin-top: 14px;
-            font-weight: 600;
-            font-family: 'Montserrat', sans-serif;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 25px;
-            right: 35px;
-            font-size: 2.8rem;
-            color: #ffffff;
-            cursor: pointer;
-            line-height: 1;
-            opacity: 0.85;
-            transition: opacity 0.2s;
-        }
-        .lightbox-close:hover {
-            opacity: 1;
-            color: #ef4444;
-        }
-    </style>
 </head>
 <body class="gallery-page">
+
+    <!-- Mobile Legends Inspired Animated Preloader -->
+    <?php if (file_exists('preloader.php')) include 'preloader.php'; ?>
 
     <!-- Header / Navbar -->
     <header>
         <div class="brand-container">
-            <img src="Barangay Logo/Logo.png" alt="Barangay Tabon Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/65';">
+            <img src="Barangay Logo/Logo.png" alt="Barangay Tabon Logo" class="brand-logo" style="width: 65px; height: 65px; object-fit: cover; border-radius: 50%;" onerror="this.src='https://via.placeholder.com/65';">
             <div>
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
             </div>
+            <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" style="width: 65px; height: 65px; object-fit: contain; border-radius: 50%;" onerror="this.src='https://via.placeholder.com/65';">
         </div>
 
         <nav>
@@ -316,11 +99,6 @@ if ($media_res) {
             </a>
             <a href="contact.php" class="nav-item">
                 <span>Contact Us</span>
-            </a>
-
-            <a href="login.php" class="btn-login">
-                <i class="fa-regular fa-user"></i>
-                <span>Sign In / Login</span>
             </a>
         </nav>
     </header>
@@ -412,7 +190,7 @@ if ($media_res) {
             <div class="footer-links">
                 <h4>Menu</h4>
                 <ul>
-                    <li><a href="Index.php">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li><a href="about.php">About</a></li>
                     <li><a href="officials.php">Officials</a></li>
                     <li><a href="gallery.php">Gallery</a></li>
@@ -484,6 +262,8 @@ if ($media_res) {
         }
     });
     </script>
+    <!-- Preloader Script -->
+    <script src="js/preloader.js?v=<?php echo time(); ?>"></script>
     <script src="js/main.js?v=<?= time() ?>"></script>
 </body>
 </html>

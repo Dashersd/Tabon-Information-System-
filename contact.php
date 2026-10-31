@@ -107,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
             </div>
+            <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" onerror="this.src='https://via.placeholder.com/65';">
         </div>
 
         <nav>
@@ -139,11 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
             </a>
             <a href="contact.php" class="nav-item active">
                 <span>Contact Us</span>
-            </a>
-
-            <a href="login.php" class="btn-login">
-                <i class="fa-regular fa-user"></i>
-                <span>Sign In / Login</span>
             </a>
         </nav>
     </header>
@@ -292,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
             <div class="footer-links">
                 <h4>Menu</h4>
                 <ul>
-                    <li><a href="Index.php">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li><a href="about.php">About</a></li>
                     <li><a href="officials.php">Officials</a></li>
                     <li><a href="gallery.php">Gallery</a></li>

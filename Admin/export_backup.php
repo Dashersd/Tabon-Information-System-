@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 require_once __DIR__ . '/../db_connect.php';
 
-$db_name = 'tabon_db';
+$db_name = $dbname ?? 'tabon_db';
 $filename = 'tabon_db_backup_' . date('Y-m-d_His') . '.sql';
 
 // Check if mysqldump is available via exec

@@ -99,6 +99,22 @@ try {
 
 
 
+// Fetch dynamic Homepage Hero Background Video from barangay_information
+$home_hero_video = 'Video/Homepage.mp4';
+try {
+    $v_check = $conn->query("SELECT `hero_video_path` FROM `barangay_information` WHERE `id` = 1 LIMIT 1");
+    if ($v_check && $v_row = $v_check->fetch_assoc()) {
+        if (!empty($v_row['hero_video_path'])) {
+            $raw_v = $v_row['hero_video_path'];
+            $resolved_v = (strpos($raw_v, 'uploads/') === 0) ? 'Admin/' . $raw_v : $raw_v;
+            if (file_exists($resolved_v)) {
+                $home_hero_video = $resolved_v;
+            }
+        }
+    }
+} catch (Exception $e) {}
+$home_hero_video_cache = file_exists($home_hero_video) ? filemtime($home_hero_video) : time();
+
 function get_home_announcement_date($when_date, $created_at) {
     $ts = !empty($when_date) ? strtotime($when_date) : null;
     if (!$ts || $ts <= 0) {
@@ -143,6 +159,7 @@ function get_home_announcement_date($when_date, $created_at) {
                 <div class="brand-title">Barangay Tabon</div>
                 <div class="brand-sub">Together for a Stronger Community</div>
             </div>
+            <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" onerror="this.src='https://via.placeholder.com/65';">
         </div>
 
         <nav>
@@ -176,11 +193,6 @@ function get_home_announcement_date($when_date, $created_at) {
             <a href="contact.php" class="nav-item">
                 <span>Contact Us</span>
             </a>
-
-            <a href="login.php" class="btn-login">
-                <i class="fa-regular fa-user"></i>
-                <span>Sign In / Login</span>
-            </a>
         </nav>
     </header>
 
@@ -190,7 +202,7 @@ function get_home_announcement_date($when_date, $created_at) {
             <!-- Background Video with Dark Overlay -->
             <div class="hero-video-bg">
                 <video id="heroBgVideo" autoplay muted loop playsinline poster="Images/Tabon%20Barangay%20hall.jpg" onloadedmetadata="this.playbackRate = 0.65;">
-                    <source src="Video/Homepage.mp4" type="video/mp4">
+                    <source src="<?= htmlspecialchars($home_hero_video) ?>?v=<?= $home_hero_video_cache ?>" type="video/mp4">
                 </video>
                 <div class="hero-video-overlay"></div>
             </div>
@@ -215,6 +227,26 @@ function get_home_announcement_date($when_date, $created_at) {
             </div>
         </section>
     </div>
+
+    <!-- Officials Section -->
+    <section class="officials-spotlight-section">
+        <div class="captain-spotlight-card fade-in-up animate-on-scroll">
+            <div class="captain-spotlight-img-box">
+                <img src="<?= htmlspecialchars($home_captain['photo']) ?>?v=<?= time() ?>" alt="Barangay Captain" class="captain-spotlight-photo" onerror="this.src='Officials/Captain.jpg';">
+            </div>
+            <div class="captain-spotlight-details">
+                <span class="captain-badge-title"><?= htmlspecialchars(strtoupper($home_captain['position'])) ?></span>
+                <h2 class="captain-fullname"><?= htmlspecialchars($home_captain['name']) ?></h2>
+                <p class="captain-quote-text">
+                    "<?= htmlspecialchars($home_captain['message']) ?>"
+                </p>
+                <a href="officials.php" class="btn-captain-view-officials">
+                    <span>View Barangay Officials</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
 
     <!-- About Section based on Mockup -->
     <div class="about-wrapper">
@@ -253,26 +285,6 @@ function get_home_announcement_date($when_date, $created_at) {
             </div>
         </section>
     </div>
-
-    <!-- Officials Section -->
-    <section class="officials-spotlight-section">
-        <div class="captain-spotlight-card fade-in-up animate-on-scroll">
-            <div class="captain-spotlight-img-box">
-                <img src="<?= htmlspecialchars($home_captain['photo']) ?>?v=<?= time() ?>" alt="Barangay Captain" class="captain-spotlight-photo" onerror="this.src='Officials/Captain.jpg';">
-            </div>
-            <div class="captain-spotlight-details">
-                <span class="captain-badge-title"><?= htmlspecialchars(strtoupper($home_captain['position'])) ?></span>
-                <h2 class="captain-fullname"><?= htmlspecialchars($home_captain['name']) ?></h2>
-                <p class="captain-quote-text">
-                    "<?= htmlspecialchars($home_captain['message']) ?>"
-                </p>
-                <a href="officials.php" class="btn-captain-view-officials">
-                    <span>View Barangay Officials</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
 
     <!-- 3D Image Carousel Gallery (Fetches Images from Gallery) -->
     <section class="gallery-wrapper" style="padding-top: 0;">
@@ -601,7 +613,7 @@ function get_home_announcement_date($when_date, $created_at) {
                 <div class="footer-links">
                     <h4>Menu</h4>
                     <ul>
-                        <li><a href="Index.php">Home</a></li>
+                        <li><a href="index.php">Home</a></li>
                         <li><a href="about.php">About</a></li>
                         <li><a href="officials.php">Officials</a></li>
                         <li><a href="gallery.php">Gallery</a></li>
