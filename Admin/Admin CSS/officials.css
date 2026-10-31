@@ -1,0 +1,110 @@
+/* css/officials.css */
+
+.officials-header-container {
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.officials-header-container h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 5px 0;
+}
+
+.officials-header-container p {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.org-chart-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    min-height: 500px;
+}
+
+.org-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.org-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #f3f4f6;
+}
+
+.org-image-placeholder {
+    height: 160px;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    padding-top: 10px;
+}
+
+.org-alt-text {
+    color: #64748b;
+    font-size: 11px;
+    text-align: center;
+    padding: 0 5px;
+    font-weight: 500;
+}
+
+.org-name-pill {
+    position: absolute;
+    bottom: 15px;
+    background-color: #1a4d33; /* Dark green from scheme */
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 15px;
+    border-radius: 20px;
+}
+
+.org-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-align: center;
+    color: #475569;
+    padding: 12px 5px;
+    letter-spacing: 0.5px;
+}
+
+.org-edit-btn {
+    border-top: 1px solid #f1f5f9;
+    background-color: #fff;
+    color: #334155;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 10px 0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.org-edit-btn:hover {
+    background-color: #f8fafc;
+}
+
+.org-edit-btn i {
+    font-size: 10px;
+    margin-right: 4px;
+}

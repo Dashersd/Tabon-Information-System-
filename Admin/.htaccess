@@ -1,0 +1,5 @@
+# Admin Directory Compatibility Rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^css/(.*)$ "Admin CSS/$1" [NC,L]
+</IfModule>

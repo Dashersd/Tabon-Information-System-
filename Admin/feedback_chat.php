@@ -44,7 +44,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/admin_common.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/feedbackchat.css?v=<?php echo time(); ?>">
 </head>
 <body class="feedback-chat-page">
@@ -52,7 +52,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img src="../Barangay Logo/Logo.png" alt="Barangay Logo" onerror="this.src='https://via.placeholder.com/70'">
+            <img src="../Barangay Logo/Logo.png" alt="Barangay Logo" width="70" height="70" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; display: inline-block;" onerror="this.src='https://via.placeholder.com/70'">
             <h3>Brgy Tabon</h3>
             <p>Info SpotMap</p>
         </div>

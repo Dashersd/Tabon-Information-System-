@@ -30,6 +30,10 @@ AddDefaultCharset UTF-8
 
     # Ensure Index.php and index.php are treated identically
     RewriteRule ^Index\.php$ index.php [NC,L]
+
+    # Map Admin/css/ to Admin/Admin CSS/ for maximum compatibility across environments
+    RewriteRule ^Admin/css/(.*)$ "Admin/Admin CSS/$1" [NC,L]
+    RewriteRule ^admin/css/(.*)$ "Admin/Admin CSS/$1" [NC,L]
 </IfModule>
 
 # 6. Protect Sensitive Files & Directories

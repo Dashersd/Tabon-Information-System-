@@ -1,0 +1,307 @@
+/* Controls Header (Search & Filter) */
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f4f6f8;
+    padding: 15px 25px;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #e0e4e8;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 6px 15px;
+    width: 300px;
+}
+
+.search-bar i {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 5px 10px;
+    width: 100%;
+    font-size: 13px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.filter-select {
+    padding: 6px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #4b5563;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
+}
+
+.count-badge {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Data Table */
+.table-container {
+    background-color: #f4f6f8;
+    border-radius: 0 0 10px 10px;
+    padding: 0 25px 25px 25px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+th {
+    text-align: left;
+    padding: 15px 20px;
+    font-size: 12px;
+    color: #4b5563;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+td {
+    background-color: #ffffff;
+    padding: 15px 20px;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+/* Rounding corners of table rows */
+td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+.marker-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.purok-badge {
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.purok-badge i {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.members-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5563;
+}
+
+.members-count i {
+    color: #6b7280;
+}
+
+.position-text {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-action:hover {
+    color: #2c6e49;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background-color: #fff;
+    width: 500px;
+    max-width: 90%;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 20px 25px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 25px;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Modal Form Elements */
+.modal-form-group {
+    margin-bottom: 15px;
+}
+
+.modal-form-group label {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.modal-form-group input, .modal-form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.btn-secondary {
+    padding: 8px 15px;
+    background-color: #e5e7eb;
+    color: #4b5563;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    padding: 8px 15px;
+    background-color: #2c6e49;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Members List within Modal */
+.member-list-container {
+    margin-bottom: 20px;
+}
+
+.member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: #f9fafb;
+}
+
+.member-info {
+    font-size: 13px;
+    color: #374151;
+}
+
+.member-role {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.btn-delete-member {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+}
+
+.add-member-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1d5db;
+}

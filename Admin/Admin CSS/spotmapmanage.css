@@ -1,0 +1,114 @@
+/* SpotMap Layout Container */
+.spotmap-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Form Section (now below map) */
+.spotmap-form-section {
+    width: 100%;
+    height: auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 6px;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f9fafb;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 4px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+/* Map Preview Section */
+.spotmap-preview-section {
+    width: 100%;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.map-container-title {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+    background: #f8fafc;
+}
+
+.custom-map-container {
+    flex: 1;
+    position: relative;
+    background-color: #e5e7eb;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.map-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none; /* Let drag events pass through to container if needed, though we track document */
+}
+
+/* Draggable Marker */
+.map-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+}
+
+.map-marker:active {
+    cursor: grabbing;
+}
+
+.map-marker img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
