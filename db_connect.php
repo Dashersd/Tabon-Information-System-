@@ -13,18 +13,41 @@ if ($is_local) {
     $dbname   = 'tabon_db';
     $username = 'root';
     $password = '';
+    $port     = 3306;
 } else {
     // --- INFINITYFREE HOSTING CREDENTIALS ---
-    // When hosting on InfinityFree, fill in the 4 values from your vPanel -> "MySQL Databases":
-    $host     = getenv('DB_HOST') ?: 'sqlXXX.infinityfree.com'; // e.g. sql100.infinityfree.com or sql200.epizy.com
-    $dbname   = getenv('DB_NAME') ?: 'if0_XXXXXXXX_tabon_db';   // e.g. if0_38000000_tabon_db
-    $username = getenv('DB_USER') ?: 'if0_XXXXXXXX';            // e.g. if0_38000000
-    $password = getenv('DB_PASS') ?: 'YOUR_VPANEL_PASSWORD';    // Your InfinityFree vPanel password
+    $host     = getenv('DB_HOST') ?: 'sql208.infinityfree.com';
+    $username = getenv('DB_USER') ?: 'if0_43319778';
+    $password = getenv('DB_PASS') ?: 'yBxuFOPGrAq0FR';
+    $port     = 3306;
+
+    // Default database name (customizable via vPanel MySQL Databases)
+    $dbname   = getenv('DB_NAME') ?: 'if0_43319778_tabon_db';
+
+    // Auto-detect the exact database created under your account
+    try {
+        $temp_conn = @new mysqli($host, $username, $password, '', $port);
+        if ($temp_conn && !$temp_conn->connect_error) {
+            $db_list = $temp_conn->query("SHOW DATABASES LIKE 'if0_43319778_%'");
+            if ($db_list && $db_list->num_rows > 0) {
+                $user_dbs = [];
+                while ($row = $db_list->fetch_array()) {
+                    $user_dbs[] = $row[0];
+                }
+                if (in_array('if0_43319778_tabon_db', $user_dbs)) {
+                    $dbname = 'if0_43319778_tabon_db';
+                } elseif (!empty($user_dbs)) {
+                    $dbname = $user_dbs[0];
+                }
+            }
+            $temp_conn->close();
+        }
+    } catch (Exception $e) {}
 }
 
 // 2. Establish PDO Connection
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $username, $password, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
@@ -33,11 +56,11 @@ try {
     // If local database does not exist, attempt auto-creation
     if ($is_local && $e->getCode() == 1049) {
         try {
-            $tempPdo = new PDO("mysql:host=$host;charset=utf8mb4", $username, $password);
+            $tempPdo = new PDO("mysql:host=$host;port=$port;charset=utf8mb4", $username, $password);
             $tempPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $tempPdo->exec("CREATE DATABASE IF NOT EXISTS `$dbname` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-            $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+            $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $username, $password);
             $sqlFile = __DIR__ . '/tabon_db.sql';
             if (file_exists($sqlFile)) {
                 $sqlContent = file_get_contents($sqlFile);
@@ -80,12 +103,10 @@ try {
                 </div>
 
                 <div class='db-steps'>
-                    <strong>How to configure for InfinityFree:</strong>
+                    <strong>Quick Fix:</strong>
                     <ol>
-                        <li>Open your InfinityFree Control Panel (vPanel) and go to <strong>MySQL Databases</strong>.</li>
-                        <li>Create a database (e.g. <code>if0_XXXXXXXX_tabon_db</code>).</li>
-                        <li>Open <strong>phpMyAdmin</strong> from your vPanel and import <code>tabon_db.sql</code>.</li>
-                        <li>Edit <code>db_connect.php</code> with your host (e.g. <code>sqlXXX.infinityfree.com</code>), database name, user, and vPanel password.</li>
+                        <li>In your InfinityFree vPanel under <strong>MySQL Databases</strong>, ensure you created a database (e.g. <code>if0_43319778_tabon_db</code>).</li>
+                        <li>Open <strong>phpMyAdmin</strong> from vPanel and import <code>tabon_db.sql</code>.</li>
                     </ol>
                 </div>
             </div>
@@ -96,7 +117,7 @@ try {
 }
 
 // 3. Establish MySQLi Connection
-$conn = @new mysqli($host, $username, $password, $dbname);
+$conn = @new mysqli($host, $username, $password, $dbname, $port);
 if ($conn->connect_error) {
     die("MySQLi connection failed: " . $conn->connect_error);
 }
