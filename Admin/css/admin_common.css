@@ -18,12 +18,13 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: 250px;
-    background-color: #223c3b; /* Dark greenish-teal from screenshot */
+    background-color: #223c3b;
+    /* Dark greenish-teal from screenshot */
     color: #fff;
     display: flex;
     flex-direction: column;
     height: 100vh;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 10;
     flex-shrink: 0;
 }
@@ -31,7 +32,7 @@ body {
 .sidebar-header {
     padding: 25px 20px;
     text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
 }
 
@@ -87,9 +88,11 @@ body {
 }
 
 .sidebar-nav ul li a.active {
-    background-color: #345c5a; /* Lighter active state */
+    background-color: #345c5a;
+    /* Lighter active state */
     color: #ffffff;
-    border-left: 4px solid #4cd137; /* Green highlight indicator */
+    border-left: 4px solid #4cd137;
+    /* Green highlight indicator */
 }
 
 /* Main Content Area */
@@ -98,7 +101,8 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    background-color: #e5e9eb; /* Slightly darker grey from the screenshot */
+    background-color: #e5e9eb;
+    /* Slightly darker grey from the screenshot */
     padding: 30px 40px;
     min-width: 0;
 }
@@ -117,7 +121,8 @@ body {
 }
 
 .btn-add {
-    background-color: #2c6e49; /* Dark green from screenshot */
+    background-color: #2c6e49;
+    /* Dark green from screenshot */
     color: #ffffff;
     border: none;
     padding: 10px 20px;
@@ -128,7 +133,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: background 0.3s;
 }
 
@@ -137,15 +142,42 @@ body {
 }
 
 /* Dropdown Styles */
-.dropdown-btn { cursor: pointer; justify-content: space-between !important; }
-.dropdown-container { display: none; background-color: #1a2e2d; }
-.dropdown-container.active { display: block; }
-.dropdown-container a { padding: 10px 25px 10px 50px !important; font-size: 12px !important; border-left: 4px solid transparent; }
-.fa-caret-down { transition: transform 0.3s ease; }
-.dropdown-btn.active .fa-caret-down { transform: rotate(180deg); }
+.dropdown-btn {
+    cursor: pointer;
+    justify-content: space-between !important;
+}
 
-.sidebar-nav::-webkit-scrollbar { display: none; }
-.sidebar-nav { -ms-overflow-style: none; scrollbar-width: none; }
+.dropdown-container {
+    display: none;
+    background-color: #1a2e2d;
+}
+
+.dropdown-container.active {
+    display: block;
+}
+
+.dropdown-container a {
+    padding: 10px 25px 10px 50px !important;
+    font-size: 12px !important;
+    border-left: 4px solid transparent;
+}
+
+.fa-caret-down {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-btn.active .fa-caret-down {
+    transform: rotate(180deg);
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar-nav {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
 /* ==========================================================================
    ADMIN MOBILE & TABLET UX/UI DESIGN SYSTEM
@@ -414,639 +446,641 @@ body {
     }
 
     .dashboard-content,
-    .legend-content-wrapper,
-    .legend-management-wrapper,
-    .settings-page-wrapper {
-        padding: 4px 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+
+        .legend-content-wrapper,
+        .legend-management-wrapper,
+        .settings-page-wrapper {
+            padding: 4px 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Control Panel Grids */
+        .dashboard-widgets,
+        .management-widgets {
+            grid-template-columns: 1fr !important;
+            gap: 18px !important;
+        }
+
+        .kpi-cards {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+            gap: 14px !important;
+        }
+
+        .purok-cards-grid {
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+        }
+
+        /* About Page Split Layout */
+        .about-content-wrapper {
+            flex-direction: column !important;
+            gap: 16px !important;
+        }
+
+        .about-left-col,
+        .about-right-col {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .about-left-col,
+        .text-card {
+            padding: 18px 16px !important;
+            border-radius: 12px !important;
+        }
+
+        .image-drop-area {
+            height: 230px !important;
+        }
+
+        /* Legend & Settings Multi-Column Grids */
+        .form-three-columns {
+            grid-template-columns: 1fr !important;
+            gap: 18px !important;
+            padding: 18px 16px !important;
+        }
+
+        .system-info-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+
+        /* Feedback Chat App Responsive Adjustments */
+        body.feedback-chat-page {
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+        }
+
+        body.feedback-chat-page .main-content {
+            flex: 1 !important;
+            height: calc(100dvh - 58px) !important;
+            max-height: calc(100dvh - 58px) !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body.feedback-chat-page .top-header {
+            height: 52px !important;
+            min-height: 52px !important;
+            padding: 0 14px !important;
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+            gap: 10px !important;
+        }
+
+        body.feedback-chat-page .topbar-left {
+            min-width: 0 !important;
+            flex: 1 !important;
+        }
+
+        body.feedback-chat-page .topbar-title {
+            font-size: 0.92rem !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        body.feedback-chat-page .topbar-right-actions {
+            gap: 8px !important;
+            flex-shrink: 0 !important;
+        }
+
+        body.feedback-chat-page .topbar-user {
+            display: none !important;
+        }
+
+        body.feedback-chat-page .chat-app-wrapper {
+            flex: 1 !important;
+            height: calc(100dvh - 110px) !important;
+            max-height: calc(100dvh - 110px) !important;
+        }
+
+        .btn-mobile-back-list {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .btn-mobile-back-list:active {
+            background: #e2e8f0;
+        }
     }
 
-    /* Control Panel Grids */
-    .dashboard-widgets,
-    .management-widgets {
-        grid-template-columns: 1fr !important;
-        gap: 18px !important;
-    }
-
-    .kpi-cards {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-        gap: 14px !important;
-    }
-
-    .purok-cards-grid {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-    }
-
-    /* About Page Split Layout */
-    .about-content-wrapper {
-        flex-direction: column !important;
-        gap: 16px !important;
-    }
-
-    .about-left-col,
-    .about-right-col {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .about-left-col,
-    .text-card {
-        padding: 18px 16px !important;
-        border-radius: 12px !important;
-    }
-
-    .image-drop-area {
-        height: 230px !important;
-    }
-
-    /* Legend & Settings Multi-Column Grids */
-    .form-three-columns {
-        grid-template-columns: 1fr !important;
-        gap: 18px !important;
-        padding: 18px 16px !important;
-    }
-
-    .system-info-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-    }
-
-    /* Feedback Chat App Responsive Adjustments */
-    body.feedback-chat-page {
-        height: 100vh !important;
-        height: 100dvh !important;
-        max-height: 100dvh !important;
-        overflow: hidden !important;
-        padding: 0 !important;
-    }
-
-    body.feedback-chat-page .main-content {
-        flex: 1 !important;
-        height: calc(100dvh - 58px) !important;
-        max-height: calc(100dvh - 58px) !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-    }
-
-    body.feedback-chat-page .top-header {
-        height: 52px !important;
-        min-height: 52px !important;
-        padding: 0 14px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
-    }
-
-    body.feedback-chat-page .topbar-left {
-        min-width: 0 !important;
-        flex: 1 !important;
-    }
-
-    body.feedback-chat-page .topbar-title {
-        font-size: 0.92rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-
-    body.feedback-chat-page .topbar-right-actions {
-        gap: 8px !important;
-        flex-shrink: 0 !important;
-    }
-
-    body.feedback-chat-page .topbar-user {
-        display: none !important;
-    }
-
-    body.feedback-chat-page .chat-app-wrapper {
-        flex: 1 !important;
-        height: calc(100dvh - 110px) !important;
-        max-height: calc(100dvh - 110px) !important;
-    }
-
-    .btn-mobile-back-list {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 12px;
-        border-radius: 8px;
-        background: #f1f5f9;
-        border: 1px solid #cbd5e1;
-        color: #0f172a;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
-    .btn-mobile-back-list:active {
-        background: #e2e8f0;
-    }
-}
-
-/* --------------------------------------------------------------------------
+    /* --------------------------------------------------------------------------
    BREAKPOINT: <= 768px (Smartphones & Small Tablets)
    -------------------------------------------------------------------------- */
-@media (max-width: 768px) {
-    .main-content {
-        padding: 16px 14px 36px 14px !important;
-    }
-
-    /* Top Bars & Page Headers */
-    .top-bar,
-    .admin-header-row,
-    .media-top-bar,
-    .section-header-flex {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 12px !important;
-        margin-bottom: 18px !important;
-    }
-
-    .legend-top-bar {
-        padding: 12px 16px !important;
-        flex-direction: row !important;
-        align-items: center !important;
-    }
-
-    .page-title,
-    .admin-header-row h2,
-    .media-top-title,
-    .content-header h2 {
-        font-size: 1.25rem !important;
-        line-height: 1.3 !important;
-    }
-
-    .top-bar-actions {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 8px !important;
-    }
-
-    .badge-date,
-    .btn-portal-link,
-    .btn-add,
-    .btn-action.btn-add,
-    .btn-create-folder {
-        width: 100% !important;
-        justify-content: center !important;
-        text-align: center !important;
-        padding: 11px 16px !important;
-    }
-
-    /* KPI Cards: Full-Width Horizontal Cards with Breathing Room */
-    .kpi-cards {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
-
-    .kpi-card {
-        padding: 16px 18px !important;
-        gap: 16px !important;
-        flex-direction: row !important;
-        align-items: center !important;
-    }
-
-    .kpi-icon {
-        width: 48px !important;
-        height: 48px !important;
-        font-size: 20px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .kpi-info h3 {
-        font-size: 12px !important;
-    }
-
-    .kpi-info p {
-        font-size: 22px !important;
-    }
-
-    /* Widget Panels & Containers */
-    .purok-breakdown-section,
-    .widget-panel,
-    .admin-container,
-    .table-card,
-    .media-container-white,
-    .form-container {
-        padding: 16px 14px !important;
-        border-radius: 12px !important;
-    }
-
-    .widget-header {
-        padding: 14px 16px !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .widget-body {
-        padding: 14px !important;
-    }
-
-    .services-widget-summary,
-    .gallery-widget-summary {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-        text-align: center !important;
-        padding: 12px !important;
-    }
-
-    .btn-add-service-shortcut,
-    .btn-gallery-shortcut {
-        justify-content: center !important;
-        padding: 8px 12px !important;
-        font-size: 12px !important;
-    }
-
-    /* Tables & Controls */
-    .controls-container {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-        padding: 14px !important;
-    }
-
-    .search-bar {
-        width: 100% !important;
-    }
-
-    .filter-group {
-        width: 100% !important;
-        justify-content: space-between !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .filter-select {
-        flex: 1 !important;
-        min-width: 140px !important;
-    }
-
-    .table-container,
-    .table-card,
-    .admin-container {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .admin-table,
-    .data-table,
-    .table-container table {
-        min-width: 580px !important;
-    }
-
-    .admin-table th,
-    .admin-table td,
-    .data-table th,
-    .data-table td {
-        padding: 12px 14px !important;
-        font-size: 12.5px !important;
-    }
-
-    /* SpotMap & Purok Forms */
-    .map-wrapper,
-    .map-container,
-    .map-viewport-wrapper,
-    .custom-map-container {
-        height: 260px !important;
-        min-height: 260px !important;
-        margin-bottom: 18px !important;
-    }
-
-    .form-card,
-    .spotmap-form-section {
-        padding: 18px 14px !important;
-        border-radius: 12px !important;
-    }
-
-    .row,
-    .form-row {
-        flex-direction: column !important;
-        gap: 12px !important;
-    }
-
-    .row .col {
-        width: 100% !important;
-        flex: none !important;
-    }
-
-    .main-content > div[style*="justify-content: space-between"],
-    .form-group > div[style*="justify-content: space-between"] {
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .map-card-toolbar,
-    .form-card-header,
-    .table-card-header {
-        padding: 12px 14px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-
-    .table-search-input {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .legends-table,
-    .activity-table {
-        min-width: 580px !important;
-    }
-
-    .map-toolbar-info,
-    .map-toolbar-actions {
-        width: 100% !important;
-        justify-content: space-between !important;
-        flex-wrap: wrap !important;
-    }
-
-    .legend-page-header,
-    .settings-banner-header,
-    .category-header-card {
-        padding: 18px 16px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 14px !important;
-    }
-
-    .legend-header-stats,
-    .settings-banner-stats {
-        width: 100% !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .stat-pill,
-    .banner-stat-pill {
-        flex: 1 !important;
-        min-width: 130px !important;
-        justify-content: center !important;
-    }
-
-    /* Settings Forms & Cards on Mobile */
-    .form-grid-2,
-    .form-grid-3 {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-    }
-
-    .settings-card-header {
-        padding: 16px 14px !important;
-    }
-
-    .settings-card-body {
-        padding: 18px 14px !important;
-    }
-
-    .settings-card-footer {
-        padding: 14px !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .settings-card-footer button,
-    .settings-card-footer .btn {
-        width: 100% !important;
-        justify-content: center !important;
-    }
-
-    .logo-upload-wrapper,
-    .admin-badge-card,
-    .backup-download-box {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        padding: 16px 14px !important;
-        gap: 14px !important;
-    }
-
-    .btn-backup-download {
-        width: 100% !important;
-        justify-content: center !important;
-    }
-
-    /* Media Library Grid */
-    .category-cards-grid {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
-
-    .media-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-    }
-
-    .media-thumb-wrap {
-        height: 145px !important;
-    }
-
-    .gallery-nav-bar {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-
-    /* Barangay & SK Officials Org Chart */
-    .org-chart-wrapper {
-        gap: 18px !important;
-        padding: 10px 4px 40px 4px !important;
-    }
-
-    .org-tier {
-        gap: 12px !important;
-    }
-
-    .org-card {
-        width: calc(50% - 8px) !important;
-        min-width: 142px !important;
-        max-width: 180px !important;
-        padding: 10px !important;
-    }
-
-    .org-tier.tier-1 .org-card {
-        width: 180px !important;
-    }
-
-    .org-photo-container {
-        width: 100% !important;
-        height: 135px !important;
-    }
-
-    /* Settings Navigation Tabs */
-    .settings-nav-tabs {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        padding: 6px !important;
-    }
-
-    .settings-tab-btn {
-        flex: 0 0 auto !important;
-        min-width: auto !important;
-        padding: 9px 14px !important;
-        font-size: 12.5px !important;
-    }
-
-    /* Feedback Chat Header, Messages & Reply Bar on Mobile */
-    .chat-sidebar-header {
-        padding: 12px 14px 10px 14px !important;
-    }
-
-    .conversation-item {
-        padding: 11px 12px !important;
-        gap: 10px !important;
-    }
-
-    .conv-avatar {
-        width: 42px !important;
-        height: 42px !important;
-        font-size: 0.92rem !important;
-    }
-
-    .chat-area-header {
-        padding: 10px 12px !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-        height: auto !important;
-    }
-
-    .chat-header-resident-meta {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-        gap: 8px !important;
-    }
-
-    .chat-header-avatar {
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 0.88rem !important;
-    }
-
-    .chat-header-info h4 {
-        font-size: 0.92rem !important;
-    }
-
-    .chat-header-actions {
-        width: 100% !important;
-        display: flex !important;
-        gap: 8px !important;
-    }
-
-    .chat-header-actions .btn-header-tool {
-        flex: 1 !important;
-        justify-content: center !important;
-        font-size: 11.5px !important;
-        padding: 7px 10px !important;
-    }
-
-    .chat-messages-scroll {
-        padding: 14px 12px !important;
-    }
-
-    .chat-email-reply-bar {
-        padding: 10px 14px !important;
-        gap: 10px !important;
-    }
-
-    .email-reply-bar-sub {
-        display: none !important;
-    }
-
-    .notif-dropdown {
-        position: fixed !important;
-        top: 114px !important;
-        left: 12px !important;
-        right: 12px !important;
-        width: auto !important;
-        max-width: none !important;
-    }
-
-    /* Modals on Mobile */
-    .modal-content,
-    .modal-container {
-        width: 95% !important;
-        max-width: 95vw !important;
-        max-height: 88dvh !important;
-        border-radius: 14px !important;
-        margin: 10px auto !important;
-    }
-
-    .modal-header {
-        padding: 14px 16px !important;
-    }
-
-    .modal-header h2,
-    .modal-title-wrap h3 {
-        font-size: 1.05rem !important;
-    }
-
-    .modal-body {
-        padding: 16px !important;
-        max-height: 68dvh !important;
-    }
-
-    .modal-footer {
-        padding: 12px 16px !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .modal-footer button,
-    .modal-footer .btn-cancel,
-    .modal-footer .btn-action,
-    .modal-footer .btn-primary,
-    .modal-footer .btn-secondary {
-        flex: 1 !important;
-        justify-content: center !important;
-    }
-
-    .save-action-container .btn-save {
-        width: 100% !important;
-        justify-content: center !important;
-    }
-}
-
-/* --------------------------------------------------------------------------
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 16px 14px 36px 14px !important;
+        }
+
+        /* Top Bars & Page Headers */
+        .top-bar,
+        .admin-header-row,
+        .media-top-bar,
+        .section-header-flex {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+            margin-bottom: 18px !important;
+        }
+
+        .legend-top-bar {
+            padding: 12px 16px !important;
+            flex-direction: row !important;
+            align-items: center !important;
+        }
+
+        .page-title,
+        .admin-header-row h2,
+        .media-top-title,
+        .content-header h2 {
+            font-size: 1.25rem !important;
+            line-height: 1.3 !important;
+        }
+
+        .top-bar-actions {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+
+        .badge-date,
+        .btn-portal-link,
+        .btn-add,
+        .btn-action.btn-add,
+        .btn-create-folder {
+            width: 100% !important;
+            justify-content: center !important;
+            text-align: center !important;
+            padding: 11px 16px !important;
+        }
+
+        /* KPI Cards: Full-Width Horizontal Cards with Breathing Room */
+        .kpi-cards {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+
+        .kpi-card {
+            padding: 16px 18px !important;
+            gap: 16px !important;
+            flex-direction: row !important;
+            align-items: center !important;
+        }
+
+        .kpi-icon {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 20px !important;
+            flex-shrink: 0 !important;
+        }
+
+        .kpi-info h3 {
+            font-size: 12px !important;
+        }
+
+        .kpi-info p {
+            font-size: 22px !important;
+        }
+
+        /* Widget Panels & Containers */
+        .purok-breakdown-section,
+        .widget-panel,
+        .admin-container,
+        .table-card,
+        .media-container-white,
+        .form-container {
+            padding: 16px 14px !important;
+            border-radius: 12px !important;
+        }
+
+        .widget-header {
+            padding: 14px 16px !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+        }
+
+        .widget-body {
+            padding: 14px !important;
+        }
+
+        .services-widget-summary,
+        .gallery-widget-summary {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            text-align: center !important;
+            padding: 12px !important;
+        }
+
+        .btn-add-service-shortcut,
+        .btn-gallery-shortcut {
+            justify-content: center !important;
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+        }
+
+        /* Tables & Controls */
+        .controls-container {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+            padding: 14px !important;
+        }
+
+        .search-bar {
+            width: 100% !important;
+        }
+
+        .filter-group {
+            width: 100% !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+        }
+
+        .filter-select {
+            flex: 1 !important;
+            min-width: 140px !important;
+        }
+
+        .table-container,
+        .table-card,
+        .admin-container {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .admin-table,
+        .data-table,
+        .table-container table {
+            min-width: 580px !important;
+        }
+
+        .admin-table th,
+        .admin-table td,
+        .data-table th,
+        .data-table td {
+            padding: 12px 14px !important;
+            font-size: 12.5px !important;
+        }
+
+        /* SpotMap & Purok Forms */
+        .map-wrapper,
+        .map-container,
+            .map-viewport-wrapper,
+            .custom-map-container {
+                height: 260px !important;
+                min-height: 260px !important;
+                margin-bottom: 18px !important;
+            }
+
+                .form-card,
+                .spotmap-form-section {
+                    padding: 18px 14px !important;
+                    border-radius: 12px !important;
+                }
+
+                .row,
+                .form-row {
+                    flex-direction: column !important;
+                    gap: 12px !important;
+                }
+
+                .row .col {
+                    width: 100% !important;
+                    flex: none !important;
+                }
+
+                .main-content>div[style*="justify-content: space-between"],
+                .form-group>div[style*="justify-content: space-between"] {
+                    flex-wrap: wrap !important;
+                    gap: 8px !important;
+                }
+
+                .map-card-toolbar,
+                .form-card-header,
+                .table-card-header {
+                    padding: 12px 14px !important;
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 10px !important;
+                }
+
+                .table-search-input {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+
+                .legends-table,
+                .activity-table {
+                    min-width: 580px !important;
+                }
+
+                .map-toolbar-info,
+                .map-toolbar-actions {
+                    width: 100% !important;
+                    justify-content: space-between !important;
+                    flex-wrap: wrap !important;
+                }
+
+                .legend-page-header,
+                .settings-banner-header,
+                .category-header-card {
+                    padding: 18px 16px !important;
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 14px !important;
+                }
+
+                .legend-header-stats,
+                .settings-banner-stats {
+                    width: 100% !important;
+                    flex-wrap: wrap !important;
+                    gap: 8px !important;
+                }
+
+                .stat-pill,
+                .banner-stat-pill {
+                    flex: 1 !important;
+                    min-width: 130px !important;
+                    justify-content: center !important;
+                }
+
+                /* Settings Forms & Cards on Mobile */
+                .form-grid-2,
+                .form-grid-3 {
+                    grid-template-columns: 1fr !important;
+                    gap: 14px !important;
+                }
+
+                .settings-card-header {
+                    padding: 16px 14px !important;
+                }
+
+                .settings-card-body {
+                    padding: 18px 14px !important;
+                }
+
+                .settings-card-footer {
+                    padding: 14px !important;
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                }
+
+                .settings-card-footer button,
+                .settings-card-footer .btn {
+                    width: 100% !important;
+                    justify-content: center !important;
+                }
+
+                .logo-upload-wrapper,
+                .admin-badge-card,
+                .backup-download-box {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    padding: 16px 14px !important;
+                    gap: 14px !important;
+                }
+
+                .btn-backup-download {
+                    width: 100% !important;
+                    justify-content: center !important;
+                }
+
+                /* Media Library Grid */
+                .category-cards-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 16px !important;
+                }
+
+                .media-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 12px !important;
+                }
+
+                .media-thumb-wrap {
+                    height: 145px !important;
+                }
+
+                .gallery-nav-bar {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 10px !important;
+                }
+
+                /* Barangay & SK Officials Org Chart */
+                .org-chart-wrapper {
+                    gap: 18px !important;
+                    padding: 10px 4px 40px 4px !important;
+                }
+
+                .org-tier {
+                    gap: 12px !important;
+                }
+
+                .org-card {
+                    width: calc(50% - 8px) !important;
+                    min-width: 142px !important;
+                    max-width: 180px !important;
+                    padding: 10px !important;
+                }
+
+                .org-tier.tier-1 .org-card {
+                    width: 180px !important;
+                }
+
+                .org-photo-container {
+                    width: 100% !important;
+                    height: 135px !important;
+                }
+
+                /* Settings Navigation Tabs */
+                .settings-nav-tabs {
+                    overflow-x: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                    flex-wrap: nowrap !important;
+                    justify-content: flex-start !important;
+                    padding: 6px !important;
+                }
+
+                .settings-tab-btn {
+                    flex: 0 0 auto !important;
+                    min-width: auto !important;
+                    padding: 9px 14px !important;
+                    font-size: 12.5px !important;
+                }
+
+                /* Feedback Chat Header, Messages & Reply Bar on Mobile */
+                .chat-sidebar-header {
+                    padding: 12px 14px 10px 14px !important;
+                }
+
+                .conversation-item {
+                    padding: 11px 12px !important;
+                    gap: 10px !important;
+                }
+
+                .conv-avatar {
+                    width: 42px !important;
+                    height: 42px !important;
+                    font-size: 0.92rem !important;
+                }
+
+                .chat-area-header {
+                    padding: 10px 12px !important;
+                    flex-wrap: wrap !important;
+                    gap: 8px !important;
+                    height: auto !important;
+                }
+
+                .chat-header-resident-meta {
+                    flex: 1 1 auto !important;
+                    min-width: 0 !important;
+                    gap: 8px !important;
+                }
+
+                .chat-header-avatar {
+                    width: 36px !important;
+                    height: 36px !important;
+                    font-size: 0.88rem !important;
+                }
+
+                .chat-header-info h4 {
+                    font-size: 0.92rem !important;
+                }
+
+                .chat-header-actions {
+                    width: 100% !important;
+                    display: flex !important;
+                    gap: 8px !important;
+                }
+
+                .chat-header-actions .btn-header-tool {
+                    flex: 1 !important;
+                    justify-content: center !important;
+                    font-size: 11.5px !important;
+                    padding: 7px 10px !important;
+                }
+
+                .chat-messages-scroll {
+                    padding: 14px 12px !important;
+                }
+
+                .chat-email-reply-bar {
+                    padding: 10px 14px !important;
+                    gap: 10px !important;
+                }
+
+                .email-reply-bar-sub {
+                    display: none !important;
+                }
+
+                .notif-dropdown {
+                    position: fixed !important;
+                    top: 114px !important;
+                    left: 12px !important;
+                    right: 12px !important;
+                    width: auto !important;
+                    max-width: none !important;
+                }
+
+                /* Modals on Mobile */
+                .modal-content,
+                .modal-container {
+                    width: 95% !important;
+                    max-width: 95vw !important;
+                    max-height: 88dvh !important;
+                    border-radius: 14px !important;
+                    margin: 10px auto !important;
+                }
+
+                .modal-header {
+                    padding: 14px 16px !important;
+                }
+
+                .modal-header h2,
+                .modal-title-wrap h3 {
+                    font-size: 1.05rem !important;
+                }
+
+                .modal-body {
+                    padding: 16px !important;
+                    max-height: 68dvh !important;
+                }
+
+                .modal-footer {
+                    padding: 12px 16px !important;
+                    flex-wrap: wrap !important;
+                    gap: 8px !important;
+                }
+
+                .modal-footer button,
+                .modal-footer .btn-cancel,
+                .modal-footer .btn-action,
+                .modal-footer .btn-primary,
+                .modal-footer .btn-secondary {
+                    flex: 1 !important;
+                    justify-content: center !important;
+                }
+
+                .save-action-container .btn-save {
+                    width: 100% !important;
+                    justify-content: center !important;
+                }
+            }
+
+            /* --------------------------------------------------------------------------
    BREAKPOINT: <= 480px (Compact Smartphones)
    -------------------------------------------------------------------------- */
-@media (max-width: 480px) {
-    .media-grid,
-    .gallery-widget-grid {
-        grid-template-columns: 1fr !important;
-    }
+            @media (max-width: 480px) {
 
-    .media-thumb-wrap,
-    .gallery-widget-img-wrapper {
-        height: 170px !important;
-    }
+                .media-grid,
+                .gallery-widget-grid {
+                    grid-template-columns: 1fr !important;
+                }
 
-    .service-widget-item,
-    .page-item {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-        padding: 14px !important;
-    }
+                .media-thumb-wrap,
+                .gallery-widget-img-wrapper {
+                    height: 170px !important;
+                }
 
-    .service-widget-actions {
-        align-self: flex-end !important;
-    }
+                .service-widget-item,
+                .page-item {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 10px !important;
+                    padding: 14px !important;
+                }
 
-    .purok-card-actions {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
-    }
+                .service-widget-actions {
+                    align-self: flex-end !important;
+                }
 
-    #audio-toggle-text {
-        display: none !important;
-    }
-}
+                .purok-card-actions {
+                    grid-template-columns: 1fr !important;
+                    gap: 8px !important;
+                }
+
+                #audio-toggle-text {
+                    display: none !important;
+                }
+            }
