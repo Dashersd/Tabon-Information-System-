@@ -59,11 +59,12 @@ onDOMReady(() => {
     
     if (!track || !carousel) return;
 
-    // --- Configuration Constants ---
-    const MAX_ANGLE = 45; // max rotation degrees at the edges
-    const DEPTH = 120; // max translateZ push (px) at the edges
-    const SPEED = 70; // pixels per second
-    const GAP = 20; // Match gap from CSS
+    // --- Configuration Constants & Responsive Defaults ---
+    const SPEED = 65; // pixels per second
+    let currentGap = 20;
+    let currentMaxAngle = 28;
+    let currentDepth = 60;
+    let isMobile = false;
 
     // --- State ---
     let offset = 0;
@@ -118,13 +119,41 @@ onDOMReady(() => {
     }
 
     function measure() {
-        containerWidth = carousel.offsetWidth;
+        containerWidth = carousel.offsetWidth || window.innerWidth;
         containerCenter = containerWidth / 2;
+
+        const viewportWidth = window.innerWidth;
+        isMobile = viewportWidth <= 768;
+
+        if (viewportWidth <= 480) {
+            currentMaxAngle = 0;
+            currentDepth = 0;
+            currentGap = 12;
+        } else if (isMobile) {
+            currentMaxAngle = 0;
+            currentDepth = 0;
+            currentGap = 14;
+        } else if (viewportWidth <= 1024) {
+            currentMaxAngle = 18;
+            currentDepth = 35;
+            currentGap = 18;
+        } else {
+            currentMaxAngle = 28;
+            currentDepth = 60;
+            currentGap = 20;
+        }
+
+        try {
+            const computedGap = parseFloat(window.getComputedStyle(track).gap);
+            if (!isNaN(computedGap) && computedGap > 0) {
+                currentGap = computedGap;
+            }
+        } catch (e) {}
 
         const cards = Array.from(track.querySelectorAll('.card'));
         if (cards.length > 0) {
             const cardWidth = cards[0].offsetWidth;
-            singleSetWidth = originalCardCount * (cardWidth + GAP);
+            singleSetWidth = originalCardCount * (cardWidth + currentGap);
         }
     }
 
@@ -132,7 +161,7 @@ onDOMReady(() => {
         const deltaTime = (now - lastTime) / 1000;
         lastTime = now;
 
-        if (!prefersReducedMotion.matches && !isPaused) {
+        if (!prefersReducedMotion.matches && !isPaused && !isDragging) {
             offset += SPEED * deltaTime;
 
             if (offset >= singleSetWidth) {
@@ -151,38 +180,119 @@ onDOMReady(() => {
         const cardWidth = cards[0].offsetWidth;
 
         cards.forEach((card, index) => {
-            const initialLeft = index * (cardWidth + GAP);
+            const initialLeft = index * (cardWidth + currentGap);
             const cardLeft = initialLeft - offset;
             const cardCenter = cardLeft + cardWidth / 2;
             const ratio = (cardCenter - containerCenter) / (containerWidth / 2);
-            const angle = -ratio * MAX_ANGLE; 
-            const depth = Math.abs(ratio) * DEPTH;
+            const absRatio = Math.abs(ratio);
 
-            card.style.transform = `translateX(${-offset}px) rotateY(${angle}deg) translateZ(${depth}px)`;
+            // Center-focused z-index: closest to viewport center has highest z-index
+            const zIndex = Math.round((1 - Math.min(1, absRatio)) * 50);
+            card.style.zIndex = zIndex;
+
+            if (isMobile) {
+                // On mobile: completely flat (no rotateY / translateZ collision)
+                // Subtle spotlight scale for the center focused card
+                const scale = Math.max(0.93, 1 - Math.min(1, absRatio) * 0.07);
+                card.style.transform = `translateX(${-offset}px) scale(${scale.toFixed(3)})`;
+            } else {
+                // On desktop: elegant coverflow with edge cards receding into background
+                const clampedRatio = Math.max(-1.5, Math.min(1.5, ratio));
+                const angle = -clampedRatio * currentMaxAngle;
+                // Negative translateZ pushes edge cards BACK, keeping center prominent & preventing overlap
+                const depth = -Math.min(1.2, absRatio) * currentDepth;
+                card.style.transform = `translateX(${-offset}px) rotateY(${angle.toFixed(1)}deg) translateZ(${depth.toFixed(1)}px)`;
+            }
         });
     }
 
-    // --- Events ---
-    window.addEventListener('resize', () => {
-        measure();
-        render();
-    });
+    // --- Touch / Mouse Drag Handling ---
+    let isDragging = false;
+    let startX = 0;
+    let startOffset = 0;
+    let dragDistance = 0;
+    let resumeTimeout = null;
 
+    function onPointerDown(e) {
+        if (lightbox.classList.contains('active')) return;
+        isDragging = true;
+        isPaused = true;
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        dragDistance = 0;
+        startX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        startOffset = offset;
+    }
+
+    function onPointerMove(e) {
+        if (!isDragging) return;
+        const currentX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const deltaX = currentX - startX;
+        dragDistance = Math.abs(deltaX);
+
+        offset = startOffset - deltaX;
+
+        // Wrap offset seamlessly
+        if (singleSetWidth > 0) {
+            while (offset >= singleSetWidth) offset -= singleSetWidth;
+            while (offset < 0) offset += singleSetWidth;
+        }
+
+        render();
+    }
+
+    function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        resumeTimeout = setTimeout(() => {
+            if (!lightbox.classList.contains('active')) {
+                isPaused = false;
+                lastTime = performance.now();
+            }
+        }, 1200);
+    }
+
+    // Attach touch gestures
+    carousel.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp, { passive: true });
+    window.addEventListener('touchcancel', onPointerUp, { passive: true });
+
+    // Attach mouse drag gestures
+    carousel.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        onPointerDown(e);
+    });
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    // --- Hover Pause (Desktop) ---
     carousel.addEventListener('mouseenter', () => {
-        if (!lightbox.classList.contains('active')) {
+        if (!lightbox.classList.contains('active') && !isDragging) {
             isPaused = true;
         }
     });
 
     carousel.addEventListener('mouseleave', () => {
-        if (!lightbox.classList.contains('active')) {
+        if (!lightbox.classList.contains('active') && !isDragging) {
             isPaused = false;
             lastTime = performance.now();
         }
     });
 
+    // Window resize
+    window.addEventListener('resize', () => {
+        measure();
+        render();
+    });
+
     // Event delegation on the track to catch all clicks (including cloned cards)
     track.addEventListener('click', (e) => {
+        if (dragDistance > 8) {
+            dragDistance = 0;
+            return; // Swiped, do not trigger lightbox
+        }
         const card = e.target.closest('.card');
         if (card) {
             const img = card.querySelector('img');

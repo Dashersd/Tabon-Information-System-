@@ -890,9 +890,17 @@ footer {
     border-radius: 12px;
     position: relative;
     perspective: 1200px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
     /* Edge fade */
-    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
-    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.carousel:active {
+    cursor: grabbing;
 }
 
 .track {
@@ -2435,14 +2443,36 @@ html.menu-open-lock {
         justify-content: center;
     }
 
-    /* Carousel */
+    /* 3D Image Carousel Mobile Optimization */
+    .gallery-wrapper {
+        padding: 30px 0 15px 0;
+        margin-bottom: 25px;
+    }
+
+    .gallery-title {
+        font-size: 26px;
+        margin-bottom: 20px;
+        padding: 0 16px;
+    }
+
     .carousel {
-        height: 270px;
+        height: 255px;
+        border-radius: 14px;
+        perspective: none;
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        touch-action: pan-y;
+    }
+
+    .track {
+        gap: 14px;
     }
 
     .card {
-        width: 180px;
-        height: 235px;
+        width: 165px;
+        height: 220px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
     }
 
     /* Home Services */
@@ -2588,6 +2618,61 @@ html.menu-open-lock {
 
     .footer-container {
         padding: 20px 10px;
+    }
+
+    /* Carousel Small Mobile Optimizations */
+    .gallery-wrapper {
+        padding: 20px 0 10px 0;
+        margin-bottom: 20px;
+    }
+
+    .gallery-title {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+
+    .carousel {
+        height: 225px;
+        border-radius: 12px;
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+    }
+
+    .track {
+        gap: 12px;
+    }
+
+    .card {
+        width: 142px;
+        height: 195px;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-overlay {
+        padding: 10px 8px;
+    }
+
+    .card-overlay-btn {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 6px;
+    }
+
+    .card-overlay-btn i {
+        font-size: 0.9rem;
+    }
+
+    .card-overlay-title {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+
+    .card-overlay-folder,
+    .card-overlay-date {
+        font-size: 0.62rem;
+        padding: 3px 7px;
+        margin-bottom: 4px;
     }
 }
 
