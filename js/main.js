@@ -543,8 +543,8 @@ function initUniversalMobileNav() {
     const dropdownToggles = nav.querySelectorAll('.nav-item.dropdown > .dropdown-toggle');
     dropdownToggles.forEach(toggle => {
         toggle.addEventListener('click', (e) => {
+            e.preventDefault();
             if (window.innerWidth <= 992) {
-                e.preventDefault();
                 e.stopPropagation();
                 const parent = toggle.closest('.nav-item.dropdown');
                 if (parent) {
