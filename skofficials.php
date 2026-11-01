@@ -101,7 +101,7 @@ $sk7 = get_pub_sk_official('kagawad_7', 'Hon. Mc Felco T Bugao', 'SK KAGAWAD 7',
             <img src="Barangay Logo/Logo.png" alt="Barangay Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/65';">
             <div>
                 <div class="brand-title">Barangay Tabon</div>
-                <div class="brand-sub">Together for a Stronger Community</div>
+                <div class="brand-sub"><?= htmlspecialchars($site_slogan) ?></div>
             </div>
             <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" onerror="this.src='https://via.placeholder.com/65';">
         </div>

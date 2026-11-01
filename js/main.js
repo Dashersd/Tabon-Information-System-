@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawerBrand.innerHTML = `
             <div class="drawer-brand-text">
                 <div class="drawer-brand-title">Barangay Tabon</div>
-                <div class="drawer-brand-sub">Together for a Stronger Community</div>
+                <div class="drawer-brand-sub">${(document.querySelector('.brand-sub') && document.querySelector('.brand-sub').textContent.trim()) || 'Together for a Stronger Community'}</div>
             </div>
         `;
         closeBtn.after(drawerBrand);

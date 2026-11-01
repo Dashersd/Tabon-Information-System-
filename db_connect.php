@@ -144,4 +144,18 @@ if ($conn->connect_error) {
     die("MySQLi connection failed: " . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");
+
+// 4. Global Branding & Slogan Configuration (for public header, navbar, & footer)
+$global_barangay_info = [];
+try {
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+        $gb_res = $conn->query("SELECT `barangay_name`, `municipality`, `province`, `slogan`, `hero_title`, `logo_path`, `municipality_logo_path` FROM `barangay_information` WHERE `id` = 1 LIMIT 1");
+        if ($gb_res && $gb_row = $gb_res->fetch_assoc()) {
+            $global_barangay_info = $gb_row;
+        }
+    }
+} catch (\Throwable $e) {}
+
+$site_slogan = !empty($global_barangay_info['slogan']) ? $global_barangay_info['slogan'] : 'Serbisyong Tapat, Para sa Lahat';
+$site_barangay_name = !empty($global_barangay_info['barangay_name']) ? $global_barangay_info['barangay_name'] : 'Barangay Tabon';
 ?>

@@ -64,7 +64,7 @@ if ($media_res) {
             <img src="Barangay Logo/Logo.png" alt="Barangay Tabon Logo" class="brand-logo" style="width: 65px; height: 65px; object-fit: cover; border-radius: 50%;" onerror="this.src='https://via.placeholder.com/65';">
             <div>
                 <div class="brand-title">Barangay Tabon</div>
-                <div class="brand-sub">Together for a Stronger Community</div>
+                <div class="brand-sub"><?= htmlspecialchars($site_slogan) ?></div>
             </div>
             <img src="Barangay Logo/lapuyanlogo.jpg" alt="Municipality of Lapuyan Logo" class="brand-logo brand-logo-secondary" style="width: 65px; height: 65px; object-fit: contain; border-radius: 50%;" onerror="this.src='https://via.placeholder.com/65';">
         </div>
