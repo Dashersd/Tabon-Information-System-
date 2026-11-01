@@ -3,9 +3,14 @@
 
 // 1. Detect Environment (Localhost vs InfinityFree / Live Server)
 $http_host = $_SERVER['HTTP_HOST'] ?? '';
-$is_local  = in_array($http_host, ['localhost', '127.0.0.1', '::1']) 
+$is_cli    = (php_sapi_name() === 'cli');
+$is_local  = $is_cli
+             || in_array($http_host, ['localhost', '127.0.0.1', '::1']) 
              || strpos($http_host, 'localhost:') === 0 
              || strpos($http_host, '127.0.0.1:') === 0;
+
+$is_api_request = (strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') !== false) 
+                  || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
 
 if ($is_local) {
     // --- LOCAL DEVELOPMENT SETTINGS (XAMPP) ---
@@ -72,6 +77,15 @@ try {
             die("Database connection failed: " . $e->getMessage());
         }
     } else {
+        if ($is_api_request) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Database connection failed: ' . $e->getMessage()
+            ]);
+            exit();
+        }
+
         // Friendly notice for hosting setup
         die("
         <!DOCTYPE html>
@@ -119,6 +133,14 @@ try {
 // 3. Establish MySQLi Connection
 $conn = @new mysqli($host, $username, $password, $dbname, $port);
 if ($conn->connect_error) {
+    if ($is_api_request) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'MySQLi connection failed: ' . $conn->connect_error
+        ]);
+        exit();
+    }
     die("MySQLi connection failed: " . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");

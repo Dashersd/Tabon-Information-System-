@@ -5,31 +5,49 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../db_connect.php';
-
-$thread_id = trim($_POST['session_id'] ?? '');
-$message = trim($_POST['message'] ?? '');
-
-if (empty($thread_id)) {
-    echo json_encode(['status' => 'error', 'message' => 'Thread session ID is required.']);
-    exit();
-}
-
 try {
-    // 1. Expiration check: Verify if thread is over 24 hours (86,400s) old
-    $exp_stmt = $conn->prepare("SELECT (TIMESTAMPDIFF(SECOND, MIN(created_at), NOW()) > 86400) AS is_expired FROM feedback_chats WHERE thread_id = ?");
-    $exp_stmt->bind_param("s", $thread_id);
-    $exp_stmt->execute();
-    $exp_res = $exp_stmt->get_result();
-    $exp_row = $exp_res->fetch_assoc();
-    $exp_stmt->close();
+    require_once __DIR__ . '/../db_connect.php';
 
-    if ($exp_row && (bool)$exp_row['is_expired']) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Cannot send reply: This chat session has expired after 1 day.'
-        ]);
+    $thread_id = trim($_POST['session_id'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if (empty($thread_id)) {
+        echo json_encode(['status' => 'error', 'message' => 'Thread session ID is required.']);
         exit();
+    }
+
+    // Ensure feedback_chats table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `thread_id` varchar(100) NOT NULL,
+      `sender_name` varchar(255) NOT NULL,
+      `email` varchar(150) DEFAULT NULL,
+      `sender_type` enum('user','admin') NOT NULL DEFAULT 'user',
+      `message` text NOT NULL,
+      `file_attachment` varchar(255) DEFAULT NULL,
+      `file_name` varchar(255) DEFAULT NULL,
+      `is_read` tinyint(1) DEFAULT 0,
+      `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+      PRIMARY KEY (`id`),
+      KEY `idx_thread_id` (`thread_id`),
+      KEY `idx_sender_type_read` (`sender_type`, `is_read`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // 1. Expiration check: Verify if thread is over 24 hours (86,400s) old
+    if ($exp_stmt = $conn->prepare("SELECT (TIMESTAMPDIFF(SECOND, MIN(created_at), NOW()) > 86400) AS is_expired FROM feedback_chats WHERE thread_id = ?")) {
+        $exp_stmt->bind_param("s", $thread_id);
+        $exp_stmt->execute();
+        $exp_res = $exp_stmt->get_result();
+        $exp_row = $exp_res ? $exp_res->fetch_assoc() : null;
+        $exp_stmt->close();
+
+        if ($exp_row && (bool)$exp_row['is_expired']) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Cannot send reply: This chat session has expired after 1 day.'
+            ]);
+            exit();
+        }
     }
 
     // 2. Handle File Upload (Optional)
@@ -39,7 +57,7 @@ try {
     if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
         $upload_dir = __DIR__ . '/../uploads/chat_files/';
         if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+            @mkdir($upload_dir, 0777, true);
         }
 
         $orig_name = basename($_FILES['attachment']['name']);
@@ -56,7 +74,6 @@ try {
         $target_path = $upload_dir . $safe_filename;
 
         if (move_uploaded_file($_FILES['attachment']['tmp_name'], $target_path)) {
-            // Store relative path from Admin directory
             $file_attachment = 'uploads/chat_files/' . $safe_filename;
             $file_name = $orig_name;
         } else {
@@ -74,11 +91,15 @@ try {
     $admin_sender = 'Admin';
     $maxChatRes = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `feedback_chats`");
     $safe_chat_id = ($maxChatRes && $cr = $maxChatRes->fetch_assoc()) ? (int)$cr['next_id'] : 1;
+
     $insert_stmt = $conn->prepare("INSERT INTO feedback_chats (id, thread_id, sender_name, email, sender_type, message, file_attachment, file_name, is_read) VALUES (?, ?, ?, NULL, 'admin', ?, ?, ?, 0)");
+    if (!$insert_stmt) {
+        throw new Exception("Insert prepare failed: " . $conn->error);
+    }
     $insert_stmt->bind_param("isssss", $safe_chat_id, $thread_id, $admin_sender, $message, $file_attachment, $file_name);
     
     if ($insert_stmt->execute()) {
-        $new_id = $insert_stmt->insert_id;
+        $new_id = $insert_stmt->insert_id ?: $safe_chat_id;
         $insert_stmt->close();
 
         echo json_encode([
@@ -96,9 +117,8 @@ try {
             ]
         ]);
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
+        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $insert_stmt->error]);
     }
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
-
