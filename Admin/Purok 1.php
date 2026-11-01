@@ -38,7 +38,8 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Admin Common & Page Stylesheet -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
     <style>
         .map-wrapper, .map-container {
             position: relative;

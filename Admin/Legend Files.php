@@ -25,7 +25,8 @@ $records = array_filter($households, function($hh) {
     <!-- Bootstrap Icons v1.11.3 CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
     <link rel="stylesheet" href="Admin CSS/Legend Files.css?v=<?= time() ?>">
 </head>
 <body>

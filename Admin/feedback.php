@@ -44,7 +44,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS `feedback_chats` (
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
     <link rel="stylesheet" href="Admin CSS/feedback.css?v=<?= time() ?>">
     <style>
 /* Admin/Admin CSS/feedbackchat.css - Barangay Tabon Admin Feedback Chat & Resident Inquiry Management */

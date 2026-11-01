@@ -196,7 +196,8 @@ $error = $_GET['error'] ?? '';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Admin & Gallery Stylesheets -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
     <link rel="stylesheet" href="Admin CSS/mediagallery.css?v=<?= time() ?>">
     <style>
 * { box-sizing: border-box; }
