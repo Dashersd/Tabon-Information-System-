@@ -23,14 +23,14 @@ return [
     | Gmail Credentials
     |--------------------------------------------------------------------------
     */
-    'smtp_username' => 'helmandacuma5@gmail.com',
-    'smtp_password' => 'byemaoomhlxwgate', // Verified 16-character Google App Password
+    'smtp_username' => 'mugiw200@gmail.com',
+    'smtp_password' => 'dwiepoqtbohugdfv', // 16-character Google App Password
 
     /*
     |--------------------------------------------------------------------------
     | Sender Identity
     |--------------------------------------------------------------------------
     */
-    'from_email'    => 'helmandacuma5@gmail.com',
+    'from_email'    => 'mugiw200@gmail.com',
     'from_name'     => 'Barangay Tabon Information System'
 ];
