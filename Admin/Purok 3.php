@@ -38,8 +38,7 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Admin Common & Page Stylesheet -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
-    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <style>
         .map-wrapper, .map-container {
             position: relative;
@@ -174,6 +173,8 @@ try {
             z-index: 100;
         }
     </style>
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>
 </head>
 <body>
 

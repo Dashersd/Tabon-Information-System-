@@ -145,8 +145,7 @@ if (!empty($raw_img)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Admin Stylesheet -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
-    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/about.css?v=<?= time() ?>">
     <style>
 /* css/about.css */
@@ -462,6 +461,8 @@ if (!empty($raw_img)) {
 
 
     </style>
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>
 </head>
 <body>
 

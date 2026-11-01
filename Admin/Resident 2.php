@@ -35,8 +35,7 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Admin Stylesheet -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
-    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <style>
         .table-card {
             background-color: #ffffff;
@@ -144,6 +143,8 @@ try {
         }
         .alert-danger { background: #fee2e2; border-left: 5px solid #ef4444; color: #991b1b; }
     </style>
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>
 </head>
 <body>
     <!-- Sidebar Navigation -->

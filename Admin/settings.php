@@ -436,8 +436,7 @@ $active_tab = $_GET['tab'] ?? 'general';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
-    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/settings.css?v=<?= time() ?>">
     <style>
 ﻿/* Admin/Admin CSS/settings.css - Admin Settings & System Configuration Center */
@@ -1502,6 +1501,8 @@ textarea.form-control {
     border: 1px solid #fde68a;
 }
     </style>
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>
 </head>
 <body>
 

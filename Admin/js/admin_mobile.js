@@ -19,14 +19,7 @@
         const mainContent = document.querySelector('.main-content');
         if (!sidebar) return;
 
-        // 1. Ensure admin_common.css rules win over inline <style> blocks by appending link at end of <head>
-        const existingCommonLink = document.querySelector('link[href*="admin_common.css"]');
-        if (existingCommonLink && document.head) {
-            const cloneLink = existingCommonLink.cloneNode(true);
-            document.head.appendChild(cloneLink);
-        }
-
-        // 2. Detect current page title for the mobile topbar subtitle
+        // 1. Detect current page title for the mobile topbar subtitle
         let pageLabel = 'Control Panel';
         const titleEl = document.querySelector('.page-title, .topbar-title, .media-top-title, .admin-header-row h2, .content-header h2, .legend-header-title h2, .settings-banner-title h2, .officials-header-container h2, .about-header h2');
         if (titleEl) {
@@ -193,3 +186,4 @@
         }
     });
 })();
+

@@ -232,8 +232,7 @@ $next_order = count($services) + 1;
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Admin Common & Services Stylesheet -->
-    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>
-    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>">
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
     <link rel="stylesheet" href="Admin CSS/services.css?v=<?= time() ?>">
     <style>
 /* Admin/Admin CSS/services.css - Barangay Services Management Styling */
@@ -746,6 +745,8 @@ $next_order = count($services) + 1;
 }
 
     </style>
+    <link rel="stylesheet" href="Admin CSS/admin_common.css?v=<?= time() ?>">
+    <script src="js/admin_mobile.js?v=<?= time() ?>" defer></script>
 </head>
 <body>
 
