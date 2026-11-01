@@ -49,13 +49,21 @@ try {
       KEY `expires_at` (`expires_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    // 2. Generate secure 6-digit PIN code
+    // 2. Self-healing: Fix any zero ID and ensure AUTO_INCREMENT is active
+    try {
+        $zeroCheck = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `email_verifications`");
+        $fix_next = ($zeroCheck && $zRow = $zeroCheck->fetch_assoc()) ? (int)$zRow['next_id'] : 1;
+        $conn->query("UPDATE `email_verifications` SET `id` = $fix_next WHERE `id` = 0");
+        $conn->query("ALTER TABLE `email_verifications` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT");
+    } catch (\Throwable $fixEx) {}
+
+    // 3. Generate secure 6-digit PIN code
     $pin_code = sprintf("%06d", mt_rand(100000, 999999));
 
     // 3 minutes expiration (180 seconds)
     $expires_at = date('Y-m-d H:i:s', time() + 180);
 
-    // 3. Invalidate any existing unverified codes for this email
+    // 4. Invalidate any existing unverified codes for this email
     $invalidate = $conn->prepare("UPDATE `email_verifications` SET `is_verified` = 2 WHERE `email` = ? AND `is_verified` = 0");
     if ($invalidate) {
         $invalidate->bind_param("s", $email);
@@ -63,23 +71,27 @@ try {
         $invalidate->close();
     }
 
-    // 4. Insert pending verification record
+    // 5. Determine next safe ID to guarantee no Duplicate entry '0' error
+    $maxRes = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `email_verifications`");
+    $assigned_id = ($maxRes && $mRow = $maxRes->fetch_assoc()) ? (int)$mRow['next_id'] : 1;
+
+    // 6. Insert pending verification record with explicit safe ID
     $stmt = $conn->prepare("INSERT INTO `email_verifications` 
-        (`email`, `pin_code`, `full_name`, `phone`, `service_type`, `message`, `expires_at`, `is_verified`, `resend_count`) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)");
+        (`id`, `email`, `pin_code`, `full_name`, `phone`, `service_type`, `message`, `expires_at`, `is_verified`, `resend_count`) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)");
 
     if (!$stmt) {
         throw new Exception("Database prepare statement failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssssss", $email, $pin_code, $fullName, $phone, $service, $message, $expires_at);
+    $stmt->bind_param("isssssss", $assigned_id, $email, $pin_code, $fullName, $phone, $service, $message, $expires_at);
 
     if (!$stmt->execute()) {
         throw new Exception("Database execution failed: " . $stmt->error);
     }
     $stmt->close();
 
-    // 5. Dispatch email
+    // 7. Dispatch email
     $mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
 
     echo json_encode([

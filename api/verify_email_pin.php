@@ -34,6 +34,14 @@ try {
       KEY `idx_sender_type_read` (`sender_type`, `is_read`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    // Self-healing: Fix any zero ID and ensure AUTO_INCREMENT is active for feedback_chats
+    try {
+        $chatZero = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `feedback_chats`");
+        $fix_chat = ($chatZero && $cRow = $chatZero->fetch_assoc()) ? (int)$cRow['next_id'] : 1;
+        $conn->query("UPDATE `feedback_chats` SET `id` = $fix_chat WHERE `id` = 0");
+        $conn->query("ALTER TABLE `feedback_chats` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT");
+    } catch (\Throwable $fixEx) {}
+
     // Find pending verification record
     $stmt = $conn->prepare("SELECT `id`, `pin_code`, `full_name`, `phone`, `service_type`, `message`, `expires_at` 
         FROM `email_verifications` 
@@ -88,27 +96,31 @@ try {
         $mark->close();
     }
 
-    // 4. Insert into primary feedback_chats table for Admin
+    // 4. Calculate safe next ID for feedback_chats to prevent Duplicate entry '0'
+    $maxChatRes = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `feedback_chats`");
+    $assigned_chat_id = ($maxChatRes && $cr = $maxChatRes->fetch_assoc()) ? (int)$cr['next_id'] : 1;
+
+    // 5. Insert into primary feedback_chats table for Admin
     $thread_id = 'thread_' . bin2hex(random_bytes(16));
     $service_tag = !empty($record['service_type']) ? $record['service_type'] : 'Contact Inquiry';
     $full_message = "[Service: " . $service_tag . "]\n\n" . $record['message'] . (!empty($record['phone']) ? "\n\nContact Phone: " . $record['phone'] : "");
 
     $chat_stmt = $conn->prepare("INSERT INTO `feedback_chats` 
-        (`thread_id`, `sender_name`, `email`, `sender_type`, `message`, `is_read`, `created_at`) 
-        VALUES (?, ?, ?, 'user', ?, 0, NOW())");
+        (`id`, `thread_id`, `sender_name`, `email`, `sender_type`, `message`, `is_read`, `created_at`) 
+        VALUES (?, ?, ?, ?, 'user', ?, 0, NOW())");
 
     if (!$chat_stmt) {
         throw new Exception("Chat prepare statement failed: " . $conn->error);
     }
 
-    $chat_stmt->bind_param("ssss", $thread_id, $record['full_name'], $email, $full_message);
+    $chat_stmt->bind_param("issss", $assigned_chat_id, $thread_id, $record['full_name'], $email, $full_message);
 
     if (!$chat_stmt->execute()) {
         throw new Exception("Chat execution failed: " . $chat_stmt->error);
     }
     $chat_stmt->close();
 
-    // 5. Return official success message requested by user
+    // 6. Return official success message requested by user
     echo json_encode([
         'status'  => 'success',
         'message' => 'The Admin has received your request and wait for 3 to 5 business days to be finished and sent to your Gmail.'

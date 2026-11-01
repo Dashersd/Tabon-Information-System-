@@ -14,8 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
         $thread_id = 'thread_' . bin2hex(random_bytes(16));
         $full_message = "[Service: Contact Inquiry]\n\n" . $message . (!empty($phone) ? "\n\nContact Phone: " . $phone : "");
         
-        $stmt = $conn->prepare("INSERT INTO feedback_chats (thread_id, sender_name, email, sender_type, message, is_read) VALUES (?, ?, ?, 'user', ?, 0)");
-        $stmt->bind_param("ssss", $thread_id, $name, $email, $full_message);
+        $mChat = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `feedback_chats`");
+        $safe_chat_id = ($mChat && $cR = $mChat->fetch_assoc()) ? (int)$cR['next_id'] : 1;
+        $stmt = $conn->prepare("INSERT INTO feedback_chats (id, thread_id, sender_name, email, sender_type, message, is_read) VALUES (?, ?, ?, ?, 'user', ?, 0)");
+        $stmt->bind_param("issss", $safe_chat_id, $thread_id, $name, $email, $full_message);
         
         if ($stmt->execute()) {
             $stmt->close();

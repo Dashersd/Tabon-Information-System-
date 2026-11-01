@@ -72,8 +72,10 @@ try {
 
     // 3. Insert Admin Message
     $admin_sender = 'Admin';
-    $insert_stmt = $conn->prepare("INSERT INTO feedback_chats (thread_id, sender_name, email, sender_type, message, file_attachment, file_name, is_read) VALUES (?, ?, NULL, 'admin', ?, ?, ?, 0)");
-    $insert_stmt->bind_param("sssss", $thread_id, $admin_sender, $message, $file_attachment, $file_name);
+    $maxChatRes = $conn->query("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `feedback_chats`");
+    $safe_chat_id = ($maxChatRes && $cr = $maxChatRes->fetch_assoc()) ? (int)$cr['next_id'] : 1;
+    $insert_stmt = $conn->prepare("INSERT INTO feedback_chats (id, thread_id, sender_name, email, sender_type, message, file_attachment, file_name, is_read) VALUES (?, ?, ?, NULL, 'admin', ?, ?, ?, 0)");
+    $insert_stmt->bind_param("isssss", $safe_chat_id, $thread_id, $admin_sender, $message, $file_attachment, $file_name);
     
     if ($insert_stmt->execute()) {
         $new_id = $insert_stmt->insert_id;
