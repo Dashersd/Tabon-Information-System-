@@ -17,22 +17,22 @@ function onDOMReady(fn) {
 // ----------------------------------------------------
 onDOMReady(() => {
     const navLinks = document.querySelectorAll('nav a, .back-to-home, .btn-login');
-    
+
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const targetUrl = link.getAttribute('href');
-            
+
             // Ignore links that don't go to another internal page (like #, empty, or external URLs)
-            if(!targetUrl || targetUrl === '#' || targetUrl.startsWith('http') || targetUrl.startsWith('javascript:')) {
+            if (!targetUrl || targetUrl === '#' || targetUrl.startsWith('http') || targetUrl.startsWith('javascript:')) {
                 return;
             }
-            
+
             // Prevent instant navigation
             e.preventDefault();
-            
+
             // Add the fade-out class to trigger CSS transition
             document.body.classList.add('fade-out');
-            
+
             // Wait for transition before navigating
             setTimeout(() => {
                 window.location.href = targetUrl;
@@ -56,7 +56,7 @@ onDOMReady(() => {
 onDOMReady(() => {
     const track = document.querySelector('.track');
     const carousel = document.querySelector('.carousel');
-    
+
     if (!track || !carousel) return;
 
     // --- Configuration Constants & Responsive Defaults ---
@@ -71,7 +71,7 @@ onDOMReady(() => {
     let isPaused = false;
     let originalCardCount = 0;
     let singleSetWidth = 0;
-    
+
     let containerWidth = 0;
     let containerCenter = 0;
 
@@ -92,7 +92,7 @@ onDOMReady(() => {
         </div>
     `;
     document.body.appendChild(lightbox);
-    
+
     const lightboxImg = lightbox.querySelector('img');
     const lightboxCaption = lightbox.querySelector('.carousel-lightbox-caption');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
@@ -101,7 +101,7 @@ onDOMReady(() => {
         // Find original cards
         const originalCards = Array.from(track.querySelectorAll('.card'));
         originalCardCount = originalCards.length;
-        if(originalCardCount === 0) return;
+        if (originalCardCount === 0) return;
 
         // Duplicate the full card list twice in JS by cloning for seamless loop
         for (let i = 0; i < 2; i++) {
@@ -112,7 +112,7 @@ onDOMReady(() => {
         }
 
         measure();
-        
+
         // Start loop
         lastTime = performance.now();
         loop(lastTime);
@@ -148,7 +148,7 @@ onDOMReady(() => {
             if (!isNaN(computedGap) && computedGap > 0) {
                 currentGap = computedGap;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         const cards = Array.from(track.querySelectorAll('.card'));
         if (cards.length > 0) {
@@ -176,7 +176,7 @@ onDOMReady(() => {
     function render() {
         const cards = track.querySelectorAll('.card');
         if (cards.length === 0) return;
-        
+
         const cardWidth = cards[0].offsetWidth;
 
         cards.forEach((card, index) => {
@@ -243,7 +243,7 @@ onDOMReady(() => {
     function onPointerUp() {
         if (!isDragging) return;
         isDragging = false;
-        
+
         if (resumeTimeout) clearTimeout(resumeTimeout);
         resumeTimeout = setTimeout(() => {
             if (!lightbox.classList.contains('active')) {
@@ -369,7 +369,7 @@ onDOMReady(() => {
         try {
             const lenis = new Lenis({
                 duration: 1.2,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 direction: 'vertical',
                 gestureDirection: 'vertical',
                 smooth: true,
@@ -543,8 +543,8 @@ function initUniversalMobileNav() {
     const dropdownToggles = nav.querySelectorAll('.nav-item.dropdown > .dropdown-toggle');
     dropdownToggles.forEach(toggle => {
         toggle.addEventListener('click', (e) => {
-            e.preventDefault();
             if (window.innerWidth <= 992) {
+                e.preventDefault();
                 e.stopPropagation();
                 const parent = toggle.closest('.nav-item.dropdown');
                 if (parent) {
