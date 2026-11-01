@@ -193,53 +193,59 @@ body {
    -------------------------------------------------------------------------- */
 @media (max-width: 992px) {
     body {
+        display: flex !important;
         flex-direction: column !important;
         height: auto !important;
         min-height: 100vh !important;
         min-height: 100dvh !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
-        padding-top: 60px !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     body.admin-drawer-lock {
         overflow: hidden !important;
     }
 
-    /* Sticky Mobile App Topbar */
+    /* Sticky In-Flow Mobile App Topbar (Never Overlaps Content Below) */
     .admin-mobile-topbar {
         display: flex !important;
         align-items: center;
         justify-content: space-between;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 60px;
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        flex-shrink: 0 !important;
         background: linear-gradient(135deg, #223c3b 0%, #182b2a 100%);
         color: #ffffff;
         padding: 0 14px;
         z-index: 99990;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .admin-mobile-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         min-width: 0;
         flex: 1;
+        margin-right: 8px;
     }
 
     .admin-mobile-menu-btn {
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         border-radius: 10px;
         background: rgba(255, 255, 255, 0.12);
         border: 1px solid rgba(255, 255, 255, 0.18);
         color: #ffffff;
-        font-size: 18px;
+        font-size: 17px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -257,13 +263,14 @@ body {
     .admin-mobile-brand {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 9px;
         min-width: 0;
+        flex: 1;
     }
 
     .admin-mobile-brand img {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         object-fit: cover;
         border: 1.5px solid rgba(255, 255, 255, 0.35);
@@ -272,12 +279,13 @@ body {
 
     .admin-mobile-brand-text {
         min-width: 0;
+        flex: 1;
         display: flex;
         flex-direction: column;
     }
 
     .admin-mobile-brand-title {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 700;
         color: #ffffff;
         white-space: nowrap;
@@ -288,32 +296,34 @@ body {
 
     .admin-mobile-brand-sub {
         font-size: 10.5px;
-        color: #94b8b6;
+        color: #a3c2c0;
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.2;
+        margin-top: 1px;
     }
 
     .admin-mobile-actions {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         flex-shrink: 0;
     }
 
     .admin-mobile-action-link {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         border-radius: 9px;
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         color: #ffffff !important;
         text-decoration: none !important;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 13.5px;
         transition: background 0.2s ease;
     }
 
@@ -408,7 +418,7 @@ body {
     }
 
     .kpi-cards {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
         gap: 14px !important;
     }
 
@@ -435,34 +445,54 @@ body {
         height: 100dvh !important;
         max-height: 100dvh !important;
         overflow: hidden !important;
+        padding: 0 !important;
     }
 
     body.feedback-chat-page .main-content {
-        height: calc(100dvh - 60px) !important;
-        max-height: calc(100dvh - 60px) !important;
+        flex: 1 !important;
+        height: calc(100dvh - 58px) !important;
+        max-height: calc(100dvh - 58px) !important;
         padding: 0 !important;
         overflow: hidden !important;
     }
 
     body.feedback-chat-page .top-header {
-        height: auto !important;
-        min-height: 56px !important;
-        padding: 10px 14px !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
+        height: 52px !important;
+        min-height: 52px !important;
+        padding: 0 14px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        gap: 10px !important;
+    }
+
+    body.feedback-chat-page .topbar-left {
+        min-width: 0 !important;
+        flex: 1 !important;
     }
 
     body.feedback-chat-page .topbar-title {
-        font-size: 1rem !important;
+        font-size: 0.92rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
-    body.feedback-chat-page .topbar-user > div {
+    body.feedback-chat-page .topbar-right-actions {
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    body.feedback-chat-page .topbar-user {
         display: none !important;
     }
 
     body.feedback-chat-page .chat-app-wrapper {
-        height: calc(100dvh - 116px) !important;
-        max-height: calc(100dvh - 116px) !important;
+        flex: 1 !important;
+        height: calc(100dvh - 110px) !important;
+        max-height: calc(100dvh - 110px) !important;
     }
 
     .btn-mobile-back-list {
@@ -474,10 +504,9 @@ body {
         background: #f1f5f9;
         border: 1px solid #cbd5e1;
         color: #0f172a;
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 700;
         cursor: pointer;
-        margin-right: 6px;
         flex-shrink: 0;
     }
 
@@ -491,14 +520,13 @@ body {
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     .main-content {
-        padding: 14px 12px 32px 12px !important;
+        padding: 16px 14px 36px 14px !important;
     }
 
     /* Top Bars & Page Headers */
     .top-bar,
     .admin-header-row,
     .media-top-bar,
-    .legend-top-bar,
     .section-header-flex {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -507,7 +535,7 @@ body {
     }
 
     .legend-top-bar {
-        padding: 14px 16px !important;
+        padding: 12px 16px !important;
         flex-direction: row !important;
         align-items: center !important;
     }
@@ -516,14 +544,14 @@ body {
     .admin-header-row h2,
     .media-top-title,
     .content-header h2 {
-        font-size: 1.28rem !important;
+        font-size: 1.25rem !important;
         line-height: 1.3 !important;
     }
 
     .top-bar-actions {
         width: 100% !important;
         display: flex !important;
-        flex-wrap: wrap !important;
+        flex-direction: column !important;
         gap: 8px !important;
     }
 
@@ -535,32 +563,38 @@ body {
         width: 100% !important;
         justify-content: center !important;
         text-align: center !important;
+        padding: 11px 16px !important;
     }
 
-    /* KPI Cards: 2-Column Compact Grid on Phones */
+    /* KPI Cards: Full-Width Horizontal Cards with Breathing Room */
     .kpi-cards {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
     }
 
     .kpi-card {
-        padding: 14px 12px !important;
-        gap: 10px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        padding: 16px 18px !important;
+        gap: 16px !important;
+        flex-direction: row !important;
+        align-items: center !important;
     }
 
     .kpi-icon {
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 17px !important;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 20px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .kpi-info h3 {
+        font-size: 12px !important;
     }
 
     .kpi-info p {
-        font-size: 20px !important;
+        font-size: 22px !important;
     }
 
-    /* Widget Panels & Cards */
+    /* Widget Panels & Containers */
     .purok-breakdown-section,
     .widget-panel,
     .admin-container,
@@ -579,6 +613,22 @@ body {
 
     .widget-body {
         padding: 14px !important;
+    }
+
+    .services-widget-summary,
+    .gallery-widget-summary {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        text-align: center !important;
+        padding: 12px !important;
+    }
+
+    .btn-add-service-shortcut,
+    .btn-gallery-shortcut {
+        justify-content: center !important;
+        padding: 8px 12px !important;
+        font-size: 12px !important;
     }
 
     /* Tables & Controls */
@@ -622,13 +672,28 @@ body {
     .admin-table td,
     .data-table th,
     .data-table td {
-        padding: 11px 12px !important;
+        padding: 12px 14px !important;
         font-size: 12.5px !important;
     }
 
     /* SpotMap & Purok Forms */
-    .map-container {
-        height: 280px !important;
+    .map-container,
+    .map-viewport-wrapper {
+        height: 300px !important;
+    }
+
+    .map-card-toolbar {
+        padding: 12px 14px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    .map-toolbar-info,
+    .map-toolbar-actions {
+        width: 100% !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
     }
 
     .form-row {
@@ -662,7 +727,7 @@ body {
     /* Media Library Grid */
     .category-cards-grid {
         grid-template-columns: 1fr !important;
-        gap: 14px !important;
+        gap: 16px !important;
     }
 
     .media-grid {
@@ -671,7 +736,7 @@ body {
     }
 
     .media-thumb-wrap {
-        height: 140px !important;
+        height: 145px !important;
     }
 
     .gallery-nav-bar {
@@ -692,13 +757,13 @@ body {
 
     .org-card {
         width: calc(50% - 8px) !important;
-        min-width: 140px !important;
-        max-width: 175px !important;
-        padding: 8px !important;
+        min-width: 142px !important;
+        max-width: 180px !important;
+        padding: 10px !important;
     }
 
     .org-tier.tier-1 .org-card {
-        width: 175px !important;
+        width: 180px !important;
     }
 
     .org-photo-container {
@@ -712,7 +777,7 @@ body {
         -webkit-overflow-scrolling: touch !important;
         flex-wrap: nowrap !important;
         justify-content: flex-start !important;
-        padding: 5px !important;
+        padding: 6px !important;
     }
 
     .settings-tab-btn {
@@ -722,16 +787,43 @@ body {
         font-size: 12.5px !important;
     }
 
-    /* Feedback Chat Header & Dropdown on Mobile */
-    .chat-area-header {
-        padding: 10px 12px !important;
-        flex-wrap: wrap !important;
+    /* Feedback Chat Header, Messages & Reply Bar on Mobile */
+    .chat-sidebar-header {
+        padding: 12px 14px 10px 14px !important;
+    }
+
+    .conversation-item {
+        padding: 11px 12px !important;
         gap: 10px !important;
     }
 
+    .conv-avatar {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 0.92rem !important;
+    }
+
+    .chat-area-header {
+        padding: 10px 12px !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        height: auto !important;
+    }
+
     .chat-header-resident-meta {
-        width: 100% !important;
-        flex: 1 1 100% !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        gap: 8px !important;
+    }
+
+    .chat-header-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 0.88rem !important;
+    }
+
+    .chat-header-info h4 {
+        font-size: 0.92rem !important;
     }
 
     .chat-header-actions {
@@ -743,13 +835,26 @@ body {
     .chat-header-actions .btn-header-tool {
         flex: 1 !important;
         justify-content: center !important;
-        font-size: 12px !important;
-        padding: 8px 10px !important;
+        font-size: 11.5px !important;
+        padding: 7px 10px !important;
+    }
+
+    .chat-messages-scroll {
+        padding: 14px 12px !important;
+    }
+
+    .chat-email-reply-bar {
+        padding: 10px 14px !important;
+        gap: 10px !important;
+    }
+
+    .email-reply-bar-sub {
+        display: none !important;
     }
 
     .notif-dropdown {
         position: fixed !important;
-        top: 115px !important;
+        top: 114px !important;
         left: 12px !important;
         right: 12px !important;
         width: auto !important;
@@ -805,21 +910,14 @@ body {
    BREAKPOINT: <= 480px (Compact Smartphones)
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
-    .kpi-cards {
+    .media-grid,
+    .gallery-widget-grid {
         grid-template-columns: 1fr !important;
     }
 
-    .kpi-card {
-        flex-direction: row !important;
-        align-items: center !important;
-    }
-
-    .media-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .media-thumb-wrap {
-        height: 180px !important;
+    .media-thumb-wrap,
+    .gallery-widget-img-wrapper {
+        height: 170px !important;
     }
 
     .service-widget-item,
@@ -827,6 +925,7 @@ body {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 10px !important;
+        padding: 14px !important;
     }
 
     .service-widget-actions {
@@ -835,6 +934,7 @@ body {
 
     .purok-card-actions {
         grid-template-columns: 1fr !important;
+        gap: 8px !important;
     }
 
     #audio-toggle-text {
