@@ -1,13 +1,29 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Select all navigation links and back buttons
+/**
+ * Main Interactive Application Script - Barangay Tabon Information System
+ * Fully compatible with Localhost, InfinityFree, and Mobile Browsers.
+ */
+
+// Universal Helper: Runs callback whether DOM is loading, interactive, or complete
+function onDOMReady(fn) {
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        setTimeout(fn, 1);
+    } else {
+        document.addEventListener('DOMContentLoaded', fn);
+    }
+}
+
+// ----------------------------------------------------
+// Smooth Page Transition Handler & bfcache recovery
+// ----------------------------------------------------
+onDOMReady(() => {
     const navLinks = document.querySelectorAll('nav a, .back-to-home, .btn-login');
     
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const targetUrl = link.getAttribute('href');
             
-            // Ignore links that don't go to another internal page (like # or external URLs)
-            if(!targetUrl || targetUrl === '#' || targetUrl.startsWith('http')) {
+            // Ignore links that don't go to another internal page (like #, empty, or external URLs)
+            if(!targetUrl || targetUrl === '#' || targetUrl.startsWith('http') || targetUrl.startsWith('javascript:')) {
                 return;
             }
             
@@ -17,18 +33,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add the fade-out class to trigger CSS transition
             document.body.classList.add('fade-out');
             
-            // Wait for the animation to finish (400ms) before actually navigating
+            // Wait for transition before navigating
             setTimeout(() => {
                 window.location.href = targetUrl;
-            }, 400);
+            }, 250);
         });
+    });
+
+    // Mobile bfcache recovery (ensures page is never blank when returning with back button)
+    window.addEventListener('pageshow', () => {
+        document.body.classList.remove('fade-out');
+        document.body.classList.remove('menu-open-lock');
+        if (document.documentElement) {
+            document.documentElement.classList.remove('menu-open-lock');
+        }
     });
 });
 
 // ----------------------------------------------------
 // 3D Infinite Scroll Image Carousel
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+onDOMReady(() => {
     const track = document.querySelector('.track');
     const carousel = document.querySelector('.carousel');
     
@@ -37,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration Constants ---
     const MAX_ANGLE = 45; // max rotation degrees at the edges
     const DEPTH = 120; // max translateZ push (px) at the edges
-    const SPEED = 70; // pixels per second (increased for a tiny bit faster scroll)
+    const SPEED = 70; // pixels per second
     const GAP = 20; // Match gap from CSS
 
     // --- State ---
@@ -54,6 +79,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Pre-create Lightbox element to avoid temporal dead zone
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.innerHTML = `
+        <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
+            <img src="" alt="Expanded View">
+            <div class="carousel-lightbox-caption" style="color:#ffffff; font-size:1.05rem; margin-top:12px; font-weight:600; text-align:center; font-family:'Montserrat',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.6);"></div>
+        </div>
+    `;
+    document.body.appendChild(lightbox);
+    
+    const lightboxImg = lightbox.querySelector('img');
+    const lightboxCaption = lightbox.querySelector('.carousel-lightbox-caption');
+    const lightboxClose = lightbox.querySelector('.lightbox-close');
 
     function init() {
         // Find original cards
@@ -83,19 +124,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const cards = Array.from(track.querySelectorAll('.card'));
         if (cards.length > 0) {
             const cardWidth = cards[0].offsetWidth;
-            // Width of exactly one original set (cards + gaps)
             singleSetWidth = originalCardCount * (cardWidth + GAP);
         }
     }
 
     function loop(now) {
-        const deltaTime = (now - lastTime) / 1000; // in seconds
+        const deltaTime = (now - lastTime) / 1000;
         lastTime = now;
 
         if (!prefersReducedMotion.matches && !isPaused) {
             offset += SPEED * deltaTime;
 
-            // Wrap seamlessly
             if (offset >= singleSetWidth) {
                 offset -= singleSetWidth;
             }
@@ -112,29 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardWidth = cards[0].offsetWidth;
 
         cards.forEach((card, index) => {
-            // Position of this card in the track, factoring in the current scroll offset
             const initialLeft = index * (cardWidth + GAP);
             const cardLeft = initialLeft - offset;
             const cardCenter = cardLeft + cardWidth / 2;
-
-            // Compute ratio from center (-1 to 1 across the container width)
-            // If it's outside the container, it's > 1 or < -1, but they are faded/clipped anyway
             const ratio = (cardCenter - containerCenter) / (containerWidth / 2);
-
-            // Compute the curve
-            // Ratio is 0 at center, -1 at left, 1 at right
-            // We want it to bow TOWARD the viewer (concave).
-            // A concave wall: center is flat, left card faces right, right card faces left.
-            // Left card (ratio < 0): rotateY should be positive to face right (assuming CSS 3D).
-            // Right card (ratio > 0): rotateY should be negative to face left.
-            // Thus, angle = -ratio * MAX_ANGLE.
             const angle = -ratio * MAX_ANGLE; 
-            
-            // Depth pushes cards forward (positive Z) as they move away from center
-            // This pulls the edges toward the viewer.
             const depth = Math.abs(ratio) * DEPTH;
 
-            // Apply transform
             card.style.transform = `translateX(${-offset}px) rotateY(${angle}deg) translateZ(${depth}px)`;
         });
     }
@@ -142,39 +165,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Events ---
     window.addEventListener('resize', () => {
         measure();
-        render(); // Force render immediately on resize
+        render();
     });
 
     carousel.addEventListener('mouseenter', () => {
-        // Only pause if lightbox is not active
         if (!lightbox.classList.contains('active')) {
             isPaused = true;
         }
     });
 
     carousel.addEventListener('mouseleave', () => {
-        // Only unpause if lightbox is not active
         if (!lightbox.classList.contains('active')) {
             isPaused = false;
-            lastTime = performance.now(); // reset time so it doesn't jump
+            lastTime = performance.now();
         }
     });
-
-    // --- Lightbox Feature ---
-    const lightbox = document.createElement('div');
-    lightbox.className = 'lightbox';
-    lightbox.innerHTML = `
-        <div class="lightbox-content">
-            <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
-            <img src="" alt="Expanded View">
-            <div class="carousel-lightbox-caption" style="color:#ffffff; font-size:1.05rem; margin-top:12px; font-weight:600; text-align:center; font-family:'Montserrat',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.6);"></div>
-        </div>
-    `;
-    document.body.appendChild(lightbox);
-    
-    const lightboxImg = lightbox.querySelector('img');
-    const lightboxCaption = lightbox.querySelector('.carousel-lightbox-caption');
-    const lightboxClose = lightbox.querySelector('.lightbox-close');
 
     // Event delegation on the track to catch all clicks (including cloned cards)
     track.addEventListener('click', (e) => {
@@ -203,14 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 lightboxCaption.innerHTML = captionHtml;
             }
             lightbox.classList.add('active');
-            isPaused = true; // Pause carousel when expanded
+            isPaused = true;
         }
     });
 
     const closeLightbox = () => {
         lightbox.classList.remove('active');
         isPaused = false;
-        lastTime = performance.now(); // Reset timer so scroll resumes smoothly
+        lastTime = performance.now();
     };
 
     lightboxClose.addEventListener('click', closeLightbox);
@@ -226,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ----------------------------------------------------
 // Scroll Animations Trigger
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+onDOMReady(() => {
     const observerOptions = {
         root: null,
         rootMargin: '0px',
@@ -247,49 +252,61 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ----------------------------------------------------
-// Lenis Smooth Scroll Initialization
+// Lenis Smooth Scroll Initialization (Safe try/catch)
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if Lenis is loaded (only on pages where it's included)
+onDOMReady(() => {
     if (typeof Lenis !== 'undefined') {
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 1,
-            smoothTouch: false,
-            touchMultiplier: 2,
-            infinite: false,
-        });
+        try {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+                direction: 'vertical',
+                gestureDirection: 'vertical',
+                smooth: true,
+                mouseMultiplier: 1,
+                smoothTouch: false,
+                touchMultiplier: 2,
+                infinite: false,
+            });
 
-        function raf(time) {
-            lenis.raf(time);
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+
             requestAnimationFrame(raf);
+        } catch (e) {
+            console.warn('Lenis scroll init bypassed:', e);
         }
-
-        requestAnimationFrame(raf);
     }
 });
 
 // ----------------------------------------------------
-// Universal Mobile Navigation Drawer Initialization
+// Universal Mobile Navigation Drawer Controller
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+function initUniversalMobileNav() {
     const header = document.querySelector('header');
     const nav = document.querySelector('nav');
     if (!header || !nav) return;
 
-    // Anchor placeholder to keep exact desktop position inside header
-    const navPlaceholder = document.createComment('nav-desktop-placeholder');
-    header.insertBefore(navPlaceholder, nav);
+    if (window.__tabonMobileNavInitialized) return;
+    window.__tabonMobileNavInitialized = true;
 
-    // Create hamburger toggle button if it doesn't exist
-    let toggleBtn = header.querySelector('.mobile-menu-toggle');
+    // Anchor placeholder to keep exact desktop position inside header
+    let navPlaceholder = document.getElementById('navDesktopPlaceholder');
+    if (!navPlaceholder) {
+        navPlaceholder = document.createElement('div');
+        navPlaceholder.id = 'navDesktopPlaceholder';
+        navPlaceholder.style.display = 'none';
+        header.insertBefore(navPlaceholder, nav);
+    }
+
+    // Locate or create hamburger toggle button
+    let toggleBtn = header.querySelector('.mobile-menu-toggle') || document.querySelector('.mobile-menu-toggle');
     if (!toggleBtn) {
         toggleBtn = document.createElement('button');
         toggleBtn.className = 'mobile-menu-toggle';
+        toggleBtn.id = 'mobileMenuToggle';
         toggleBtn.setAttribute('aria-label', 'Toggle navigation menu');
         toggleBtn.setAttribute('type', 'button');
         toggleBtn.innerHTML = `
@@ -300,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         header.appendChild(toggleBtn);
     }
 
-    // Create backdrop if it doesn't exist
+    // Locate or create backdrop
     let backdrop = document.querySelector('.mobile-nav-backdrop');
     if (!backdrop) {
         backdrop = document.createElement('div');
@@ -308,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(backdrop);
     }
 
-    // Create close button inside nav if not present
+    // Locate or create close button inside nav
     let closeBtn = nav.querySelector('.mobile-nav-close');
     if (!closeBtn) {
         closeBtn = document.createElement('button');
@@ -316,38 +333,28 @@ document.addEventListener('DOMContentLoaded', () => {
         closeBtn.setAttribute('aria-label', 'Close menu');
         closeBtn.setAttribute('type', 'button');
         closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-        nav.prepend(closeBtn);
+        nav.insertBefore(closeBtn, nav.firstChild);
     }
 
-    // Mobile brand header inside nav drawer
+    // Locate or create mobile brand header inside nav drawer
     let drawerBrand = nav.querySelector('.mobile-drawer-brand');
     if (!drawerBrand) {
         drawerBrand = document.createElement('div');
         drawerBrand.className = 'mobile-drawer-brand';
+        const brandSubEl = document.querySelector('.brand-sub');
+        const brandSubText = (brandSubEl && brandSubEl.textContent.trim()) || 'Together for a Stronger Community';
         drawerBrand.innerHTML = `
             <div class="drawer-brand-text">
                 <div class="drawer-brand-title">Barangay Tabon</div>
-                <div class="drawer-brand-sub">${(document.querySelector('.brand-sub') && document.querySelector('.brand-sub').textContent.trim()) || 'Together for a Stronger Community'}</div>
+                <div class="drawer-brand-sub">${brandSubText}</div>
             </div>
         `;
-        closeBtn.after(drawerBrand);
-    }
-
-    // Ensures nav is a direct child of <body> on mobile so it completely escapes header's stacking context
-    function syncNavPlacement() {
-        if (window.innerWidth <= 992) {
-            if (nav.parentElement !== document.body) {
-                document.body.appendChild(nav);
-            }
+        if (closeBtn.nextSibling) {
+            nav.insertBefore(drawerBrand, closeBtn.nextSibling);
         } else {
-            if (nav.parentElement !== header) {
-                navPlaceholder.after(nav);
-            }
-            closeMobileMenu();
+            nav.appendChild(drawerBrand);
         }
     }
-    syncNavPlacement();
-    window.addEventListener('resize', syncNavPlacement);
 
     function openMobileMenu() {
         if (nav.parentElement !== document.body) {
@@ -356,17 +363,47 @@ document.addEventListener('DOMContentLoaded', () => {
         nav.classList.add('mobile-open');
         backdrop.classList.add('active');
         toggleBtn.classList.add('open');
+        header.classList.add('header-menu-active');
         document.body.classList.add('menu-open-lock');
+        if (document.documentElement) {
+            document.documentElement.classList.add('menu-open-lock');
+        }
     }
 
     function closeMobileMenu() {
         nav.classList.remove('mobile-open');
         backdrop.classList.remove('active');
         toggleBtn.classList.remove('open');
+        header.classList.remove('header-menu-active');
         document.body.classList.remove('menu-open-lock');
+        if (document.documentElement) {
+            document.documentElement.classList.remove('menu-open-lock');
+        }
     }
 
+    // Dynamic placement: body on mobile (escapes sticky header constraints), header on desktop
+    function syncNavPlacement() {
+        if (window.innerWidth <= 992) {
+            if (nav.parentElement !== document.body) {
+                document.body.appendChild(nav);
+            }
+        } else {
+            if (nav.parentElement !== header) {
+                if (navPlaceholder && navPlaceholder.parentNode) {
+                    navPlaceholder.parentNode.insertBefore(nav, navPlaceholder.nextSibling);
+                } else {
+                    header.appendChild(nav);
+                }
+            }
+            closeMobileMenu();
+        }
+    }
+    syncNavPlacement();
+    window.addEventListener('resize', syncNavPlacement);
+
+    // Toggle button click / touch
     toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (nav.classList.contains('mobile-open')) {
             closeMobileMenu();
@@ -375,14 +412,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Close button click
     closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         closeMobileMenu();
     });
 
-    backdrop.addEventListener('click', () => {
+    // Backdrop click / touch to dismiss
+    backdrop.addEventListener('click', (e) => {
+        e.preventDefault();
         closeMobileMenu();
     });
+    backdrop.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        closeMobileMenu();
+    }, { passive: false });
 
     // Mobile dropdown accordion handling (About Us & Officials)
     const dropdownToggles = nav.querySelectorAll('.nav-item.dropdown > .dropdown-toggle');
@@ -415,4 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
             closeMobileMenu();
         }
     });
-});
+
+    // Handle bfcache on mobile browsers
+    window.addEventListener('pageshow', () => {
+        closeMobileMenu();
+    });
+}
+
+// Initialize Universal Mobile Navigation
+onDOMReady(initUniversalMobileNav);

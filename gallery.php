@@ -70,6 +70,16 @@ if ($media_res) {
         </div>
 
         <nav>
+            <!-- Mobile Drawer Close Button & Brand Header -->
+            <button class="mobile-nav-close" type="button" aria-label="Close menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="mobile-drawer-brand">
+                <div class="drawer-brand-text">
+                    <div class="drawer-brand-title">Barangay Tabon</div>
+                    <div class="drawer-brand-sub"><?= htmlspecialchars($site_slogan) ?></div>
+                </div>
+            </div>
             <a href="index.php" class="nav-item">
                 <span>Home</span>
             </a>
@@ -101,6 +111,13 @@ if ($media_res) {
                 <span>Contact Us</span>
             </a>
         </nav>
+
+        <!-- Mobile Menu Hamburger Button -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Toggle navigation menu">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+        </button>
     </header>
 
     <!-- Main Content -->
@@ -265,5 +282,7 @@ if ($media_res) {
     <!-- Preloader Script -->
     <script src="js/preloader.js?v=<?php echo time(); ?>"></script>
     <script src="js/main.js?v=<?= time() ?>"></script>
+    <!-- Mobile Navigation Drawer Backdrop -->
+    <div class="mobile-nav-backdrop"></div>
 </body>
 </html>
