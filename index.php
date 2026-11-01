@@ -101,8 +101,10 @@ try {
 
 // Fetch dynamic Homepage Hero Background Video from barangay_information
 $home_hero_video = 'Video/Homepage.mp4';
+$home_hero_title = 'Building a Stronger and United Community';
+
 try {
-    $v_check = $conn->query("SELECT `hero_video_path` FROM `barangay_information` WHERE `id` = 1 LIMIT 1");
+    $v_check = $conn->query("SELECT `hero_video_path`, `hero_title` FROM `barangay_information` WHERE `id` = 1 LIMIT 1");
     if ($v_check && $v_row = $v_check->fetch_assoc()) {
         if (!empty($v_row['hero_video_path'])) {
             $raw_v = $v_row['hero_video_path'];
@@ -111,9 +113,25 @@ try {
                 $home_hero_video = $resolved_v;
             }
         }
+        if (!empty($v_row['hero_title'])) {
+            $home_hero_title = $v_row['hero_title'];
+        }
     }
 } catch (Exception $e) {}
 $home_hero_video_cache = file_exists($home_hero_video) ? filemtime($home_hero_video) : time();
+
+function format_hero_title($text) {
+    if (empty($text)) {
+        return 'Building a Stronger<br>and United Community';
+    }
+    $sanitized = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    $sanitized = preg_replace('/&lt;br\s*\/?&gt;/i', '<br>', $sanitized);
+    $sanitized = nl2br($sanitized);
+    if (strpos($sanitized, '<br>') === false && trim($text) === 'Building a Stronger and United Community') {
+        $sanitized = 'Building a Stronger<br>and United Community';
+    }
+    return $sanitized;
+}
 
 function get_home_announcement_date($when_date, $created_at) {
     $ts = !empty($when_date) ? strtotime($when_date) : null;
@@ -207,7 +225,7 @@ function get_home_announcement_date($when_date, $created_at) {
                 <div class="hero-video-overlay"></div>
             </div>
             <div class="hero-content">
-                <h1 class="hero-title fade-in-left">Building a Stronger<br>and United Community</h1>
+                <h1 class="hero-title fade-in-left"><?= format_hero_title($home_hero_title) ?></h1>
                 <!-- Live Official Timestamp Widget -->
                 <div class="hero-timestamp fade-in-left delay-1" id="heroTimestampBox">
                     <span class="hero-timestamp-badge">

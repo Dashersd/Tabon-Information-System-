@@ -37,6 +37,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `barangay_information` (
     `municipality` VARCHAR(150) NOT NULL DEFAULT 'Lapuyan',
     `province` VARCHAR(150) NOT NULL DEFAULT 'Zamboanga del Sur',
     `slogan` VARCHAR(255) DEFAULT 'Serbisyong Tapat, Para sa Lahat',
+    `hero_title` VARCHAR(255) DEFAULT 'Building a Stronger and United Community',
     `office_hours` VARCHAR(150) DEFAULT 'Monday - Friday, 8:00 AM - 5:00 PM',
     `hall_address` VARCHAR(255) DEFAULT 'Barangay Hall, Tabon, Lapuyan, Zamboanga del Sur',
     `mission_vision` TEXT NULL,
@@ -48,22 +49,26 @@ $conn->query("CREATE TABLE IF NOT EXISTS `barangay_information` (
     `tanod_hotline` VARCHAR(50) DEFAULT '0931-234-5678',
     `logo_path` VARCHAR(255) DEFAULT '../Barangay Logo/Logo.png',
     `municipality_logo_path` VARCHAR(255) DEFAULT '../Barangay Logo/lapuyanlogo.jpg',
+    `hero_video_path` VARCHAR(255) DEFAULT 'Video/Homepage.mp4',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+ensureColumnExists($conn, 'barangay_information', 'hero_title', "VARCHAR(255) DEFAULT 'Building a Stronger and United Community' AFTER `slogan`");
+ensureColumnExists($conn, 'barangay_information', 'hero_video_path', "VARCHAR(255) DEFAULT 'Video/Homepage.mp4' AFTER `municipality_logo_path`");
 
 // Ensure record id = 1 exists in barangay_information
 $check_info = $conn->query("SELECT * FROM `barangay_information` WHERE `id` = 1");
 if ($check_info && $check_info->num_rows === 0) {
     $conn->query("INSERT INTO `barangay_information` (
-        `id`, `barangay_name`, `municipality`, `province`, `slogan`, `office_hours`, 
+        `id`, `barangay_name`, `municipality`, `province`, `slogan`, `hero_title`, `office_hours`, 
         `hall_address`, `email`, `contact_number`,
-        `police_hotline`, `fire_hotline`, `health_hotline`, `tanod_hotline`, `logo_path`
+        `police_hotline`, `fire_hotline`, `health_hotline`, `tanod_hotline`, `logo_path`, `hero_video_path`
     ) VALUES (
-        1, 'Barangay Tabon', 'Lapuyan', 'Zamboanga del Sur', 'Serbisyong Tapat, Para sa Lahat',
+        1, 'Barangay Tabon', 'Lapuyan', 'Zamboanga del Sur', 'Serbisyong Tapat, Para sa Lahat', 'Building a Stronger and United Community',
         'Monday - Friday, 8:00 AM - 5:00 PM', 'Barangay Hall, Tabon, Lapuyan, Zamboanga del Sur',
         'barangaytabon@gmail.com', '(+63) 912 345 6789',
-        '0998-598-7241', '0917-123-4567', '0920-987-6543', '0931-234-5678', '../Barangay Logo/Logo.png'
+        '0998-598-7241', '0917-123-4567', '0920-987-6543', '0931-234-5678', '../Barangay Logo/Logo.png', 'Video/Homepage.mp4'
     )");
 }
 
@@ -118,6 +123,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $municipality   = trim($_POST['municipality'] ?? 'Lapuyan');
         $province       = trim($_POST['province'] ?? 'Zamboanga del Sur');
         $slogan         = trim($_POST['slogan'] ?? '');
+        $hero_title     = trim($_POST['hero_title'] ?? 'Building a Stronger and United Community');
         $office_hours   = trim($_POST['office_hours'] ?? '');
         $hall_address   = trim($_POST['hall_address'] ?? '');
         $mission_vision = trim($_POST['mission_vision'] ?? '');
@@ -178,11 +184,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         }
 
         $stmt = $conn->prepare("UPDATE `barangay_information` SET 
-            `barangay_name` = ?, `municipality` = ?, `province` = ?, `slogan` = ?, 
+            `barangay_name` = ?, `municipality` = ?, `province` = ?, `slogan` = ?, `hero_title` = ?, 
             `office_hours` = ?, `hall_address` = ?, `mission_vision` = ?, 
             `logo_path` = ?, `municipality_logo_path` = ?, `hero_video_path` = ? 
             WHERE `id` = 1");
-        $stmt->bind_param("ssssssssss", $barangay_name, $municipality, $province, $slogan, $office_hours, $hall_address, $mission_vision, $curr_logo, $curr_muni_logo, $curr_hero_video);
+        $stmt->bind_param("sssssssssss", $barangay_name, $municipality, $province, $slogan, $hero_title, $office_hours, $hall_address, $mission_vision, $curr_logo, $curr_muni_logo, $curr_hero_video);
         $stmt->execute();
 
         logActivity($conn, 'Profile Updated', 'Barangay profile details, branding seals, and hero video updated');
@@ -1796,6 +1802,14 @@ textarea.form-control {
                                     <label class="form-label" for="officeHoursInput">Office Operating Hours</label>
                                     <input type="text" name="office_hours" id="officeHoursInput" class="form-control" value="<?= htmlspecialchars($info['office_hours'] ?? 'Monday - Friday, 8:00 AM - 5:00 PM') ?>">
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="heroTitleInput">Homepage Hero Title / Headline <span class="required">*</span></label>
+                                <input type="text" name="hero_title" id="heroTitleInput" class="form-control" value="<?= htmlspecialchars($info['hero_title'] ?? 'Building a Stronger and United Community') ?>" placeholder="e.g. Building a Stronger and United Community" required>
+                                <small style="color: #64748b; font-size: 0.82rem; margin-top: 5px; display: block;">
+                                    <i class="bi bi-info-circle"></i> Main headline displayed over the hero background video on the website homepage.
+                                </small>
                             </div>
 
                             <div class="form-group">

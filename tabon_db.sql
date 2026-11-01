@@ -116,6 +116,7 @@ CREATE TABLE `barangay_information` (
   `municipality` varchar(150) NOT NULL DEFAULT 'Lapuyan',
   `province` varchar(150) NOT NULL DEFAULT 'Zamboanga del Sur',
   `slogan` varchar(255) DEFAULT 'Serbisyong Tapat, Para sa Lahat',
+  `hero_title` varchar(255) DEFAULT 'Building a Stronger and United Community',
   `office_hours` varchar(150) DEFAULT 'Monday - Friday, 8:00 AM - 5:00 PM',
   `hall_address` varchar(255) DEFAULT 'Barangay Hall, Tabon, Lapuyan, Zamboanga del Sur',
   `mission_vision` text DEFAULT NULL,
@@ -141,7 +142,7 @@ CREATE TABLE `barangay_information` (
 
 LOCK TABLES `barangay_information` WRITE;
 /*!40000 ALTER TABLE `barangay_information` DISABLE KEYS */;
-INSERT INTO `barangay_information` VALUES (1,'Barangay Tabon','Lapuyan','Zamboanga del Sur','Serbisyong Tapat, Para sa Lahat','Monday - Friday, 8:00 AM - 5:00 PM','Barangay Hall, Tabon, Lapuyan, Zamboanga del Sur','A peaceful, progressive, and resilient community of Tabon.','barangaytabon@gmail.com','(+63) 912 345 6789','https://www.facebook.com/','0998-598-7241','0917-123-4567','0920-987-6543','0931-234-5678','../Barangay Logo/Logo.png','../Barangay Logo/lapuyanlogo.jpg','uploads/branding/hero_video_1793440568.mp4','2026-10-29 06:17:10','2026-10-31 09:56:08');
+INSERT INTO `barangay_information` VALUES (1,'Barangay Tabon','Lapuyan','Zamboanga del Sur','Serbisyong Tapat, Para sa Lahat','Building a Stronger and United Community','Monday - Friday, 8:00 AM - 5:00 PM','Barangay Hall, Tabon, Lapuyan, Zamboanga del Sur','A peaceful, progressive, and resilient community of Tabon.','barangaytabon@gmail.com','(+63) 912 345 6789','https://www.facebook.com/','0998-598-7241','0917-123-4567','0920-987-6543','0931-234-5678','../Barangay Logo/Logo.png','../Barangay Logo/lapuyanlogo.jpg','uploads/branding/hero_video_1793440568.mp4','2026-10-29 06:17:10','2026-10-31 09:56:08');
 /*!40000 ALTER TABLE `barangay_information` ENABLE KEYS */;
 UNLOCK TABLES;
 
