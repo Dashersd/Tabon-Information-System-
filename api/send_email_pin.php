@@ -30,41 +30,72 @@ if (empty($message)) {
     exit();
 }
 
-// Generate secure 6-digit PIN code
-$pin_code = sprintf("%06d", mt_rand(100000, 999999));
+try {
+    // 1. Ensure email_verifications table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS `email_verifications` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `email` varchar(150) NOT NULL,
+      `pin_code` varchar(10) NOT NULL,
+      `full_name` varchar(150) NOT NULL,
+      `phone` varchar(50) DEFAULT NULL,
+      `service_type` varchar(150) DEFAULT 'Contact Inquiry',
+      `message` text NOT NULL,
+      `expires_at` datetime NOT NULL,
+      `is_verified` tinyint(1) DEFAULT 0,
+      `resend_count` int(11) DEFAULT 0,
+      `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+      PRIMARY KEY (`id`),
+      KEY `email` (`email`),
+      KEY `expires_at` (`expires_at`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-// 3 minutes expiration (180 seconds)
-$expires_at = date('Y-m-d H:i:s', time() + 180);
+    // 2. Generate secure 6-digit PIN code
+    $pin_code = sprintf("%06d", mt_rand(100000, 999999));
 
-// Invalidate any existing unverified codes for this email
-$invalidate = $conn->prepare("UPDATE `email_verifications` SET `is_verified` = 2 WHERE `email` = ? AND `is_verified` = 0");
-$invalidate->bind_param("s", $email);
-$invalidate->execute();
-$invalidate->close();
+    // 3 minutes expiration (180 seconds)
+    $expires_at = date('Y-m-d H:i:s', time() + 180);
 
-// Insert pending verification record
-$stmt = $conn->prepare("INSERT INTO `email_verifications` 
-    (`email`, `pin_code`, `full_name`, `phone`, `service_type`, `message`, `expires_at`, `is_verified`, `resend_count`) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)");
+    // 3. Invalidate any existing unverified codes for this email
+    $invalidate = $conn->prepare("UPDATE `email_verifications` SET `is_verified` = 2 WHERE `email` = ? AND `is_verified` = 0");
+    if ($invalidate) {
+        $invalidate->bind_param("s", $email);
+        $invalidate->execute();
+        $invalidate->close();
+    }
 
-$stmt->bind_param("sssssss", $email, $pin_code, $fullName, $phone, $service, $message, $expires_at);
+    // 4. Insert pending verification record
+    $stmt = $conn->prepare("INSERT INTO `email_verifications` 
+        (`email`, `pin_code`, `full_name`, `phone`, `service_type`, `message`, `expires_at`, `is_verified`, `resend_count`) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)");
 
-if (!$stmt->execute()) {
-    echo json_encode(['status' => 'error', 'message' => 'Failed to initialize verification. Please try again.']);
-    exit();
+    if (!$stmt) {
+        throw new Exception("Database prepare statement failed: " . $conn->error);
+    }
+
+    $stmt->bind_param("sssssss", $email, $pin_code, $fullName, $phone, $service, $message, $expires_at);
+
+    if (!$stmt->execute()) {
+        throw new Exception("Database execution failed: " . $stmt->error);
+    }
+    $stmt->close();
+
+    // 5. Dispatch email
+    $mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
+
+    echo json_encode([
+        'status'     => 'success',
+        'message'    => !empty($mailResult['mail_sent']) 
+            ? 'OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.' 
+            : 'OTP Code generated. (Testing OTP: ' . $pin_code . ')',
+        'mail_sent'  => !empty($mailResult['mail_sent']),
+        'email'      => $email,
+        'expires_in' => 180,
+        'dev_pin'    => $pin_code
+    ]);
+
+} catch (\Throwable $e) {
+    echo json_encode([
+        'status'  => 'error',
+        'message' => 'Unable to send OTP at this moment: ' . $e->getMessage()
+    ]);
 }
-$stmt->close();
-
-// Dispatch email
-$mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
-
-echo json_encode([
-    'status'     => 'success',
-    'message'    => !empty($mailResult['mail_sent']) 
-        ? 'OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.' 
-        : 'OTP Code generated. (Testing OTP: ' . $pin_code . ')',
-    'mail_sent'  => !empty($mailResult['mail_sent']),
-    'email'      => $email,
-    'expires_in' => 180,
-    'dev_pin'    => $pin_code
-]);

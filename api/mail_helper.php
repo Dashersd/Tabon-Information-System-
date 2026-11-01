@@ -123,6 +123,7 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
             $mail->Password   = $smtp_config['smtp_password'];
             $mail->SMTPSecure = ($smtp_config['smtp_secure'] === 'ssl') ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = (int)($smtp_config['smtp_port'] ?: 587);
+            $mail->Timeout    = 10; // Prevent indefinite hanging on hosting firewalls
             $mail->CharSet    = 'UTF-8';
             $mail->Encoding   = 'base64';
 
