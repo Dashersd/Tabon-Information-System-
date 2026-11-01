@@ -68,6 +68,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
             </p>
 
             <!-- Alert box inside modal for error/expiry messages -->
+            <!-- Free Hosting / Offline OTP Fallback Banner -->
+            <div class="pin-offline-banner" id="pinOfflineBanner" style="display: none; background: #fef3c7; border: 1px solid #fde047; color: #854d0e; padding: 14px 16px; border-radius: 10px; font-size: 13px; margin: 12px 0 16px 0; text-align: left;">
+                <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #b45309;">
+                    <i class="fa-solid fa-circle-info"></i> Notice: Free Hosting Mode
+                </div>
+                <span>InfinityFree blocks outbound email sending (SMTP). For instant testing & submission, your 6-digit OTP code is:</span>
+                <div style="margin: 8px 0; text-align: center;">
+                    <span id="pinOfflineCode" style="font-family: monospace; font-size: 26px; font-weight: 800; letter-spacing: 6px; background: #ffffff; padding: 4px 16px; border-radius: 8px; border: 2px solid #eab308; color: #1e293b; display: inline-block;">------</span>
+                </div>
+                <div style="text-align: center;">
+                    <button type="button" id="btnAutoFillPin" style="background: #093d25; color: #ffffff; border: none; padding: 8px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill & Verify Now
+                    </button>
+                </div>
+            </div>
+
             <div class="pin-modal-alert" id="pinModalAlert">
                 <i class="fa-solid fa-circle-exclamation"></i>
                 <span id="pinModalAlertText">Invalid OTP code.</span>
@@ -568,6 +584,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
 
+                    // Free hosting fallback display
+                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
+                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
+                    if (pinOfflineBanner && pinOfflineCode) {
+                        if (!data.mail_sent && data.dev_pin) {
+                            pinOfflineBanner.style.display = 'block';
+                            pinOfflineCode.textContent = data.dev_pin;
+                        } else {
+                            pinOfflineBanner.style.display = 'none';
+                        }
+                    }
+
                     // Dev hint if local dev mode
                     if (data.dev_pin) {
                         console.log(`%c[Barangay Tabon Dev OTP] PIN for ${email}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
@@ -586,6 +614,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
         });
 
         // 2. Resend Code Handler
+                // Auto-Fill & Verify Handler
+        const btnAutoFillPin = document.getElementById('btnAutoFillPin');
+        if (btnAutoFillPin) {
+            btnAutoFillPin.addEventListener('click', function() {
+                const code = document.getElementById('pinOfflineCode').textContent.trim();
+                if (code && code.length === 6 && code !== '------') {
+                    code.split('').forEach((char, i) => {
+                        if (pinInputs[i]) {
+                            pinInputs[i].value = char;
+                            pinInputs[i].classList.add('filled');
+                        }
+                    });
+                    btnVerifyPin.click();
+                }
+            });
+        }
+
         btnResendPin.addEventListener('click', function () {
             if (!activeEmail) return;
 
@@ -606,6 +651,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_contact_msg'])) 
                     resetPinInputs();
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
+
+                    // Free hosting fallback display
+                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
+                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
+                    if (pinOfflineBanner && pinOfflineCode) {
+                        if (!data.mail_sent && data.dev_pin) {
+                            pinOfflineBanner.style.display = 'block';
+                            pinOfflineCode.textContent = data.dev_pin;
+                        } else {
+                            pinOfflineBanner.style.display = 'none';
+                        }
+                    }
 
                     if (data.dev_pin) {
                         console.log(`%c[Barangay Tabon Dev OTP] Resent PIN for ${activeEmail}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
