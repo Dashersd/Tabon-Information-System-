@@ -135,7 +135,8 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
             $mail->XMailer = ' ';
 
             $fromEmail = !empty($smtp_config['from_email']) ? $smtp_config['from_email'] : $smtp_config['smtp_username'];
-            $fromName  = !empty($smtp_config['from_name']) ? $smtp_config['from_name'] : 'Barangay Tabon';
+            global $global_barangay_info;
+            $fromName  = !empty($smtp_config['from_name']) ? $smtp_config['from_name'] : (!empty($global_barangay_info['barangay_name']) ? $global_barangay_info['barangay_name'] . ' Information System' : 'Barangay Tabon Information System');
 
             $mail->setFrom($fromEmail, $fromName);
             $mail->Sender = $fromEmail; // Ensures Return-Path matches From:
