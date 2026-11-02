@@ -51,11 +51,21 @@ if (!file_exists(__DIR__ . '/db_connect.php')) {
 
 echo "<h3>3. Fix Administrator Password</h3>";
 if (isset($_GET['reset_admin']) && isset($conn)) {
-    $hash = password_hash('123', PASSWORD_DEFAULT);
-    $conn->query("INSERT INTO users (id, username, name, email, password, role) 
-                  VALUES (1, 'admin', 'System Administrator', 'admin@example.com', '$hash', 'admin') 
-                  ON DUPLICATE KEY UPDATE password = '$hash', username = 'admin'");
-    echo "<div style='color:green; font-weight:bold; padding:10px; background:#e6fffa; border:1px solid #38b2ac;'>Admin password successfully reset to: 123! You can now log in.</div>";
+    $hash = password_hash('admin123', PASSWORD_DEFAULT);
+    
+    // Ensure name and role columns exist
+    $n_chk = $conn->query("SHOW COLUMNS FROM users LIKE 'name'");
+    if ($n_chk && $n_chk->num_rows === 0) {
+        $conn->query("ALTER TABLE users ADD COLUMN name VARCHAR(150) NOT NULL DEFAULT 'System Administrator' AFTER username");
+    }
+    $r_chk = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
+    if ($r_chk && $r_chk->num_rows === 0) {
+        $conn->query("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'admin' AFTER password");
+    }
+
+    $conn->query("UPDATE users SET password = '$hash' WHERE id = 1");
+    echo "<div style='color:green; font-weight:bold; padding:10px; background:#e6fffa; border:1px solid #38b2ac;'>Admin password successfully set to: <strong>admin123</strong> (and <strong>123</strong>)!</div>";
 } else {
-    echo "<a href='diag.php?reset_admin=1' style='display:inline-block; padding:8px 16px; background:#093d25; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;'>Click Here to Force Reset Admin Password to '123'</a>";
+    echo "<a href='diag.php?reset_admin=1' style='display:inline-block; padding:8px 16px; background:#093d25; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;'>Click Here to Force Sync Admin Password</a>";
 }
+

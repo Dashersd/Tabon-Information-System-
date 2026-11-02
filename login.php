@@ -18,6 +18,17 @@ $conn->query("CREATE TABLE IF NOT EXISTS `users` (
     UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+// Ensure users table columns exist (InfinityFree schema compatibility)
+$name_chk = $conn->query("SHOW COLUMNS FROM `users` LIKE 'name'");
+if ($name_chk && $name_chk->num_rows === 0) {
+    $conn->query("ALTER TABLE `users` ADD COLUMN `name` VARCHAR(150) NOT NULL DEFAULT 'System Administrator' AFTER `username`");
+}
+
+$role_chk = $conn->query("SHOW COLUMNS FROM `users` LIKE 'role'");
+if ($role_chk && $role_chk->num_rows === 0) {
+    $conn->query("ALTER TABLE `users` ADD COLUMN `role` VARCHAR(50) DEFAULT 'admin' AFTER `password`");
+}
+
 // Ensure username column exists in users table
 $col_chk = $conn->query("SHOW COLUMNS FROM `users` LIKE 'username'");
 if ($col_chk && $col_chk->num_rows === 0) {
@@ -26,11 +37,11 @@ if ($col_chk && $col_chk->num_rows === 0) {
 }
 
 // Seed or repair default admin account
-$chk_admin = $conn->query("SELECT id, password FROM `users` WHERE `id` = 1 OR `username` = 'admin' OR `email` = 'admin@example.com' LIMIT 1");
+$chk_admin = $conn->query("SELECT id, password FROM `users` WHERE `id` = 1 OR `username` = 'admin' OR `email` = 'admin@example.com' OR `email` = 'admin@gmail.com' LIMIT 1");
 if (!$chk_admin || $chk_admin->num_rows === 0) {
     $default_pw_hash = password_hash('123', PASSWORD_DEFAULT);
-    $conn->query("INSERT INTO `users` (`id`, `username`, `name`, `email`, `password`, `role`) 
-                  VALUES (1, 'admin', 'System Administrator', 'admin@example.com', '$default_pw_hash', 'admin')");
+    $conn->query("INSERT INTO `users` (`id`, `username`, `email`, `password`) 
+                  VALUES (1, 'admin', 'admin@example.com', '$default_pw_hash')");
 }
 
 // -------------------------------------------------------------
@@ -82,11 +93,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && (!isset($_POST['action_type']) || $
     } else {
         $authenticated = false;
 
-        // Query user by email, username, or name
+        // Query user by email or username (safely handles tables with or without name column)
         try {
-            $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `username` = ? OR `name` = ? LIMIT 1");
-            if ($stmt) {
+            $has_name_col = true;
+            $n_check = $conn->query("SHOW COLUMNS FROM `users` LIKE 'name'");
+            if (!$n_check || $n_check->num_rows === 0) {
+                $has_name_col = false;
+            }
+
+            if ($has_name_col) {
+                $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `username` = ? OR `name` = ? LIMIT 1");
                 $stmt->bind_param("sss", $entered_login, $entered_login, $entered_login);
+            } else {
+                $stmt = $conn->prepare("SELECT * FROM `users` WHERE `email` = ? OR `username` = ? LIMIT 1");
+                $stmt->bind_param("ss", $entered_login, $entered_login);
+            }
+
+            if ($stmt) {
                 $stmt->execute();
                 $res = $stmt->get_result();
                 if ($res && $user = $res->fetch_assoc()) {
@@ -105,24 +128,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && (!isset($_POST['action_type']) || $
 
                         $_SESSION['admin_logged_in'] = true;
                         $_SESSION['admin_id'] = (int)$user['id'];
-                        $_SESSION['admin_name'] = $user['name'];
+                        $_SESSION['admin_name'] = $user['name'] ?? ($user['username'] ?? 'System Administrator');
                         $_SESSION['admin_username'] = $user['username'] ?? 'admin';
-                        $_SESSION['admin_email'] = $user['email'];
+                        $_SESSION['admin_email'] = $user['email'] ?? 'admin@gmail.com';
                         $_SESSION['admin_role'] = $user['role'] ?? 'admin';
 
-                        // Log Activity
-                        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-                        $act = $conn->prepare("INSERT INTO `activity_logs` (`user_id`, `action`, `details`, `ip_address`) VALUES (?, 'Admin Login', 'Administrator authenticated successfully', ?)");
-                        if ($act) {
-                            $act->bind_param("is", $user['id'], $ip);
-                            $act->execute();
-                        }
+                        // Log Activity (silently ignored if activity_logs doesn't exist)
+                        try {
+                            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                            $act = $conn->prepare("INSERT INTO `activity_logs` (`user_id`, `action`, `details`, `ip_address`) VALUES (?, 'Admin Login', 'Administrator authenticated successfully', ?)");
+                            if ($act) {
+                                $act->bind_param("is", $user['id'], $ip);
+                                $act->execute();
+                            }
+                        } catch (\Throwable $e) {}
 
                         $authenticated = true;
                     }
                 }
             }
-        } catch (Exception $e) {}
+        } catch (\Throwable $e) {
+            $error = "Login query failed: " . $e->getMessage();
+        }
 
         if ($authenticated) {
             header("Location: Admin/controlpanel.php");
