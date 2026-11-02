@@ -1,4 +1,8 @@
 <?php
+// Display errors in case of unexpected hosting environment issues
+ini_set('display_errors', 0);
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,6 +12,17 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 require_once __DIR__ . '/../db_connect.php';
+
+// Safe query helper: prevents fatal errors if table or column doesn't exist on InfinityFree
+function safeQuery($conn, $sql) {
+    try {
+        if ($conn && $conn instanceof mysqli && !$conn->connect_error) {
+            $res = @$conn->query($sql);
+            if ($res !== false) return $res;
+        }
+    } catch (\Throwable $e) {}
+    return null;
+}
 
 // -------------------------------------------------------------
 // 1. DYNAMIC DEMOGRAPHIC & HOUSEHOLD CALCULATIONS
@@ -50,9 +65,9 @@ $total_population = 0;
 
 foreach ($purok_stats as $key => &$pData) {
     $tbl = $pData['table'];
-    $chk = $conn->query("SHOW TABLES LIKE '$tbl'");
+    $chk = safeQuery($conn, "SHOW TABLES LIKE '$tbl'");
     if ($chk && $chk->num_rows > 0) {
-        $res = $conn->query("SELECT husband_name, spouse_name, children FROM `$tbl`");
+        $res = safeQuery($conn, "SELECT husband_name, spouse_name, children FROM `$tbl`");
         if ($res) {
             $pData['households'] = $res->num_rows;
             $total_households += $res->num_rows;
@@ -78,14 +93,14 @@ unset($pData);
 // 2. GOVERNANCE & OFFICIALS COUNT
 // -------------------------------------------------------------
 $total_officials = 0;
-$res_off = $conn->query("SELECT COUNT(*) FROM `officials` WHERE `status` = 'active'");
+$res_off = safeQuery($conn, "SELECT COUNT(*) FROM `officials` WHERE `status` = 'active'");
 if ($res_off) $total_officials += (int)$res_off->fetch_row()[0];
-$res_sk = $conn->query("SELECT COUNT(*) FROM `sk_officials` WHERE `status` = 'active'");
+$res_sk = safeQuery($conn, "SELECT COUNT(*) FROM `sk_officials` WHERE `status` = 'active'");
 if ($res_sk) $total_officials += (int)$res_sk->fetch_row()[0];
 
 // Fallback if officials table empty
 if ($total_officials === 0) {
-    $res_all_off = $conn->query("SELECT (SELECT COUNT(*) FROM `officials`) + (SELECT COUNT(*) FROM `sk_officials`) AS total");
+    $res_all_off = safeQuery($conn, "SELECT (SELECT COUNT(*) FROM `officials`) + (SELECT COUNT(*) FROM `sk_officials`) AS total");
     if ($res_all_off) $total_officials = (int)$res_all_off->fetch_row()[0];
 }
 
@@ -94,15 +109,15 @@ if ($total_officials === 0) {
 // -------------------------------------------------------------
 $unread_feedback_count = 0;
 $total_feedback_count = 0;
-$res_fb_unread = $conn->query("SELECT COUNT(*) FROM `feedback_chats` WHERE `sender_type` = 'user' AND `is_read` = 0");
+$res_fb_unread = safeQuery($conn, "SELECT COUNT(*) FROM `feedback_chats` WHERE `sender_type` = 'user' AND `is_read` = 0");
 if ($res_fb_unread) $unread_feedback_count = (int)$res_fb_unread->fetch_row()[0];
 
-$res_fb_total = $conn->query("SELECT COUNT(DISTINCT `thread_id`) FROM `feedback_chats`");
+$res_fb_total = safeQuery($conn, "SELECT COUNT(DISTINCT `thread_id`) FROM `feedback_chats`");
 if ($res_fb_total) $total_feedback_count = (int)$res_fb_total->fetch_row()[0];
 
 // Fetch 5 most recent resident inquiries
 $recent_inquiries = [];
-$res_inq = $conn->query("
+$res_inq = safeQuery($conn, "
     SELECT id, thread_id, sender_name, email, message, is_read, created_at 
     FROM `feedback_chats` 
     WHERE `sender_type` = 'user' 
@@ -119,11 +134,11 @@ if ($res_inq) {
 // 4. ANNOUNCEMENTS COUNT
 // -------------------------------------------------------------
 $total_announcements = 0;
-$res_ann = $conn->query("SELECT COUNT(*) FROM `announcements` WHERE `status` = 'published'");
+$res_ann = safeQuery($conn, "SELECT COUNT(*) FROM `announcements` WHERE `status` = 'published'");
 if ($res_ann) $total_announcements = (int)$res_ann->fetch_row()[0];
 
 $recent_announcements = [];
-$res_recent_ann = $conn->query("SELECT id, title, when_date, status, created_at FROM `announcements` ORDER BY `id` DESC LIMIT 4");
+$res_recent_ann = safeQuery($conn, "SELECT id, title, when_date, status, created_at FROM `announcements` ORDER BY `id` DESC LIMIT 4");
 if ($res_recent_ann) {
     while ($row = $res_recent_ann->fetch_assoc()) {
         $recent_announcements[] = $row;
@@ -134,8 +149,8 @@ if ($res_recent_ann) {
 // 5. ACTIVITY LOGS & AUDIT TRAIL
 // -------------------------------------------------------------
 $recent_activities = [];
-$res_act = $conn->query("
-    SELECT a.id, a.action, a.details, a.ip_address, a.created_at, u.name as user_name 
+$res_act = safeQuery($conn, "
+    SELECT a.id, a.action, a.details, a.ip_address, a.created_at, u.username as user_name 
     FROM `activity_logs` a 
     LEFT JOIN `users` u ON a.user_id = u.id 
     ORDER BY a.id DESC 
@@ -151,7 +166,7 @@ if ($res_act && $res_act->num_rows > 0) {
 // 6. ADMINISTRATOR ACCOUNTS
 // -------------------------------------------------------------
 $admin_users = [];
-$res_usr = $conn->query("SELECT id, name, email, role, created_at FROM `users` ORDER BY `id` ASC LIMIT 5");
+$res_usr = safeQuery($conn, "SELECT id, username, email, role, created_at FROM `users` ORDER BY `id` ASC LIMIT 5");
 if ($res_usr) {
     while ($row = $res_usr->fetch_assoc()) {
         $admin_users[] = $row;
@@ -165,9 +180,9 @@ $services_list = [];
 $total_services = 0;
 $active_services_count = 0;
 
-$services_table_check = $conn->query("SHOW TABLES LIKE 'services'");
+$services_table_check = safeQuery($conn, "SHOW TABLES LIKE 'services'");
 if ($services_table_check && $services_table_check->num_rows > 0) {
-    $res_srv = $conn->query("SELECT id, name, icon, status, fee, processing_time, description FROM `services` ORDER BY display_order ASC, id ASC LIMIT 5");
+    $res_srv = safeQuery($conn, "SELECT id, name, icon, status, fee, processing_time, description FROM `services` ORDER BY display_order ASC, id ASC LIMIT 5");
     if ($res_srv) {
         while ($row = $res_srv->fetch_assoc()) {
             $services_list[] = $row;
@@ -176,7 +191,7 @@ if ($services_table_check && $services_table_check->num_rows > 0) {
             }
         }
     }
-    $cnt_all = $conn->query("SELECT COUNT(*) FROM `services`");
+    $cnt_all = safeQuery($conn, "SELECT COUNT(*) FROM `services`");
     if ($cnt_all) {
         $total_services = (int)$cnt_all->fetch_row()[0];
     }
@@ -189,9 +204,9 @@ $gallery_items = [];
 $total_albums = 0;
 $total_photos = 0;
 
-$chk_gallery_m = $conn->query("SHOW TABLES LIKE 'gallery_media'");
+$chk_gallery_m = safeQuery($conn, "SHOW TABLES LIKE 'gallery_media'");
 if ($chk_gallery_m && $chk_gallery_m->num_rows > 0) {
-    $res_gal = $conn->query("
+    $res_gal = safeQuery($conn, "
         SELECT m.id, m.folder_id, m.file_path, m.file_name, m.caption, m.created_at, f.name AS folder_name 
         FROM `gallery_media` m
         LEFT JOIN `gallery_folders` f ON m.folder_id = f.id
@@ -204,10 +219,10 @@ if ($chk_gallery_m && $chk_gallery_m->num_rows > 0) {
         }
     }
 
-    $c_photos = $conn->query("SELECT COUNT(*) FROM `gallery_media`");
+    $c_photos = safeQuery($conn, "SELECT COUNT(*) FROM `gallery_media`");
     if ($c_photos) $total_photos = (int)$c_photos->fetch_row()[0];
 
-    $c_albums = $conn->query("SELECT COUNT(*) FROM `gallery_folders`");
+    $c_albums = safeQuery($conn, "SELECT COUNT(*) FROM `gallery_folders`");
     if ($c_albums) $total_albums = (int)$c_albums->fetch_row()[0];
 }
 

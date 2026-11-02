@@ -131,6 +131,7 @@ try {
 }
 
 // 3. Establish MySQLi Connection
+mysqli_report(MYSQLI_REPORT_OFF);
 $conn = @new mysqli($host, $username, $password, $dbname, $port);
 if ($conn->connect_error) {
     if ($is_api_request) {
