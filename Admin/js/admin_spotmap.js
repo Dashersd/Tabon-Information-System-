@@ -4,9 +4,9 @@
  * Features:
  *  - Drag & drop marker positioning
  *  - Real-time preview & dimension controls
- *  - Dynamic Children / Dependents repeater
- *  - Interactive pin hover/click tooltip cards with children badges
- *  - Bi-directional edit sync
+ *  - Dynamic Children / Dependents repeater (Add, Remove, Clear All)
+ *  - Interactive pin hover/click tooltip cards with Edit & Delete actions
+ *  - Full form editing, clear/reset controls, and direct deletion from map
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -22,12 +22,101 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const householdIdInput = document.getElementById('household_id') || document.querySelector('input[name="household_id"]');
     const saveBtn = document.getElementById('btn-save-record') || document.querySelector('.btn-save') || document.querySelector('.save-btn');
+    const targetFileInput = document.querySelector('input[name="target_file"]');
+    function detectPurokKey() {
+        const path = decodeURIComponent(window.location.pathname.toLowerCase());
+        if (path.includes('purok 2') || path.includes('purok2')) return 'purok2';
+        if (path.includes('purok 3') || path.includes('purok3')) return 'purok3';
+        if (path.includes('purok 1') || path.includes('purok1')) return 'purok1';
+        return targetFileInput ? targetFileInput.value : 'purok1';
+    }
+    const targetFile = detectPurokKey();
+
+    function getCurrentPageClean() {
+        const raw = window.location.pathname.split('/').pop() || 'Purok 1.php';
+        return decodeURIComponent(raw);
+    }
+
+    // Robust native POST deletion helper: posts directly to current page (self-handling)
+    function executeHouseholdDeletion(deleteId, houseNo) {
+        if (!deleteId && !houseNo) {
+            alert('Error: Missing household details for deletion.');
+            return;
+        }
+
+        const confirmMsg = houseNo ? `Are you sure you want to permanently delete House #${houseNo} from the map?` : 'Are you sure you want to permanently delete this household?';
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+
+        // Native form POST directly to current page (self-handling, 0% failure on InfinityFree)
+        const postForm = document.createElement('form');
+        postForm.method = 'POST';
+        postForm.action = '';
+        postForm.style.display = 'none';
+
+        const addHidden = (name, val) => {
+            const inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = name;
+            inp.value = val;
+            postForm.appendChild(inp);
+        };
+
+        addHidden('action', 'delete');
+        if (deleteId) addHidden('delete_id', deleteId);
+        if (houseNo)  addHidden('house_number', houseNo);
+
+        document.body.appendChild(postForm);
+        postForm.submit();
+    }
+
+    function showNotificationToast(msg, type = 'success') {
+        let toast = document.getElementById('spotmap-toast-msg');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'spotmap-toast-msg';
+            toast.style.cssText = `
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                z-index: 99999;
+                background: #10b981;
+                color: #ffffff;
+                padding: 14px 22px;
+                border-radius: 8px;
+                font-family: 'Montserrat', sans-serif;
+                font-size: 0.92rem;
+                font-weight: 600;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+        }
+        if (type === 'error') {
+            toast.style.background = '#ef4444';
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${msg}</span>`;
+        } else {
+            toast.style.background = '#10b981';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${msg}</span>`;
+        }
+        toast.style.display = 'flex';
+        toast.style.opacity = '1';
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 4000);
+    }
 
     let previewMarker = null;
     let popover = null;
 
     // =========================================================================
-    // 1. DYNAMIC CHILDREN REPEATER
+    // 1. DYNAMIC CHILDREN REPEATER (ADD, REMOVE, CLEAR ALL)
     // =========================================================================
     function addChildRow(value = '') {
         if (!childrenContainer) return;
@@ -55,8 +144,8 @@ document.addEventListener('DOMContentLoaded', function () {
         removeBtn.type = 'button';
         removeBtn.className = 'btn-remove-child';
         removeBtn.innerHTML = '&times;';
-        removeBtn.title = 'Remove dependent';
-        removeBtn.style.cssText = 'background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 6px; width: 34px; height: 34px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;';
+        removeBtn.title = 'Remove this dependent';
+        removeBtn.style.cssText = 'background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 6px; width: 34px; height: 34px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;';
 
         removeBtn.addEventListener('mouseenter', () => removeBtn.style.background = '#fecaca');
         removeBtn.addEventListener('mouseleave', () => removeBtn.style.background = '#fee2e2');
@@ -68,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.appendChild(removeBtn);
         childrenContainer.appendChild(row);
 
-        input.focus();
+        if (!value) input.focus();
     }
 
     if (btnAddChild) {
@@ -76,6 +165,21 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             addChildRow();
         });
+
+        // Add "Clear All Dependents" button next to "+ Add Child"
+        if (btnAddChild.parentNode && !document.getElementById('btn-clear-children')) {
+            const btnClearChildren = document.createElement('button');
+            btnClearChildren.type = 'button';
+            btnClearChildren.id = 'btn-clear-children';
+            btnClearChildren.style.cssText = 'background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; transition: all 0.2s;';
+            btnClearChildren.innerHTML = '<i class="fa-solid fa-trash-can"></i> Clear All';
+            btnClearChildren.title = 'Remove all children inputs';
+            btnClearChildren.onclick = function(e) {
+                e.preventDefault();
+                if (childrenContainer) childrenContainer.innerHTML = '';
+            };
+            btnAddChild.parentNode.appendChild(btnClearChildren);
+        }
     }
 
     // =========================================================================
@@ -227,60 +331,197 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // =========================================================================
-    // 3. INTERACTIVE PIN HOVER / CLICK POPOVER (WITH CHILDREN INTEGRATION)
+    // 3. INTERACTIVE PIN DETAILS MODAL (WITH EDIT & DELETE ACTIONS)
+    // Centered modal dialog eliminates all screen jumps, coordinate glitches & overflow cuts
     // =========================================================================
-    let activeMarkerEl = null;
+    let pinModal = null;
 
-    function createPopover() {
-        if (popover) return popover;
-        popover = document.createElement('div');
-        popover.className = 'spotmap-pin-popover';
-        popover.style.cssText = `
-            position: absolute;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            padding: 16px;
-            width: 280px;
-            z-index: 2000;
+    function createPinModal() {
+        if (pinModal) return pinModal;
+        pinModal = document.createElement('div');
+        pinModal.id = 'spotmap-pin-modal-overlay';
+        pinModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 99999;
             display: none;
-            font-family: 'Montserrat', sans-serif;
-            border-top: 4px solid #223c3b;
-            pointer-events: auto;
-            transition: opacity 0.2s ease;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
         `;
-        document.body.appendChild(popover);
 
-        // Prevent clicks inside popover from propagating to document
-        popover.addEventListener('click', (e) => e.stopPropagation());
+        pinModal.innerHTML = `
+            <div id="spotmap-modal-card" style="
+                background: #ffffff;
+                border-radius: 14px;
+                width: 100%;
+                max-width: 440px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+                border-top: 5px solid #223c3b;
+                overflow: hidden;
+                font-family: 'Montserrat', sans-serif;
+                display: flex;
+                flex-direction: column;
+                max-height: 90vh;
+                animation: popInModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            ">
+                <div id="spotmap-modal-header" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 16px 20px;
+                    border-bottom: 1px solid #e2e8f0;
+                    background: #f8fafc;
+                ">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="spotmap-modal-badge" style="
+                            font-size: 0.78rem;
+                            font-weight: 800;
+                            background: #223c3b;
+                            color: #ffffff;
+                            padding: 4px 10px;
+                            border-radius: 6px;
+                            letter-spacing: 0.5px;
+                        ">HOUSE #</span>
+                    </div>
+                    <button type="button" id="spotmap-modal-close" style="
+                        background: none;
+                        border: none;
+                        font-size: 1.6rem;
+                        cursor: pointer;
+                        color: #64748b;
+                        line-height: 1;
+                        padding: 2px 6px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 6px;
+                        transition: all 0.15s;
+                    ">&times;</button>
+                </div>
+                
+                <div id="spotmap-modal-body" style="
+                    padding: 20px;
+                    overflow-y: auto;
+                    flex: 1;
+                ">
+                    <!-- Dynamic details inserted here -->
+                </div>
 
-        return popover;
+                <div id="spotmap-modal-footer" style="
+                    padding: 14px 20px;
+                    border-top: 1px solid #e2e8f0;
+                    background: #f8fafc;
+                    display: flex;
+                    gap: 12px;
+                ">
+                    <button type="button" id="spotmap-modal-edit-btn" style="
+                        flex: 1;
+                        background: #2c6e49;
+                        color: #ffffff;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 11px 16px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        transition: background 0.15s;
+                        box-shadow: 0 2px 6px rgba(44, 110, 73, 0.25);
+                    ">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Details
+                    </button>
+                    <button type="button" id="spotmap-modal-delete-btn" style="
+                        flex: 1;
+                        background: #fee2e2;
+                        color: #b91c1c;
+                        border: 1px solid #fca5a5;
+                        border-radius: 8px;
+                        padding: 11px 16px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        transition: background 0.15s;
+                    ">
+                        <i class="fa-solid fa-trash"></i> Delete Pin
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Inject keyframes animation style if not already added
+        if (!document.getElementById('spotmap-modal-anim-style')) {
+            const style = document.createElement('style');
+            style.id = 'spotmap-modal-anim-style';
+            style.textContent = `
+                @keyframes popInModal {
+                    0% { transform: scale(0.92); opacity: 0; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                #spotmap-modal-close:hover {
+                    background: #fee2e2;
+                    color: #ef4444;
+                }
+                #spotmap-modal-edit-btn:hover {
+                    background: #1e4f34;
+                }
+                #spotmap-modal-delete-btn:hover {
+                    background: #fecaca;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(pinModal);
+
+        // Close on background backdrop click
+        pinModal.addEventListener('click', function (e) {
+            if (e.target === pinModal) {
+                closePinModal();
+            }
+        });
+
+        // Close on X button
+        pinModal.querySelector('#spotmap-modal-close').addEventListener('click', closePinModal);
+
+        // Close on ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && pinModal && pinModal.style.display === 'flex') {
+                closePinModal();
+            }
+        });
+
+        return pinModal;
     }
 
-    // Close popover when clicking anywhere outside
-    document.addEventListener('click', function (e) {
-        if (popover && popover.style.display === 'block') {
-            if (!popover.contains(e.target) && !e.target.classList.contains('saved-marker-pin')) {
-                popover.style.display = 'none';
-                activeMarkerEl = null;
-            }
+    function closePinModal() {
+        if (pinModal) {
+            pinModal.style.display = 'none';
         }
-    });
+    }
 
     function showPinDetails(markerEl) {
-        const pop = createPopover();
+        const modal = createPinModal();
 
-        // Toggle off if clicking the already open marker
-        if (activeMarkerEl === markerEl && pop.style.display === 'block') {
-            pop.style.display = 'none';
-            activeMarkerEl = null;
-            return;
-        }
-
-        activeMarkerEl = markerEl;
         const houseNo = markerEl.getAttribute('data-house-number') || 'N/A';
         const husband = markerEl.getAttribute('data-husband') || 'N/A';
-        const spouse = markerEl.getAttribute('data-spouse') || 'N/A';
+        const spouse = markerEl.getAttribute('data-spouse') || '';
         const houseImg = markerEl.getAttribute('data-house-image') || '';
         const rawChildren = markerEl.getAttribute('data-children') || '[]';
         const markerId = markerEl.getAttribute('data-id');
@@ -296,51 +537,75 @@ document.addEventListener('DOMContentLoaded', function () {
         let childrenHtml = '';
         if (childrenArr.length > 0) {
             childrenHtml = `
-                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">
-                    <div style="font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
-                        Children / Dependents
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                        <span><i class="fa-solid fa-children"></i> Children / Dependents</span>
+                        <span style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">${childrenArr.length}</span>
                     </div>
-                    <ul style="margin: 0; padding-left: 18px; list-style-type: disc; display: flex; flex-direction: column; gap: 4px; max-height: 90px; overflow-y: auto;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto;">
                         ${childrenArr.map(c => `
-                            <li style="color: #0284c7; font-size: 0.85rem;">
-                                <span style="color: #1e293b; font-size: 0.82rem; font-weight: 600;">${c}</span>
-                            </li>
+                            <span style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                                ${c}
+                            </span>
                         `).join('')}
-                    </ul>
+                    </div>
                 </div>
             `;
         } else {
             childrenHtml = `
-                <div style="margin-top: 8px; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
+                <div style="margin-top: 12px; font-size: 0.8rem; color: #94a3b8; font-style: italic; display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-circle-info"></i> No children / dependents registered
                 </div>
             `;
         }
 
-        pop.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                <div>
-                    <span style="font-size: 0.7rem; font-weight: 700; background: #223c3b; color: #fff; padding: 2px 7px; border-radius: 4px;">HOUSE #${houseNo}</span>
+        // Update modal badge
+        modal.querySelector('#spotmap-modal-badge').textContent = `HOUSE #${houseNo}`;
+
+        // Populate modal body
+        const modalBody = modal.querySelector('#spotmap-modal-body');
+        modalBody.innerHTML = `
+            ${houseImg ? `
+                <div style="margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; max-height: 180px;">
+                    <img src="${houseImg}" onerror="this.parentElement.style.display='none'" style="width: 100%; height: 180px; object-fit: cover; display: block;">
                 </div>
-                <button type="button" class="close-pop-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8; line-height: 1;">&times;</button>
-            </div>
-            ${houseImg ? `<img src="${houseImg}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e2e8f0;">` : ''}
-            <div style="font-size: 0.85rem; color: #1e293b; line-height: 1.4;">
-                <div><strong>Head:</strong> ${husband}</div>
-                <div><strong>Spouse:</strong> ${spouse}</div>
+            ` : ''}
+            <div style="font-size: 0.9rem; color: #1e293b; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                    <span style="color: #64748b; font-weight: 500;">Household Head:</span>
+                    <strong style="color: #0f172a;">${husband}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                    <span style="color: #64748b; font-weight: 500;">Spouse:</span>
+                    <strong style="color: #0f172a;">${spouse || '<span style="color: #94a3b8; font-style: italic; font-weight: normal;">None / Single</span>'}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b; font-weight: 500;">Map Coordinates:</span>
+                    <span style="color: #2c6e49; font-weight: 700; font-family: monospace;">Top: ${markerEl.getAttribute('data-top')}%, Left: ${markerEl.getAttribute('data-left')}%</span>
+                </div>
             </div>
             ${childrenHtml}
         `;
 
-        pop.querySelector('.close-pop-btn').onclick = () => {
-            pop.style.display = 'none';
-            activeMarkerEl = null;
+        // Wire Edit Button
+        modal.querySelector('#spotmap-modal-edit-btn').onclick = function () {
+            closePinModal();
+            loadMarkerForEdit(markerEl);
+            showNotificationToast(`Editing House #${houseNo}. Modify details below and click "Update Household Pin".`, 'success');
         };
 
-        const rect = markerEl.getBoundingClientRect();
-        pop.style.display = 'block';
-        pop.style.left = (window.scrollX + rect.left + rect.width / 2 - 140) + 'px';
-        pop.style.top = (window.scrollY + rect.top - pop.offsetHeight - 10) + 'px';
+        // Wire Delete Button
+        modal.querySelector('#spotmap-modal-delete-btn').onclick = function (e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            closePinModal();
+            executeHouseholdDeletion(markerId, houseNo);
+        };
+
+        // Show centered modal
+        modal.style.display = 'flex';
     }
 
     // Bind saved markers strictly on click and lock them from being dragged
@@ -366,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // =========================================================================
-    // 4. BI-DIRECTIONAL EDIT SYNC
+    // 4. BI-DIRECTIONAL EDIT SYNC & FORM RESET/DELETE ACTIONS
     // =========================================================================
     function loadMarkerForEdit(markerEl) {
         const id = markerEl.getAttribute('data-id');
@@ -378,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const width = markerEl.getAttribute('data-width') || '40';
         const height = markerEl.getAttribute('data-height') || '40';
         const markerSrc = markerEl.getAttribute('src');
+        const houseImgSrc = markerEl.getAttribute('data-house-image') || '';
         const rawChildren = markerEl.getAttribute('data-children') || '[]';
 
         if (householdIdInput) householdIdInput.value = id;
@@ -418,22 +684,65 @@ document.addEventListener('DOMContentLoaded', function () {
         if (markerInput) markerInput.removeAttribute('required');
         if (houseInput) houseInput.removeAttribute('required');
 
-        // Update button appearance
+        // Show image notice badges if present
+        let housePreviewBadge = document.getElementById('house_image_preview');
+        if (!housePreviewBadge && houseInput && houseInput.parentNode) {
+            housePreviewBadge = document.createElement('div');
+            housePreviewBadge.id = 'house_image_preview';
+            housePreviewBadge.style.cssText = 'margin-top: 6px; font-size: 0.8rem; color: #059669; font-weight: 500;';
+            houseInput.parentNode.appendChild(housePreviewBadge);
+        }
+        if (housePreviewBadge) {
+            housePreviewBadge.style.display = 'block';
+            housePreviewBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Current house photo saved. Leave empty to keep, or select file to replace.';
+        }
+
+        let markerPreviewBadge = document.getElementById('marker_image_preview');
+        if (!markerPreviewBadge && markerInput && markerInput.parentNode) {
+            markerPreviewBadge = document.createElement('div');
+            markerPreviewBadge.id = 'marker_image_preview';
+            markerPreviewBadge.style.cssText = 'margin-top: 6px; font-size: 0.8rem; color: #059669; font-weight: 500;';
+            markerInput.parentNode.appendChild(markerPreviewBadge);
+        }
+        if (markerPreviewBadge) {
+            markerPreviewBadge.style.display = 'block';
+            markerPreviewBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Current marker pin icon saved. Leave empty to keep, or select file to replace.';
+        }
+
+        // Update save button appearance
         if (saveBtn) {
             saveBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update Household Pin';
             saveBtn.style.background = '#2c6e49';
         }
 
-        // Add Cancel Edit button if not present
-        let cancelBtn = document.getElementById('btn-cancel-edit');
-        if (!cancelBtn && saveBtn && saveBtn.parentNode) {
-            cancelBtn = document.createElement('button');
-            cancelBtn.type = 'button';
-            cancelBtn.id = 'btn-cancel-edit';
-            cancelBtn.style.cssText = 'width: 100%; background: #64748b; color: #fff; padding: 10px; font-weight: 600; font-size: 0.95rem; border: none; border-radius: 8px; cursor: pointer; margin-top: 8px; transition: background 0.2s;';
-            cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Cancel Edit Mode';
-            cancelBtn.onclick = resetFormToNew;
-            saveBtn.parentNode.insertBefore(cancelBtn, saveBtn.nextSibling);
+        // Container for action buttons below saveBtn
+        let actionBtnGroup = document.getElementById('edit-mode-action-group');
+        if (!actionBtnGroup && saveBtn && saveBtn.parentNode) {
+            actionBtnGroup = document.createElement('div');
+            actionBtnGroup.id = 'edit-mode-action-group';
+            actionBtnGroup.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
+            saveBtn.parentNode.insertBefore(actionBtnGroup, saveBtn.nextSibling);
+        }
+
+        if (actionBtnGroup) {
+            actionBtnGroup.innerHTML = `
+                <button type="button" id="btn-cancel-edit" style="flex: 1; background: #64748b; color: #ffffff; padding: 12px; font-weight: 600; font-size: 0.92rem; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s;">
+                    <i class="fa-solid fa-xmark"></i> Cancel Edit
+                </button>
+                <button type="button" id="btn-delete-from-map" style="flex: 1; background: #ef4444; color: #ffffff; padding: 12px; font-weight: 600; font-size: 0.92rem; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s;">
+                    <i class="fa-solid fa-trash"></i> Delete Pin
+                </button>
+            `;
+
+            document.getElementById('btn-cancel-edit').onclick = resetFormToNew;
+            document.getElementById('btn-delete-from-map').onclick = function (e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                const delId = (householdIdInput && householdIdInput.value) ? householdIdInput.value : id;
+                executeHouseholdDeletion(delId, houseNo);
+            };
         }
 
         // Scroll smoothly to form
@@ -449,13 +758,41 @@ document.addEventListener('DOMContentLoaded', function () {
         if (markerInput) markerInput.setAttribute('required', 'required');
         if (houseInput) houseInput.setAttribute('required', 'required');
 
+        const housePreviewBadge = document.getElementById('house_image_preview');
+        if (housePreviewBadge) housePreviewBadge.style.display = 'none';
+        const markerPreviewBadge = document.getElementById('marker_image_preview');
+        if (markerPreviewBadge) markerPreviewBadge.style.display = 'none';
+
         if (saveBtn) {
             saveBtn.innerHTML = '<i class="fa-solid fa-map-pin"></i> Save to Map';
             saveBtn.style.background = '#2c6e49';
         }
 
-        const cancelBtn = document.getElementById('btn-cancel-edit');
-        if (cancelBtn) cancelBtn.remove();
+        const actionBtnGroup = document.getElementById('edit-mode-action-group');
+        if (actionBtnGroup) actionBtnGroup.remove();
+
+        // Clear ?edit_id from URL if present
+        if (window.history.replaceState) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+        }
+    }
+
+    // Add a "Clear Form" button header link if not already present
+    const formTitle = document.querySelector('.form-title');
+    if (formTitle && !document.getElementById('btn-quick-clear-form')) {
+        const clearLink = document.createElement('button');
+        clearLink.type = 'button';
+        clearLink.id = 'btn-quick-clear-form';
+        clearLink.style.cssText = 'margin-left: auto; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;';
+        clearLink.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Reset Form';
+        clearLink.onclick = function (e) {
+            e.preventDefault();
+            if (confirm('Clear all inputs on this form?')) {
+                resetFormToNew();
+            }
+        };
+        formTitle.appendChild(clearLink);
     }
 
     // Check if URL has ?edit_id=

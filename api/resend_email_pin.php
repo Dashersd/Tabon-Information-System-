@@ -53,15 +53,19 @@ try {
     // Dispatch email
     $mailResult = send_barangay_pin_email($email, $record['full_name'], $new_pin);
 
+    if (empty($mailResult['mail_sent'])) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Could not resend OTP to ' . htmlspecialchars($email) . '. Please ensure your Gmail address is correct and active.'
+        ]);
+        exit();
+    }
+
     echo json_encode([
         'status'     => 'success',
-        'message'    => !empty($mailResult['mail_sent']) 
-            ? 'A new OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.' 
-            : 'New OTP Code generated. (Testing OTP: ' . $new_pin . ')',
-        'mail_sent'  => !empty($mailResult['mail_sent']),
+        'message'    => 'A fresh OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.',
         'email'      => $email,
-        'expires_in' => 180,
-        'dev_pin'    => $new_pin
+        'expires_in' => 180
     ]);
 
 } catch (\Throwable $e) {

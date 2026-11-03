@@ -127,6 +127,14 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
             $mail->CharSet    = 'UTF-8';
             $mail->Encoding   = 'base64';
 
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+
             // CRITICAL FIX FOR SPAM:
             // Prevent using local PC name (e.g. LAPTOP-EDQQ093G) in Message-ID.
             $mail->Hostname = 'gmail.com';
@@ -153,9 +161,27 @@ function send_barangay_pin_email($to_email, $to_name, $pin_code) {
             $mail->Body    = $html_body;
             $mail->AltBody = $plain_body;
 
-            $mail->send();
-            $mail_sent = true;
-            $smtp_used = true;
+            try {
+                $mail->send();
+                $mail_sent = true;
+                $smtp_used = true;
+            } catch (Exception $sendEx) {
+                // If port 587 connection timed out or failed, auto-fallback to port 465 (SSL)
+                if ((int)$mail->Port === 587) {
+                    try {
+                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                        $mail->Port       = 465;
+                        $mail->smtpClose();
+                        $mail->send();
+                        $mail_sent = true;
+                        $smtp_used = true;
+                    } catch (Exception $retryEx) {
+                        $error_msg = $mail->ErrorInfo ?: $retryEx->getMessage();
+                    }
+                } else {
+                    $error_msg = $mail->ErrorInfo ?: $sendEx->getMessage();
+                }
+            }
         } catch (Exception $e) {
             $error_msg = $mail->ErrorInfo ?: $e->getMessage();
             $mail_sent = false;

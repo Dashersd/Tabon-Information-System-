@@ -94,15 +94,19 @@ try {
     // 7. Dispatch email
     $mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
 
+    if (empty($mailResult['mail_sent'])) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Could not deliver verification OTP to ' . htmlspecialchars($email) . '. Please ensure your Gmail address is correct and active.'
+        ]);
+        exit();
+    }
+
     echo json_encode([
         'status'     => 'success',
-        'message'    => !empty($mailResult['mail_sent']) 
-            ? 'OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.' 
-            : 'OTP Code generated. (Testing OTP: ' . $pin_code . ')',
-        'mail_sent'  => !empty($mailResult['mail_sent']),
+        'message'    => 'Verification OTP has been sent to your Gmail. Please check your Inbox or Spam folder.',
         'email'      => $email,
-        'expires_in' => 180,
-        'dev_pin'    => $pin_code
+        'expires_in' => 180
     ]);
 
 } catch (\Throwable $e) {

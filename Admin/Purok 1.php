@@ -1,5 +1,8 @@
 <?php
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: ../login.php");
     exit();
@@ -14,15 +17,215 @@ $map_image_src = "../Images/Purok/Purok%201.jpg";
 $map_page_file = "Purok 1.php";
 $resident_page_file = "Resident 1.php";
 
+$post_error = null;
+
+// -------------------------------------------------------------
+// SELF-HANDLING POST PROCESSOR (100% RELIABLE ON INFINITYFREE)
+// Prevents cross-file redirect drops and InfinityFree anti-bot blocks
+// -------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. ACTION: DELETE
+    if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+        $deleteId = (int)($_POST['delete_id'] ?? 0);
+        $houseNo  = trim($_POST['house_number'] ?? '');
+
+        if ($deleteId > 0 || !empty($houseNo)) {
+            $deleted = false;
+            if (isset($pdo) && $pdo instanceof PDO) {
+                try {
+                    $sel = null;
+                    if ($deleteId > 0) {
+                        $sel = $pdo->prepare("SELECT id, house_image, marker_image FROM `$table_name` WHERE id = ? LIMIT 1");
+                        $sel->execute([$deleteId]);
+                    } elseif (!empty($houseNo)) {
+                        $sel = $pdo->prepare("SELECT id, house_image, marker_image FROM `$table_name` WHERE house_number = ? LIMIT 1");
+                        $sel->execute([$houseNo]);
+                    }
+                    $row = $sel ? $sel->fetch(PDO::FETCH_ASSOC) : null;
+                    $actualId = $row ? (int)$row['id'] : $deleteId;
+
+                    if ($actualId > 0) {
+                        $del = $pdo->prepare("DELETE FROM `$table_name` WHERE id = ?");
+                        $del->execute([$actualId]);
+                        $deleted = true;
+                    } elseif (!empty($houseNo)) {
+                        $del = $pdo->prepare("DELETE FROM `$table_name` WHERE house_number = ?");
+                        $del->execute([$houseNo]);
+                        $deleted = true;
+                    }
+
+                    if ($row) {
+                        $imgPaths = [$row['house_image'] ?? '', $row['marker_image'] ?? ''];
+                        foreach ($imgPaths as $img) {
+                            if (!empty($img) && strpos($img, 'uploads/') === 0) {
+                                if (file_exists(__DIR__ . '/' . $img)) @unlink(__DIR__ . '/' . $img);
+                                elseif (file_exists($img)) @unlink($img);
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    $post_error = "Delete failed: " . $e->getMessage();
+                }
+            }
+            if (!$deleted && isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                if ($deleteId > 0) {
+                    $conn->query("DELETE FROM `$table_name` WHERE id = " . (int)$deleteId);
+                    $deleted = true;
+                } elseif (!empty($houseNo)) {
+                    $conn->query("DELETE FROM `$table_name` WHERE house_number = '" . $conn->real_escape_string($houseNo) . "'");
+                    $deleted = true;
+                }
+            }
+            if (!$post_error) {
+                header("Location: " . $map_page_file . "?deleted=" . ($deleted ? '1' : '0'));
+                exit();
+            }
+        }
+    }
+
+    // 2. ACTION: SAVE (INSERT OR UPDATE)
+    if ((isset($_POST['action']) && $_POST['action'] === 'save') || isset($_POST['house_number'])) {
+        $householdId = !empty($_POST['household_id']) ? (int)$_POST['household_id'] : null;
+        $houseNumber = trim($_POST['house_number'] ?? '');
+        $husbandName = trim($_POST['husband_name'] ?? '');
+        $spouseName  = trim($_POST['spouse_name'] ?? '');
+        $markerWidth = !empty($_POST['marker_width']) ? (int)$_POST['marker_width'] : 40;
+        $markerHeight = !empty($_POST['marker_height']) ? (int)$_POST['marker_height'] : 40;
+
+        // Fallback: If householdId is missing but houseNumber already exists, update that record
+        if (!$householdId && !empty($houseNumber) && isset($pdo) && $pdo instanceof PDO) {
+            try {
+                $chkExisting = $pdo->prepare("SELECT id FROM `$table_name` WHERE house_number = ? LIMIT 1");
+                $chkExisting->execute([$houseNumber]);
+                $exId = $chkExisting->fetchColumn();
+                if ($exId) {
+                    $householdId = (int)$exId;
+                }
+            } catch (\Throwable $ce) {}
+        }
+
+        $topPos = isset($_POST['top_position']) ? $_POST['top_position'] : ($_POST['top_pos'] ?? '50.00');
+        $leftPos = isset($_POST['left_position']) ? $_POST['left_position'] : ($_POST['left_pos'] ?? '50.00');
+        $topPos = number_format((float)$topPos, 2, '.', '');
+        $leftPos = number_format((float)$leftPos, 2, '.', '');
+
+        // Children JSON Array
+        $childrenList = [];
+        if (isset($_POST['children'])) {
+            if (is_array($_POST['children'])) {
+                foreach ($_POST['children'] as $child) {
+                    $tr = trim((string)$child);
+                    if ($tr !== '') $childrenList[] = $tr;
+                }
+            } elseif (is_string($_POST['children'])) {
+                $dec = json_decode($_POST['children'], true);
+                if (is_array($dec)) $childrenList = array_values(array_filter(array_map('trim', $dec)));
+            }
+        }
+        $childrenJson = json_encode($childrenList, JSON_UNESCAPED_UNICODE);
+
+        // Upload handling
+        $houseDir = __DIR__ . '/uploads/houses/';
+        $markerDir = __DIR__ . '/uploads/markers/';
+        if (!is_dir($houseDir)) @mkdir($houseDir, 0777, true);
+        if (!is_dir($markerDir)) @mkdir($markerDir, 0777, true);
+
+        $houseImagePath = '';
+        $markerImagePath = '';
+
+        if (isset($_FILES['house_image']) && $_FILES['house_image']['error'] === UPLOAD_ERR_OK) {
+            $name = 'house_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($_FILES['house_image']['name']));
+            if (move_uploaded_file($_FILES['house_image']['tmp_name'], $houseDir . $name)) {
+                $houseImagePath = 'uploads/houses/' . $name;
+            }
+        }
+
+        if (isset($_FILES['marker_image']) && $_FILES['marker_image']['error'] === UPLOAD_ERR_OK) {
+            $name = 'marker_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($_FILES['marker_image']['name']));
+            if (move_uploaded_file($_FILES['marker_image']['tmp_name'], $markerDir . $name)) {
+                $markerImagePath = 'uploads/markers/' . $name;
+            }
+        }
+
+        try {
+            if ($householdId) {
+                // UPDATE RECORD
+                $updateFields = [
+                    'house_number = :house_number',
+                    'husband_name = :husband_name',
+                    'spouse_name = :spouse_name',
+                    'children = :children',
+                    'marker_width = :marker_width',
+                    'marker_height = :marker_height',
+                    'coordinate_x = :coordinate_x',
+                    'coordinate_y = :coordinate_y'
+                ];
+                $params = [
+                    ':house_number' => $houseNumber,
+                    ':husband_name' => $husbandName,
+                    ':spouse_name'  => ($spouseName !== '' ? $spouseName : null),
+                    ':children'     => $childrenJson,
+                    ':marker_width' => $markerWidth,
+                    ':marker_height'=> $markerHeight,
+                    ':coordinate_x' => $leftPos,
+                    ':coordinate_y' => $topPos,
+                    ':id'           => $householdId
+                ];
+                if ($houseImagePath !== '') {
+                    $updateFields[] = 'house_image = :house_image';
+                    $params[':house_image'] = $houseImagePath;
+                }
+                if ($markerImagePath !== '') {
+                    $updateFields[] = 'marker_image = :marker_image';
+                    $params[':marker_image'] = $markerImagePath;
+                }
+
+                $stmt = $pdo->prepare("UPDATE `$table_name` SET " . implode(', ', $updateFields) . " WHERE id = :id");
+                $stmt->execute($params);
+
+                header("Location: " . $map_page_file . "?updated=1");
+                exit();
+            } else {
+                // INSERT NEW RECORD
+                $stmt = $pdo->prepare("INSERT INTO `$table_name` (house_number, husband_name, spouse_name, children, house_image, marker_image, marker_width, marker_height, coordinate_x, coordinate_y) VALUES (:house_number, :husband_name, :spouse_name, :children, :house_image, :marker_image, :marker_width, :marker_height, :coordinate_x, :coordinate_y)");
+                $stmt->execute([
+                    ':house_number' => $houseNumber,
+                    ':husband_name' => $husbandName,
+                    ':spouse_name'  => ($spouseName !== '' ? $spouseName : null),
+                    ':children'     => $childrenJson,
+                    ':house_image'  => $houseImagePath,
+                    ':marker_image' => $markerImagePath,
+                    ':marker_width' => $markerWidth,
+                    ':marker_height'=> $markerHeight,
+                    ':coordinate_x' => $leftPos,
+                    ':coordinate_y' => $topPos
+                ]);
+
+                header("Location: " . $map_page_file . "?success=1");
+                exit();
+            }
+        } catch (\PDOException $e) {
+            $post_error = "Database error: " . $e->getMessage();
+        }
+    }
+}
+
 // Fetch existing markers for Purok 1
 $existing_markers = [];
+$db_debug_info = [];
 try {
     $stmt = $pdo->prepare("SELECT * FROM `$table_name` ORDER BY id ASC");
     $stmt->execute();
     $existing_markers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $db_debug_info['marker_ids'] = array_column($existing_markers, 'id');
 } catch (PDOException $e) {
     $error_msg = $e->getMessage();
+    $db_debug_info['error'] = $error_msg;
 }
+
+// Log status for diagnostics
+$logLine = "[" . date('Y-m-d H:i:s') . "] PUROK1 VIEW: db=" . ($dbname ?? 'N/A') . " | count=" . count($existing_markers) . " | ids=" . implode(',', $db_debug_info['marker_ids'] ?? []) . " | err=" . ($error_msg ?? 'none') . "\n";
+@file_put_contents(__DIR__ . '/infinity_debug.log', $logLine, FILE_APPEND);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -259,7 +462,12 @@ try {
             </div>
         </div>
 
-        <?php if (isset($_GET['success'])): ?>
+        <?php if (!empty($post_error)): ?>
+            <div class="alert-banner" style="background: #fef2f2; border-left: 5px solid #dc2626; color: #991b1b;">
+                <div><i class="fa-solid fa-triangle-exclamation"></i> <?= htmlspecialchars($post_error) ?></div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#991b1b;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['success'])): ?>
             <div class="alert-banner alert-success">
                 <div><i class="fa-solid fa-circle-check"></i> Household pin successfully plotted and saved to <?= $module_name ?>!</div>
                 <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#065f46;">&times;</button>
@@ -268,6 +476,16 @@ try {
             <div class="alert-banner alert-updated">
                 <div><i class="fa-solid fa-circle-check"></i> Household details and map coordinates successfully updated!</div>
                 <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#075985;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] === '1'): ?>
+            <div class="alert-banner" style="background: #fee2e2; border-left: 5px solid #ef4444; color: #991b1b;">
+                <div><i class="fa-solid fa-circle-check"></i> Household pin successfully removed from <?= $module_name ?> map!</div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#991b1b;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] === '0'): ?>
+            <div class="alert-banner" style="background: #fffbeb; border-left: 5px solid #f59e0b; color: #92400e;">
+                <div><i class="fa-solid fa-triangle-exclamation"></i> Household record was already removed or not found.</div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#92400e;">&times;</button>
             </div>
         <?php endif; ?>
 
@@ -307,7 +525,8 @@ try {
         <div class="form-card">
             <h3 class="form-title"><i class="fa-solid fa-house-chimney-medical"></i> Plot Household & Dependents</h3>
             
-            <form action="process_household.php" method="POST" enctype="multipart/form-data">
+            <form action="" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="save">
                 <input type="hidden" name="target_file" value="<?= $target_file ?>">
                 <input type="hidden" name="household_id" id="household_id" value="">
 

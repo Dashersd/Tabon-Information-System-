@@ -67,23 +67,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                 We sent a 6-digit verification OTP to <strong id="modalTargetEmail">your Gmail</strong>. Please check your Inbox or Spam folder, then enter the OTP below to confirm your request:
             </p>
 
-            <!-- Alert box inside modal for error/expiry messages -->
-            <!-- Free Hosting / Offline OTP Fallback Banner -->
-            <div class="pin-offline-banner" id="pinOfflineBanner" style="display: none; background: #fef3c7; border: 1px solid #fde047; color: #854d0e; padding: 14px 16px; border-radius: 10px; font-size: 13px; margin: 12px 0 16px 0; text-align: left;">
-                <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #b45309;">
-                    <i class="fa-solid fa-circle-info"></i> Notice: Free Hosting Mode
-                </div>
-                <span>InfinityFree blocks outbound email sending (SMTP). For instant testing & submission, your 6-digit OTP code is:</span>
-                <div style="margin: 8px 0; text-align: center;">
-                    <span id="pinOfflineCode" style="font-family: monospace; font-size: 26px; font-weight: 800; letter-spacing: 6px; background: #ffffff; padding: 4px 16px; border-radius: 8px; border: 2px solid #eab308; color: #1e293b; display: inline-block;">------</span>
-                </div>
-                <div style="text-align: center;">
-                    <button type="button" id="btnAutoFillPin" style="background: #093d25; color: #ffffff; border: none; padding: 8px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill & Verify Now
-                    </button>
-                </div>
-            </div>
-
             <div class="pin-modal-alert" id="pinModalAlert">
                 <i class="fa-solid fa-circle-exclamation"></i>
                 <span id="pinModalAlertText">Invalid OTP code.</span>
@@ -310,7 +293,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
         <i class="fa-solid fa-heart" style="font-size: 16px;"></i><i class="fa-solid fa-heart" style="font-size: 12px; margin-left: 5px;"></i>
     </div>
 
-    <footer class="site-footer">
+        <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="footer-logo">
@@ -321,13 +304,25 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
             </div>
             
             <div class="footer-links">
-                <h4>Menu</h4>
+                <h4>Navigation</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="about.php">About</a></li>
-                    <li><a href="officials.php">Officials</a></li>
+                    <li><a href="service.php">Services</a></li>
+                    <li><a href="announcement.php">Announcements</a></li>
+                    <li><a href="spotmap.php">Spot Map</a></li>
                     <li><a href="gallery.php">Gallery</a></li>
-                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links">
+                <h4>About Us</h4>
+                <ul>
+                    <li><a href="history.php">History</a></li>
+                    <li><a href="mission.php">Mission</a></li>
+                    <li><a href="vision.php">Vision</a></li>
+                    <li><a href="officials.php">Barangay Officials</a></li>
+                    <li><a href="skofficials.php">SK Officials</a></li>
                 </ul>
             </div>
             
@@ -600,54 +595,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                     // Start 3-minute expiration timer & resend cooldown
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
-
-                    // Free hosting fallback display
-                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
-                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
-                    if (pinOfflineBanner && pinOfflineCode) {
-                        if (!data.mail_sent && data.dev_pin) {
-                            pinOfflineBanner.style.display = 'block';
-                            pinOfflineCode.textContent = data.dev_pin;
-                        } else {
-                            pinOfflineBanner.style.display = 'none';
-                        }
-                    }
-
-                    // Dev hint if local dev mode
-                    if (data.dev_pin) {
-                        console.log(`%c[Barangay Tabon Dev OTP] PIN for ${email}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
-                    }
                 } else {
-                    showToast('error', 'Dispatch Error', data.message || 'Could not send verification OTP.');
+                    showToast('error', 'Dispatch Error', data.message || 'Could not send verification OTP to your Gmail.');
                 }
             })
             .catch(err => {
                 btnSubmit.disabled = false;
                 btnSubmitIcon.className = 'fa-regular fa-paper-plane';
                 btnSubmitText.textContent = 'Send Message →';
-                showToast('error', 'Connection Error', 'Network error while requesting OTP code. Please try again.');
+                showToast('error', 'Connection Error', 'Network error while requesting OTP code. Please check your internet connection.');
                 console.error(err);
             });
         });
 
         // 2. Resend Code Handler
-                // Auto-Fill & Verify Handler
-        const btnAutoFillPin = document.getElementById('btnAutoFillPin');
-        if (btnAutoFillPin) {
-            btnAutoFillPin.addEventListener('click', function() {
-                const code = document.getElementById('pinOfflineCode').textContent.trim();
-                if (code && code.length === 6 && code !== '------') {
-                    code.split('').forEach((char, i) => {
-                        if (pinInputs[i]) {
-                            pinInputs[i].value = char;
-                            pinInputs[i].classList.add('filled');
-                        }
-                    });
-                    btnVerifyPin.click();
-                }
-            });
-        }
-
         btnResendPin.addEventListener('click', function () {
             if (!activeEmail) return;
 
@@ -668,22 +629,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                     resetPinInputs();
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
-
-                    // Free hosting fallback display
-                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
-                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
-                    if (pinOfflineBanner && pinOfflineCode) {
-                        if (!data.mail_sent && data.dev_pin) {
-                            pinOfflineBanner.style.display = 'block';
-                            pinOfflineCode.textContent = data.dev_pin;
-                        } else {
-                            pinOfflineBanner.style.display = 'none';
-                        }
-                    }
-
-                    if (data.dev_pin) {
-                        console.log(`%c[Barangay Tabon Dev OTP] Resent PIN for ${activeEmail}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
-                    }
                 } else {
                     btnResendPin.disabled = false;
                     btnResendPin.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend Code';

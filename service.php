@@ -241,7 +241,7 @@ if ($res) {
     </div>
 
     <!-- Footer -->
-    <footer class="site-footer">
+        <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="footer-logo">
@@ -250,16 +250,30 @@ if ($res) {
                 </div>
                 <p>The Barangay Tabon information system aims to provide better services, transparent governance, and a vibrant community experience for all residents.</p>
             </div>
+            
             <div class="footer-links">
-                <h4>Menu</h4>
+                <h4>Navigation</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="about.php">About</a></li>
-                    <li><a href="officials.php">Officials</a></li>
+                    <li><a href="service.php">Services</a></li>
+                    <li><a href="announcement.php">Announcements</a></li>
+                    <li><a href="spotmap.php">Spot Map</a></li>
                     <li><a href="gallery.php">Gallery</a></li>
-                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
                 </ul>
             </div>
+            
+            <div class="footer-links">
+                <h4>About Us</h4>
+                <ul>
+                    <li><a href="history.php">History</a></li>
+                    <li><a href="mission.php">Mission</a></li>
+                    <li><a href="vision.php">Vision</a></li>
+                    <li><a href="officials.php">Barangay Officials</a></li>
+                    <li><a href="skofficials.php">SK Officials</a></li>
+                </ul>
+            </div>
+            
             <div class="footer-links footer-partner-col">
                 <h4>Partnership by</h4>
                 <p class="footer-partner-name">Municipality of Lapuyan</p>

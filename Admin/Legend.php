@@ -57,56 +57,64 @@ $conn->query("CREATE TABLE IF NOT EXISTS `sm_legend_spots` (
 
 // Function: JSON Synchronization & Cross-Table Sync
 function syncLegendJson($conn, $json_file_path) {
+    global $pdo;
     try {
-        $res = $conn->query("SELECT * FROM `sm_legends` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC");
         $export_data = [];
-        if ($res) {
-            while ($row = $res->fetch_assoc()) {
-                // Compatible fields for spotmap & legacy Legend Files
-                $export_row = [
-                    'id'            => (int)$row['id'],
-                    'name'          => $row['name'],
-                    'icon_path'     => $row['icon_path'],
-                    'color_hex'     => $row['color_hex'],
-                    'is_active'     => (int)$row['is_active'],
-                    'display_order' => (int)$row['display_order'],
-                    'top_position'  => (float)$row['top_position'],
-                    'left_position' => (float)$row['left_position'],
-                    'marker_width'  => (int)$row['marker_width'],
-                    'marker_height' => (int)$row['marker_height'],
-                    'image_path'    => $row['image_path'],
-                    // Legacy household-like keys for backward compatibility
-                    'purok'         => 'Legend',
-                    'houseNumber'   => $row['name'],
-                    'markerImage'   => $row['icon_path'],
-                    'topPos'        => (float)$row['top_position'],
-                    'leftPos'       => (float)$row['left_position'],
-                    'markerWidth'   => (int)$row['marker_width'],
-                    'markerHeight'  => (int)$row['marker_height'],
-                    'dateAdded'     => substr($row['created_at'], 0, 10)
-                ];
-                $export_data[] = $export_row;
+        $rows = [];
+        if (isset($pdo) && $pdo instanceof PDO) {
+            $stmt = $pdo->query("SELECT * FROM `sm_legends` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC");
+            if ($stmt) $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } elseif (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            $res = $conn->query("SELECT * FROM `sm_legends` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC");
+            if ($res) {
+                while ($r = $res->fetch_assoc()) $rows[] = $r;
+            }
+        }
 
-                // Synchronize with sm_legend_spots
-                $check = $conn->prepare("SELECT `id` FROM `sm_legend_spots` WHERE `legend_id` = ?");
-                $leg_id = (int)$row['id'];
-                $check->bind_param("i", $leg_id);
-                $check->execute();
-                $c_res = $check->get_result();
-                if ($c_res && $c_res->num_rows > 0) {
-                    $up = $conn->prepare("UPDATE `sm_legend_spots` SET `title` = ?, `top_position` = ?, `left_position` = ?, `marker_width` = ?, `marker_height` = ?, `marker_image` = ?, `house_image` = ? WHERE `legend_id` = ?");
-                    $up->bind_param("sddiissi", $row['name'], $row['top_position'], $row['left_position'], $row['marker_width'], $row['marker_height'], $row['icon_path'], $row['image_path'], $leg_id);
-                    $up->execute();
+        foreach ($rows as $row) {
+            $export_row = [
+                'id'            => (int)$row['id'],
+                'name'          => $row['name'],
+                'icon_path'     => $row['icon_path'],
+                'color_hex'     => $row['color_hex'],
+                'is_active'     => (int)$row['is_active'],
+                'display_order' => (int)$row['display_order'],
+                'top_position'  => (float)$row['top_position'],
+                'left_position' => (float)$row['left_position'],
+                'marker_width'  => (int)$row['marker_width'],
+                'marker_height' => (int)$row['marker_height'],
+                'image_path'    => $row['image_path'],
+                'purok'         => 'Legend',
+                'houseNumber'   => $row['name'],
+                'markerImage'   => $row['icon_path'],
+                'topPos'        => (float)$row['top_position'],
+                'leftPos'       => (float)$row['left_position'],
+                'markerWidth'   => (int)$row['marker_width'],
+                'markerHeight'  => (int)$row['marker_height'],
+                'dateAdded'     => substr($row['created_at'] ?? date('Y-m-d'), 0, 10)
+            ];
+            $export_data[] = $export_row;
+
+            $leg_id = (int)$row['id'];
+            if (isset($pdo) && $pdo instanceof PDO) {
+                $chk = $pdo->prepare("SELECT id FROM `sm_legend_spots` WHERE `legend_id` = ? LIMIT 1");
+                $chk->execute([$leg_id]);
+                $exists = $chk->fetchColumn();
+                if ($exists) {
+                    $up = $pdo->prepare("UPDATE `sm_legend_spots` SET `title` = ?, `top_position` = ?, `left_position` = ?, `marker_width` = ?, `marker_height` = ?, `marker_image` = ?, `house_image` = ? WHERE `legend_id` = ?");
+                    $up->execute([$row['name'], $row['top_position'], $row['left_position'], $row['marker_width'], $row['marker_height'], $row['icon_path'], $row['image_path'], $leg_id]);
                 } else {
-                    $ins = $conn->prepare("INSERT INTO `sm_legend_spots` (`legend_id`, `title`, `top_position`, `left_position`, `marker_width`, `marker_height`, `marker_image`, `house_image`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $ins->bind_param("isddiiss", $leg_id, $row['name'], $row['top_position'], $row['left_position'], $row['marker_width'], $row['marker_height'], $row['icon_path'], $row['image_path']);
-                    $ins->execute();
+                    $ins = $pdo->prepare("INSERT INTO `sm_legend_spots` (`legend_id`, `title`, `top_position`, `left_position`, `marker_width`, `marker_height`, `marker_image`, `house_image`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $ins->execute([$leg_id, $row['name'], $row['top_position'], $row['left_position'], $row['marker_width'], $row['marker_height'], $row['icon_path'], $row['image_path']]);
                 }
             }
         }
-        $conn->query("DELETE FROM `sm_legend_spots` WHERE `legend_id` NOT IN (SELECT `id` FROM `sm_legends`)");
-        file_put_contents($json_file_path, json_encode($export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    } catch (Exception $e) {
+
+        if (isset($pdo) && $pdo instanceof PDO) {
+            $pdo->exec("DELETE FROM `sm_legend_spots` WHERE `legend_id` NOT IN (SELECT `id` FROM `sm_legends`)");
+        }
+        @file_put_contents($json_file_path, json_encode($export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    } catch (\Throwable $e) {
         // Fail silently
     }
 }
@@ -117,28 +125,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS `sm_settings` (
     `setting_value` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-$seed_check = $conn->query("SELECT `setting_value` FROM `sm_settings` WHERE `setting_key` = 'legends_seeded'");
-if (!$seed_check || $seed_check->num_rows == 0) {
-    $count_check = $conn->query("SELECT COUNT(*) AS total FROM `sm_legends`");
-    $row_cnt = $count_check ? $count_check->fetch_assoc()['total'] : 0;
-    if ($row_cnt == 0) {
-        $defaults = [
-            ['Barangay Tabon Hall', 'bi-building-fill', '#4f46e5', 48.20, 51.50, 40, 40, 1, 'Images/Tabon Barangay hall.jpg'],
-            ['Tabon Elementary School', 'bi-book-half', '#10b981', 38.60, 42.10, 40, 40, 2, null],
-            ['Barangay Gymnasium / Court', 'bi-dribbble', '#f59e0b', 54.10, 58.40, 40, 40, 3, null],
-            ['Barangay Health Center', 'bi-heart-pulse-fill', '#ef4444', 46.80, 47.90, 40, 40, 4, null],
-            ['Community Chapel', 'bi-bell-fill', '#8b5cf6', 61.30, 35.70, 40, 40, 5, null],
-            ['Barangay Security Outpost', 'bi-shield-check', '#0284c7', 32.50, 59.80, 40, 40, 6, null]
-        ];
-        $stmt_seed = $conn->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `top_position`, `left_position`, `marker_width`, `marker_height`, `display_order`, `image_path`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-        foreach ($defaults as $d) {
-            $stmt_seed->bind_param("sssddiiss", $d[0], $d[1], $d[2], $d[3], $d[4], $d[5], $d[6], $d[7], $d[8]);
-            $stmt_seed->execute();
-        }
-    }
-    $conn->query("INSERT INTO `sm_settings` (`setting_key`, `setting_value`) VALUES ('legends_seeded', '1') ON DUPLICATE KEY UPDATE `setting_value` = '1'");
-    syncLegendJson($conn, $json_cache_file);
-}
+// Mark legends as permanently initialized so dummy records never auto-seed
+$conn->query("INSERT INTO `sm_settings` (`setting_key`, `setting_value`) VALUES ('legends_seeded', '1') ON DUPLICATE KEY UPDATE `setting_value` = '1'");
 
 // --- 2. Request Handling (POST / AJAX) ---
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
@@ -194,10 +182,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             }
         }
 
-        $stmt = $conn->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `is_active`, `display_order`, `top_position`, `left_position`, `marker_width`, `marker_height`, `image_path`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssiiddiis", $name, $icon_path, $color_hex, $is_active, $display_order, $top_position, $left_position, $marker_width, $marker_height, $image_path);
-        $stmt->execute();
-        $inserted_id = $stmt->insert_id;
+        $inserted_id = 0;
+        if (isset($pdo) && $pdo instanceof PDO) {
+            $stmt = $pdo->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `is_active`, `display_order`, `top_position`, `left_position`, `marker_width`, `marker_height`, `image_path`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $icon_path, $color_hex, $is_active, $display_order, $top_position, $left_position, $marker_width, $marker_height, $image_path]);
+            $inserted_id = (int)$pdo->lastInsertId();
+        } elseif (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            $stmt = $conn->prepare("INSERT INTO `sm_legends` (`name`, `icon_path`, `color_hex`, `is_active`, `display_order`, `top_position`, `left_position`, `marker_width`, `marker_height`, `image_path`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssiiddiis", $name, $icon_path, $color_hex, $is_active, $display_order, $top_position, $left_position, $marker_width, $marker_height, $image_path);
+            $stmt->execute();
+            $inserted_id = $stmt->insert_id;
+        }
 
         syncLegendJson($conn, $json_cache_file);
 
@@ -228,25 +223,50 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $icon_type     = $_POST['icon_type'] ?? 'preset';
         $icon_path     = trim($_POST['preset_icon'] ?? 'bi-building-fill');
 
-        if ($id <= 0 || empty($name)) {
+        if (empty($name)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
-                echo json_encode(['status' => 'error', 'message' => 'Invalid ID or landmark name.']);
+                echo json_encode(['status' => 'error', 'message' => 'Landmark name cannot be empty.']);
                 exit();
             }
             header("Location: Legend.php?error=invalid_data");
             exit();
         }
 
-        // Fetch current record
-        $curr_stmt = $conn->prepare("SELECT * FROM `sm_legends` WHERE `id` = ?");
-        $curr_stmt->bind_param("i", $id);
-        $curr_stmt->execute();
-        $curr = $curr_stmt->get_result()->fetch_assoc();
-        if (!$curr) {
+        // Fetch current record safely via PDO or MySQLi
+        $curr = null;
+        if (isset($pdo) && $pdo instanceof PDO) {
+            if ($id > 0) {
+                $st = $pdo->prepare("SELECT * FROM `sm_legends` WHERE `id` = ? LIMIT 1");
+                $st->execute([$id]);
+                $curr = $st->fetch(PDO::FETCH_ASSOC);
+            }
+            if (!$curr) {
+                $st = $pdo->prepare("SELECT * FROM `sm_legends` WHERE `name` = ? LIMIT 1");
+                $st->execute([$name]);
+                $curr = $st->fetch(PDO::FETCH_ASSOC);
+                if ($curr) $id = (int)$curr['id'];
+            }
+        }
+        if (!$curr && isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            if ($id > 0) {
+                $res = $conn->query("SELECT * FROM `sm_legends` WHERE `id` = $id LIMIT 1");
+                if ($res) $curr = $res->fetch_assoc();
+            }
+            if (!$curr) {
+                $esc = $conn->real_escape_string($name);
+                $res = $conn->query("SELECT * FROM `sm_legends` WHERE `name` = '$esc' LIMIT 1");
+                if ($res) {
+                    $curr = $res->fetch_assoc();
+                    if ($curr) $id = (int)$curr['id'];
+                }
+            }
+        }
+
+        if (!$curr && $id <= 0) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
-                echo json_encode(['status' => 'error', 'message' => 'Legend not found.']);
+                echo json_encode(['status' => 'error', 'message' => 'Legend record not found.']);
                 exit();
             }
             header("Location: Legend.php?error=not_found");
@@ -263,12 +283,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     $icon_path = 'uploads/legends/' . $icon_filename;
                 }
             }
-        } elseif ($icon_type === 'retain') {
+        } elseif ($icon_type === 'retain' && $curr) {
             $icon_path = $curr['icon_path'];
         }
 
         // Handle photo
-        $image_path = $curr['image_path'];
+        $image_path = $curr ? $curr['image_path'] : null;
         if (isset($_FILES['landmark_image']) && $_FILES['landmark_image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['landmark_image']['name'], PATHINFO_EXTENSION));
             if (in_array($ext, ['png', 'jpg', 'jpeg', 'webp'])) {
@@ -282,9 +302,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $image_path = null;
         }
 
-        $up_stmt = $conn->prepare("UPDATE `sm_legends` SET `name` = ?, `icon_path` = ?, `color_hex` = ?, `is_active` = ?, `display_order` = ?, `top_position` = ?, `left_position` = ?, `marker_width` = ?, `marker_height` = ?, `image_path` = ? WHERE `id` = ?");
-        $up_stmt->bind_param("sssiiddiisi", $name, $icon_path, $color_hex, $is_active, $display_order, $top_position, $left_position, $marker_width, $marker_height, $image_path, $id);
-        $up_stmt->execute();
+        // Execute update
+        if (isset($pdo) && $pdo instanceof PDO) {
+            if ($id > 0) {
+                $up = $pdo->prepare("UPDATE `sm_legends` SET `name` = ?, `icon_path` = ?, `color_hex` = ?, `is_active` = ?, `display_order` = ?, `top_position` = ?, `left_position` = ?, `marker_width` = ?, `marker_height` = ?, `image_path` = ? WHERE `id` = ?");
+                $up->execute([$name, $icon_path, $color_hex, $is_active, $display_order, $top_position, $left_position, $marker_width, $marker_height, $image_path, $id]);
+            }
+        }
+        if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            if ($id > 0) {
+                $esc_name = $conn->real_escape_string($name);
+                $esc_icon = $conn->real_escape_string($icon_path);
+                $esc_color = $conn->real_escape_string($color_hex);
+                $esc_img = $image_path !== null ? "'" . $conn->real_escape_string($image_path) . "'" : "NULL";
+                $conn->query("UPDATE `sm_legends` SET `name` = '$esc_name', `icon_path` = '$esc_icon', `color_hex` = '$esc_color', `is_active` = $is_active, `display_order` = $display_order, `top_position` = $top_position, `left_position` = $left_position, `marker_width` = $marker_width, `marker_height` = $marker_height, `image_path` = $esc_img WHERE `id` = $id");
+            }
+        }
 
         syncLegendJson($conn, $json_cache_file);
 
@@ -305,7 +338,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     if ($action === 'toggle_status') {
         $id = intval($_POST['id'] ?? 0);
         if ($id > 0) {
-            $conn->query("UPDATE `sm_legends` SET `is_active` = IF(`is_active` = 1, 0, 1) WHERE `id` = $id");
+            if (isset($pdo) && $pdo instanceof PDO) {
+                $pdo->prepare("UPDATE `sm_legends` SET `is_active` = IF(`is_active` = 1, 0, 1) WHERE `id` = ?")->execute([$id]);
+            }
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $conn->query("UPDATE `sm_legends` SET `is_active` = IF(`is_active` = 1, 0, 1) WHERE `id` = $id");
+            }
             syncLegendJson($conn, $json_cache_file);
         }
         if ($is_ajax) {
@@ -317,13 +355,33 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         exit();
     }
 
-            // Action: Delete Legend
+    // Action: Delete Legend
     if ($action === 'delete_legend') {
         $id = intval($_POST['id'] ?? 0);
-        if ($id > 0) {
+        $name = trim(urldecode($_POST['name'] ?? ''));
+
+        if ($id <= 0 && !empty($name)) {
+            if (isset($pdo) && $pdo instanceof PDO) {
+                $st = $pdo->prepare("SELECT id FROM sm_legends WHERE name = ? LIMIT 1");
+                $st->execute([$name]);
+                $id = (int)$st->fetchColumn();
+            }
+        }
+
+        if ($id > 0 || !empty($name)) {
             // Delete associated custom uploaded files
-            $fetch_row = $conn->query("SELECT `icon_path`, `image_path` FROM `sm_legends` WHERE `id` = $id");
-            if ($fetch_row && $row_data = $fetch_row->fetch_assoc()) {
+            $row_data = null;
+            if (isset($pdo) && $pdo instanceof PDO) {
+                $st = $pdo->prepare("SELECT icon_path, image_path FROM sm_legends WHERE id = ? OR name = ? LIMIT 1");
+                $st->execute([$id, $name]);
+                $row_data = $st->fetch(PDO::FETCH_ASSOC);
+            }
+            if (!$row_data && isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $fetch_row = $conn->query("SELECT icon_path, image_path FROM sm_legends WHERE id = $id LIMIT 1");
+                if ($fetch_row) $row_data = $fetch_row->fetch_assoc();
+            }
+
+            if ($row_data) {
                 if (!empty($row_data['image_path']) && strpos($row_data['image_path'], 'uploads/landmarks/') === 0) {
                     $img_full = __DIR__ . '/' . $row_data['image_path'];
                     if (file_exists($img_full)) @unlink($img_full);
@@ -333,10 +391,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     if (file_exists($ico_full)) @unlink($ico_full);
                 }
             }
-            $conn->query("DELETE FROM `sm_legends` WHERE `id` = $id");
-            $conn->query("DELETE FROM `sm_legend_spots` WHERE `legend_id` = $id");
+
+            if (isset($pdo) && $pdo instanceof PDO) {
+                if ($id > 0) {
+                    $pdo->prepare("DELETE FROM sm_legends WHERE id = ?")->execute([$id]);
+                    $pdo->prepare("DELETE FROM sm_legend_spots WHERE legend_id = ?")->execute([$id]);
+                } elseif (!empty($name)) {
+                    $pdo->prepare("DELETE FROM sm_legends WHERE name = ?")->execute([$name]);
+                    $pdo->prepare("DELETE FROM sm_legend_spots WHERE title = ?")->execute([$name]);
+                }
+            }
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                if ($id > 0) {
+                    $conn->query("DELETE FROM `sm_legends` WHERE `id` = $id");
+                    $conn->query("DELETE FROM `sm_legend_spots` WHERE `legend_id` = $id");
+                } elseif (!empty($name)) {
+                    $esc = $conn->real_escape_string($name);
+                    $conn->query("DELETE FROM `sm_legends` WHERE `name` = '$esc'");
+                    $conn->query("DELETE FROM `sm_legend_spots` WHERE `title` = '$esc'");
+                }
+            }
             syncLegendJson($conn, $json_cache_file);
         }
+
         if ($is_ajax) {
             header('Content-Type: application/json');
             echo json_encode([
@@ -353,16 +430,31 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
 
 // Fetch all legends for map & table display
-$legends_res = $conn->query("SELECT * FROM `sm_legends` ORDER BY `display_order` ASC, `id` ASC");
 $all_legends = [];
 $active_count = 0;
 $hidden_count = 0;
-if ($legends_res) {
-    while ($row = $legends_res->fetch_assoc()) {
-        $all_legends[] = $row;
-        if ($row['is_active'] == 1) $active_count++;
-        else $hidden_count++;
+
+if (isset($pdo) && $pdo instanceof PDO) {
+    try {
+        $st = $pdo->query("SELECT * FROM `sm_legends` ORDER BY `display_order` ASC, `id` ASC");
+        if ($st) {
+            $all_legends = $st->fetchAll(PDO::FETCH_ASSOC);
+        }
+    } catch (\Throwable $e) {}
+}
+
+if (empty($all_legends) && isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+    $legends_res = $conn->query("SELECT * FROM `sm_legends` ORDER BY `display_order` ASC, `id` ASC");
+    if ($legends_res) {
+        while ($row = $legends_res->fetch_assoc()) {
+            $all_legends[] = $row;
+        }
     }
+}
+
+foreach ($all_legends as $row) {
+    if ((int)($row['is_active'] ?? 1) == 1) $active_count++;
+    else $hidden_count++;
 }
 
 // Helper to resolve landmark display photo URL
@@ -2322,13 +2414,13 @@ function get_legend_photo_url($path) {
                                             <!-- Edit Modal Button -->
                                             <button type="button" 
                                                     class="btn-table-action edit" 
-                                                    onclick="openEditModal(<?= $leg_json ?>)"
+                                                    onclick="openEditModal(<?= (int)$leg['id'] ?>)"
                                                     title="Edit Legend">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
 
                                             <!-- Toggle Visibility -->
-                                            <form method="POST" action="Legend.php" style="display:inline;" onsubmit="return handleToggleSubmit(event, this)">
+                                            <form method="POST" action="Legend.php" style="display:inline;">
                                                 <input type="hidden" name="action" value="toggle_status">
                                                 <input type="hidden" name="id" value="<?= $leg['id'] ?>">
                                                 <button type="submit" class="btn-table-action toggle" title="<?= $leg['is_active'] == 1 ? 'Hide Landmark' : 'Make Visible' ?>">
@@ -2814,7 +2906,12 @@ function get_legend_photo_url($path) {
         // --- Edit Modal Logic ---
         function openEditModal(leg) {
             if (typeof leg === 'number' || typeof leg === 'string') {
-                leg = ALL_LEGENDS.find(l => l.id == leg) || leg;
+                const found = ALL_LEGENDS.find(l => l.id == leg);
+                if (found) leg = found;
+            }
+            if (!leg || !leg.id) {
+                console.warn('Legend item not found', leg);
+                return;
             }
             document.getElementById('editLegendId').value = leg.id;
             document.getElementById('editNameInput').value = leg.name;
@@ -3013,72 +3110,29 @@ function get_legend_photo_url($path) {
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('action', 'delete_legend');
-            formData.append('id', id);
-            formData.append('is_ajax', '1');
-
-            fetch('Legend.php', {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // 1. Remove marker pin from aerial map in Admin/Legend.php
-                    const markers = document.querySelectorAll('#marker-' + id + ', .saved-legend-marker[data-id="' + id + '"]');
-                    markers.forEach(m => {
-                        m.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
-                        m.style.transform = 'translate(-50%, -100%) scale(0)';
-                        m.style.opacity = '0';
-                        setTimeout(() => m.remove(), 300);
-                    });
-
-                    // 2. Remove row from Existing Spot Map Legends table
-                    const rows = document.querySelectorAll('#table-row-' + id + ', #legend-row-' + id + ', tr[data-id="' + id + '"]');
-                    rows.forEach(r => {
-                        r.style.transition = 'opacity 0.3s ease';
-                        r.style.opacity = '0';
-                        setTimeout(() => {
-                            r.remove();
-                            const tbody = document.querySelector('#legendsTable tbody');
-                            if (tbody && tbody.querySelectorAll('tr[id^="table-row-"], tr[data-id]').length === 0) {
-                                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 35px 20px; color:#94a3b8; font-style: italic;">No landmarks currently added. Click on the map canvas to place a new landmark.</td></tr>';
-                            }
-                        }, 300);
-                    });
-
-                    // 3. Close photo modal if open
-                    closeLandmarkPhotoModal();
-
-                    // 4. Update ALL_LEGENDS array
-                    const idx = ALL_LEGENDS.findIndex(l => l.id == id);
-                    if (idx !== -1) ALL_LEGENDS.splice(idx, 1);
-
-                    // 5. Update stat pills
-                    updateStatsDisplay();
-
-                    showToast(`Landmark "${name}" was completely deleted from the map and table.`);
-                } else {
-                    submitDeleteFallback(id);
-                }
-            })
-            .catch(err => {
-                submitDeleteFallback(id);
-            });
-        }
-
-        function submitDeleteFallback(id) {
+            // Direct native form POST submission (100% immune to InfinityFree aes.js/AJAX blocks)
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = 'Legend.php';
+            
             const act = document.createElement('input');
-            act.type = 'hidden'; act.name = 'action'; act.value = 'delete_legend';
-            const idInput = document.createElement('input');
-            idInput.type = 'hidden'; idInput.name = 'id'; idInput.value = id;
+            act.type = 'hidden';
+            act.name = 'action';
+            act.value = 'delete_legend';
             form.appendChild(act);
+
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            idInput.value = id;
             form.appendChild(idInput);
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'hidden';
+            nameInput.name = 'name';
+            nameInput.value = name;
+            form.appendChild(nameInput);
+
             document.body.appendChild(form);
             form.submit();
         }
@@ -3118,6 +3172,12 @@ function get_legend_photo_url($path) {
             updateLivePreview();
 
             const urlParams = new URLSearchParams(window.location.search);
+            const editIdParam = urlParams.get('edit_id');
+            if (editIdParam) {
+                setTimeout(function() {
+                    openEditModal(parseInt(editIdParam, 10));
+                }, 400);
+            }
             if (urlParams.get('msg') === 'added') {
                 showToast('Legend landmark successfully pinned to Spot Map!');
             } else if (urlParams.get('msg') === 'updated') {

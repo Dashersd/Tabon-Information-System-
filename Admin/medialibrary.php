@@ -1,6 +1,10 @@
 <?php
 // Admin/medialibrary.php - Media Gallery and Album Management
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: ../login.php");
     exit();
@@ -8,11 +12,61 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 require_once '../db_connect.php';
 
-// Ensure upload directory exists
-$upload_base_dir = 'uploads/gallery/';
+// Detect whether user loaded mediagallery.php or medialibrary.php
+$current_page_file = (basename($_SERVER['PHP_SELF'] ?? '') === 'mediagallery.php') ? 'mediagallery.php' : 'medialibrary.php';
+
+// Ensure upload directory exists with absolute path
+$upload_base_dir = __DIR__ . '/uploads/gallery/';
 if (!is_dir($upload_base_dir)) {
-    mkdir($upload_base_dir, 0777, true);
+    @mkdir($upload_base_dir, 0777, true);
 }
+
+// Auto-verify and create gallery tables if they don't exist
+try {
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+        $conn->query("CREATE TABLE IF NOT EXISTS `gallery_folders` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `name` varchar(150) NOT NULL,
+            `description` text DEFAULT NULL,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $conn->query("CREATE TABLE IF NOT EXISTS `gallery_media` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `folder_id` int(11) NOT NULL,
+            `file_path` varchar(255) NOT NULL,
+            `file_name` varchar(255) NOT NULL,
+            `caption` varchar(255) DEFAULT NULL,
+            `file_size` int(11) DEFAULT NULL,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            PRIMARY KEY (`id`),
+            KEY `folder_id` (`folder_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } elseif (isset($pdo) && $pdo instanceof PDO) {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery_folders` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `name` varchar(150) NOT NULL,
+            `description` text DEFAULT NULL,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery_media` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `folder_id` int(11) NOT NULL,
+            `file_path` varchar(255) NOT NULL,
+            `file_name` varchar(255) NOT NULL,
+            `caption` varchar(255) DEFAULT NULL,
+            `file_size` int(11) DEFAULT NULL,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            PRIMARY KEY (`id`),
+            KEY `folder_id` (`folder_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    }
+} catch (\Throwable $e) {}
 
 // -------------------------------------------------------------
 // POST Request Actions
@@ -26,13 +80,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $folder_desc = trim($_POST['folder_description'] ?? '');
 
         if (!empty($folder_name)) {
-            $stmt = $conn->prepare("INSERT INTO gallery_folders (name, description) VALUES (?, ?)");
-            $stmt->bind_param("ss", $folder_name, $folder_desc);
-            $stmt->execute();
-            header("Location: medialibrary.php?msg=folder_created");
+            $inserted = false;
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $stmt = $conn->prepare("INSERT INTO gallery_folders (name, description) VALUES (?, ?)");
+                if ($stmt) {
+                    $stmt->bind_param("ss", $folder_name, $folder_desc);
+                    $stmt->execute();
+                    $stmt->close();
+                    $inserted = true;
+                }
+            }
+            if (!$inserted && isset($pdo) && $pdo instanceof PDO) {
+                $stmt = $pdo->prepare("INSERT INTO gallery_folders (name, description) VALUES (?, ?)");
+                $stmt->execute([$folder_name, $folder_desc]);
+                $inserted = true;
+            }
+            header("Location: " . $current_page_file . "?msg=folder_created");
             exit;
         } else {
-            header("Location: medialibrary.php?error=empty_folder_name");
+            header("Location: " . $current_page_file . "?error=empty_folder_name");
             exit;
         }
     }
@@ -44,10 +110,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $folder_desc = trim($_POST['folder_description'] ?? '');
 
         if ($folder_id > 0 && !empty($folder_name)) {
-            $stmt = $conn->prepare("UPDATE gallery_folders SET name = ?, description = ? WHERE id = ?");
-            $stmt->bind_param("ssi", $folder_name, $folder_desc, $folder_id);
-            $stmt->execute();
-            header("Location: medialibrary.php?folder_id=" . $folder_id . "&msg=folder_updated");
+            $updated = false;
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $stmt = $conn->prepare("UPDATE gallery_folders SET name = ?, description = ? WHERE id = ?");
+                if ($stmt) {
+                    $stmt->bind_param("ssi", $folder_name, $folder_desc, $folder_id);
+                    $stmt->execute();
+                    $stmt->close();
+                    $updated = true;
+                }
+            }
+            if (!$updated && isset($pdo) && $pdo instanceof PDO) {
+                $stmt = $pdo->prepare("UPDATE gallery_folders SET name = ?, description = ? WHERE id = ?");
+                $stmt->execute([$folder_name, $folder_desc, $folder_id]);
+            }
+            header("Location: " . $current_page_file . "?folder_id=" . $folder_id . "&msg=folder_updated");
             exit;
         }
     }
@@ -55,22 +132,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 3. Delete Entire Folder & Physical Files
     if ($action === 'delete_folder') {
         $folder_id = intval($_POST['folder_id'] ?? 0);
-        if ($folder_id > 0) {
-            $stmt_media = $conn->prepare("SELECT file_path FROM gallery_media WHERE folder_id = ?");
-            $stmt_media->bind_param("i", $folder_id);
-            $stmt_media->execute();
-            $res = $stmt_media->get_result();
-            while ($row = $res->fetch_assoc()) {
-                if (!empty($row['file_path']) && file_exists($row['file_path'])) {
-                    @unlink($row['file_path']);
+        $folder_name = trim($_POST['folder_name'] ?? '');
+
+        if ($folder_id <= 0 && !empty($folder_name)) {
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $chk = $conn->query("SELECT id FROM gallery_folders WHERE name = '" . $conn->real_escape_string($folder_name) . "' LIMIT 1");
+                if ($chk && $r = $chk->fetch_assoc()) $folder_id = (int)$r['id'];
+            }
+            if ($folder_id <= 0 && isset($pdo) && $pdo instanceof PDO) {
+                $chk = $pdo->prepare("SELECT id FROM gallery_folders WHERE name = ? LIMIT 1");
+                $chk->execute([$folder_name]);
+                $r = $chk->fetchColumn();
+                if ($r) $folder_id = (int)$r;
+            }
+        }
+
+        if ($folder_id > 0 || !empty($folder_name)) {
+            $media_rows = [];
+            if ($folder_id > 0) {
+                if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                    $stmt_media = $conn->prepare("SELECT file_path FROM gallery_media WHERE folder_id = ?");
+                    if ($stmt_media) {
+                        $stmt_media->bind_param("i", $folder_id);
+                        $stmt_media->execute();
+                        $res = $stmt_media->get_result();
+                        while ($row = $res->fetch_assoc()) $media_rows[] = $row;
+                        $stmt_media->close();
+                    }
+                    $stmt_del = $conn->prepare("DELETE FROM gallery_folders WHERE id = ?");
+                    if ($stmt_del) {
+                        $stmt_del->bind_param("i", $folder_id);
+                        $stmt_del->execute();
+                        $stmt_del->close();
+                    }
+                    $conn->query("DELETE FROM gallery_media WHERE folder_id = " . intval($folder_id));
+                } elseif (isset($pdo) && $pdo instanceof PDO) {
+                    $sel = $pdo->prepare("SELECT file_path FROM gallery_media WHERE folder_id = ?");
+                    $sel->execute([$folder_id]);
+                    $media_rows = $sel->fetchAll(PDO::FETCH_ASSOC);
+
+                    $del = $pdo->prepare("DELETE FROM gallery_folders WHERE id = ?");
+                    $del->execute([$folder_id]);
+
+                    $delM = $pdo->prepare("DELETE FROM gallery_media WHERE folder_id = ?");
+                    $delM->execute([$folder_id]);
+                }
+            } elseif (!empty($folder_name)) {
+                if (isset($pdo) && $pdo instanceof PDO) {
+                    $del = $pdo->prepare("DELETE FROM gallery_folders WHERE name = ?");
+                    $del->execute([$folder_name]);
                 }
             }
 
-            $stmt_del = $conn->prepare("DELETE FROM gallery_folders WHERE id = ?");
-            $stmt_del->bind_param("i", $folder_id);
-            $stmt_del->execute();
+            foreach ($media_rows as $row) {
+                if (!empty($row['file_path'])) {
+                    $possible_paths = [
+                        $row['file_path'],
+                        __DIR__ . '/' . $row['file_path'],
+                        __DIR__ . '/../' . $row['file_path']
+                    ];
+                    foreach ($possible_paths as $p) {
+                        if (file_exists($p) && is_file($p)) @unlink($p);
+                    }
+                }
+            }
 
-            header("Location: medialibrary.php?msg=folder_deleted");
+            header("Location: " . $current_page_file . "?msg=folder_deleted");
             exit;
         }
     }
@@ -78,44 +205,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 4. Upload Multiple Images into Folder
     if ($action === 'upload_media') {
         $folder_id = intval($_POST['folder_id'] ?? 0);
+        $target_folder_name = trim($_POST['target_folder_name'] ?? '');
         $caption = trim($_POST['caption'] ?? '');
 
-        if ($folder_id > 0 && isset($_FILES['media_files']) && !empty($_FILES['media_files']['name'][0])) {
-            $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-            $uploaded_count = 0;
+        // If folder_id <= 0, resolve via target_folder_name
+        if ($folder_id <= 0 && !empty($target_folder_name)) {
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $c = $conn->query("SELECT id FROM gallery_folders WHERE name = '" . $conn->real_escape_string($target_folder_name) . "' LIMIT 1");
+                if ($c && $cr = $c->fetch_assoc()) $folder_id = (int)$cr['id'];
+            }
+            if ($folder_id <= 0 && isset($pdo) && $pdo instanceof PDO) {
+                $p = $pdo->prepare("SELECT id FROM gallery_folders WHERE name = ? LIMIT 1");
+                $p->execute([$target_folder_name]);
+                $pr = $p->fetchColumn();
+                if ($pr) $folder_id = (int)$pr;
+            }
+        }
+
+        // If still <= 0, pick the first available folder
+        if ($folder_id <= 0 && isset($pdo) && $pdo instanceof PDO) {
+            $first = $pdo->query("SELECT id FROM gallery_folders ORDER BY id ASC LIMIT 1")->fetchColumn();
+            if ($first) $folder_id = (int)$first;
+        }
+
+        if ($folder_id <= 0) {
+            header("Location: " . $current_page_file . "?error=invalid_folder");
+            exit;
+        }
+
+        // Support both dropzone input and direct fallback input
+        $files = null;
+        if (isset($_FILES['media_files']) && !empty($_FILES['media_files']['name']) && !empty($_FILES['media_files']['name'][0])) {
             $files = $_FILES['media_files'];
-            $file_count = count($files['name']);
+        } elseif (isset($_FILES['media_files_direct']) && !empty($_FILES['media_files_direct']['name']) && !empty($_FILES['media_files_direct']['name'][0])) {
+            $files = $_FILES['media_files_direct'];
+        }
 
-            for ($i = 0; $i < $file_count; $i++) {
-                if ($files['error'][$i] === UPLOAD_ERR_OK) {
-                    $orig_name = $files['name'][$i];
-                    $file_size = $files['size'][$i];
-                    $tmp_name = $files['tmp_name'][$i];
+        if (!$files) {
+            header("Location: " . $current_page_file . "?folder_id=" . $folder_id . "&error=no_files_selected");
+            exit;
+        }
 
-                    $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
-                    if (in_array($ext, $allowed_extensions)) {
-                        $sanitized = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', pathinfo($orig_name, PATHINFO_FILENAME));
-                        $new_filename = time() . '_' . uniqid() . '_' . $sanitized . '.' . $ext;
-                        $destination = $upload_base_dir . $new_filename;
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $uploaded_count = 0;
+        $upload_errors = [];
 
-                        if (move_uploaded_file($tmp_name, $destination)) {
-                            $item_caption = !empty($caption) ? $caption : pathinfo($orig_name, PATHINFO_FILENAME);
+        // Ensure target directory exists and is writable
+        if (!is_dir($upload_base_dir)) {
+            @mkdir($upload_base_dir, 0777, true);
+        }
+        @chmod($upload_base_dir, 0777);
+
+        $file_count = is_array($files['name']) ? count($files['name']) : 0;
+
+        for ($i = 0; $i < $file_count; $i++) {
+            $file_err = $files['error'][$i];
+            if ($file_err === UPLOAD_ERR_OK) {
+                $orig_name = $files['name'][$i];
+                $file_size = $files['size'][$i];
+                $tmp_name  = $files['tmp_name'][$i];
+
+                $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+                if (in_array($ext, $allowed_extensions)) {
+                    $sanitized = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', pathinfo($orig_name, PATHINFO_FILENAME));
+                    $new_filename = time() . '_' . uniqid() . '_' . $sanitized . '.' . $ext;
+                    $dest_full = $upload_base_dir . $new_filename;
+                    $db_rel_path = 'uploads/gallery/' . $new_filename;
+
+                    if (move_uploaded_file($tmp_name, $dest_full)) {
+                        @chmod($dest_full, 0644);
+                        $item_caption = !empty($caption) ? $caption : pathinfo($orig_name, PATHINFO_FILENAME);
+                        
+                        $saved_db = false;
+                        if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
                             $stmt_ins = $conn->prepare("INSERT INTO gallery_media (folder_id, file_path, file_name, caption, file_size) VALUES (?, ?, ?, ?, ?)");
-                            $stmt_ins->bind_param("isssi", $folder_id, $destination, $new_filename, $item_caption, $file_size);
-                            $stmt_ins->execute();
+                            if ($stmt_ins) {
+                                $stmt_ins->bind_param("isssi", $folder_id, $db_rel_path, $new_filename, $item_caption, $file_size);
+                                $stmt_ins->execute();
+                                $stmt_ins->close();
+                                $saved_db = true;
+                            }
+                        }
+                        if (!$saved_db && isset($pdo) && $pdo instanceof PDO) {
+                            try {
+                                $p_stmt = $pdo->prepare("INSERT INTO gallery_media (folder_id, file_path, file_name, caption, file_size) VALUES (?, ?, ?, ?, ?)");
+                                $p_stmt->execute([$folder_id, $db_rel_path, $new_filename, $item_caption, $file_size]);
+                                $saved_db = true;
+                            } catch (\Throwable $pe) {
+                                $upload_errors[] = "DB Error: " . $pe->getMessage();
+                            }
+                        }
+
+                        if ($saved_db) {
                             $uploaded_count++;
                         }
+                    } else {
+                        $errMsg = "Could not save uploaded file " . htmlspecialchars($orig_name);
+                        $upload_errors[] = $errMsg;
+                        @file_put_contents(__DIR__ . '/infinity_debug.log', "[" . date('Y-m-d H:i:s') . "] UPLOAD MOVE FAILED: $tmp_name -> $dest_full | is_writable=" . (is_writable($upload_base_dir) ? '1' : '0') . "\n", FILE_APPEND);
                     }
+                } else {
+                    $upload_errors[] = "Unsupported format (.$ext) for " . htmlspecialchars($orig_name);
                 }
+            } elseif ($file_err !== UPLOAD_ERR_NO_FILE) {
+                $errName = "File error ($file_err) for " . htmlspecialchars($files['name'][$i]);
+                if ($file_err === UPLOAD_ERR_INI_SIZE || $file_err === UPLOAD_ERR_FORM_SIZE) {
+                    $errName = "File too large: " . htmlspecialchars($files['name'][$i]) . " exceeds server upload limit";
+                }
+                $upload_errors[] = $errName;
+                @file_put_contents(__DIR__ . '/infinity_debug.log', "[" . date('Y-m-d H:i:s') . "] UPLOAD ERROR CODE: $file_err on " . $files['name'][$i] . "\n", FILE_APPEND);
             }
+        }
 
-            if ($uploaded_count > 0) {
-                header("Location: medialibrary.php?folder_id=" . $folder_id . "&msg=uploaded&count=" . $uploaded_count);
-                exit;
-            } else {
-                header("Location: medialibrary.php?folder_id=" . $folder_id . "&error=no_valid_images");
-                exit;
-            }
+        if ($uploaded_count > 0) {
+            @file_put_contents(__DIR__ . '/infinity_debug.log', "[" . date('Y-m-d H:i:s') . "] UPLOAD SUCCESS: $uploaded_count image(s) to folder $folder_id\n", FILE_APPEND);
+            header("Location: " . $current_page_file . "?folder_id=" . $folder_id . "&msg=uploaded&count=" . $uploaded_count);
+            exit;
+        } else {
+            $errDetails = !empty($upload_errors) ? urlencode(implode('; ', $upload_errors)) : 'no_valid_images';
+            header("Location: " . $current_page_file . "?folder_id=" . $folder_id . "&error=upload_failed&details=" . $errDetails);
+            exit;
         }
     }
 
@@ -123,24 +332,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete_media') {
         $media_id = intval($_POST['media_id'] ?? 0);
         $folder_id = intval($_POST['folder_id'] ?? 0);
+        $file_name = trim($_POST['file_name'] ?? '');
 
+        $filePath = '';
         if ($media_id > 0) {
-            $stmt = $conn->prepare("SELECT file_path FROM gallery_media WHERE id = ?");
-            $stmt->bind_param("i", $media_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($row = $result->fetch_assoc()) {
-                if (!empty($row['file_path']) && file_exists($row['file_path'])) {
-                    @unlink($row['file_path']);
+            if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+                $stmt = $conn->prepare("SELECT file_path FROM gallery_media WHERE id = ?");
+                if ($stmt) {
+                    $stmt->bind_param("i", $media_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($row = $result->fetch_assoc()) $filePath = $row['file_path'];
+                    $stmt->close();
                 }
                 $del_stmt = $conn->prepare("DELETE FROM gallery_media WHERE id = ?");
-                $del_stmt->bind_param("i", $media_id);
-                $del_stmt->execute();
+                if ($del_stmt) {
+                    $del_stmt->bind_param("i", $media_id);
+                    $del_stmt->execute();
+                    $del_stmt->close();
+                }
             }
+            if (!$filePath && isset($pdo) && $pdo instanceof PDO) {
+                $sel = $pdo->prepare("SELECT file_path FROM gallery_media WHERE id = ?");
+                $sel->execute([$media_id]);
+                $row = $sel->fetch(PDO::FETCH_ASSOC);
+                if ($row) $filePath = $row['file_path'];
 
-            header("Location: medialibrary.php?folder_id=" . $folder_id . "&msg=media_deleted");
-            exit;
+                $del = $pdo->prepare("DELETE FROM gallery_media WHERE id = ?");
+                $del->execute([$media_id]);
+            }
+        } elseif (!empty($file_name)) {
+            if (isset($pdo) && $pdo instanceof PDO) {
+                $sel = $pdo->prepare("SELECT file_path FROM gallery_media WHERE file_name = ? LIMIT 1");
+                $sel->execute([$file_name]);
+                $row = $sel->fetch(PDO::FETCH_ASSOC);
+                if ($row) $filePath = $row['file_path'];
+
+                $del = $pdo->prepare("DELETE FROM gallery_media WHERE file_name = ?");
+                $del->execute([$file_name]);
+            }
         }
+
+        if (!empty($filePath)) {
+            $possible_paths = [
+                $filePath,
+                __DIR__ . '/' . $filePath,
+                __DIR__ . '/../' . $filePath
+            ];
+            foreach ($possible_paths as $p) {
+                if (file_exists($p) && is_file($p)) @unlink($p);
+            }
+        }
+
+        header("Location: " . $current_page_file . ($folder_id > 0 ? "?folder_id=" . $folder_id : "") . "&msg=media_deleted");
+        exit;
     }
 }
 
@@ -148,35 +393,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // View State Determination (Root View vs Inside Folder View)
 // -------------------------------------------------------------
 $current_folder_id = isset($_GET['folder_id']) ? intval($_GET['folder_id']) : 0;
+$current_folder_name = trim($_GET['folder_name'] ?? '');
 $current_folder = null;
 $folder_media = [];
 
+// Fetch list of all folders (needed for upload selector dropdown everywhere)
+$all_folders = [];
+try {
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+        $res_all = $conn->query("SELECT id, name FROM gallery_folders ORDER BY name ASC");
+        if ($res_all) {
+            while ($rf = $res_all->fetch_assoc()) $all_folders[] = $rf;
+        }
+    }
+    if (empty($all_folders) && isset($pdo) && $pdo instanceof PDO) {
+        $all_folders = $pdo->query("SELECT id, name FROM gallery_folders ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (\Throwable $e) {}
+
+// If folder_id <= 0 but folder_name provided, resolve id by name
+if ($current_folder_id <= 0 && !empty($current_folder_name)) {
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+        $st = $conn->prepare("SELECT * FROM gallery_folders WHERE name = ? LIMIT 1");
+        if ($st) {
+            $st->bind_param("s", $current_folder_name);
+            $st->execute();
+            $current_folder = $st->get_result()->fetch_assoc();
+            $st->close();
+        }
+    }
+    if (!$current_folder && isset($pdo) && $pdo instanceof PDO) {
+        $st = $pdo->prepare("SELECT * FROM gallery_folders WHERE name = ? LIMIT 1");
+        $st->execute([$current_folder_name]);
+        $current_folder = $st->fetch(PDO::FETCH_ASSOC);
+    }
+    if ($current_folder) {
+        $current_folder_id = (int)$current_folder['id'];
+    }
+}
+
 if ($current_folder_id > 0) {
-    $stmt = $conn->prepare("SELECT * FROM gallery_folders WHERE id = ?");
-    $stmt->bind_param("i", $current_folder_id);
-    $stmt->execute();
-    $current_folder = $stmt->get_result()->fetch_assoc();
+    if (!$current_folder) {
+        if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            $stmt = $conn->prepare("SELECT * FROM gallery_folders WHERE id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $current_folder_id);
+                $stmt->execute();
+                $current_folder = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+        }
+        if (!$current_folder && isset($pdo) && $pdo instanceof PDO) {
+            $stmt = $pdo->prepare("SELECT * FROM gallery_folders WHERE id = ?");
+            $stmt->execute([$current_folder_id]);
+            $current_folder = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+    }
 
     if ($current_folder) {
-        $stmt_media = $conn->prepare("SELECT * FROM gallery_media WHERE folder_id = ? ORDER BY id DESC");
-        $stmt_media->bind_param("i", $current_folder_id);
-        $stmt_media->execute();
-        $media_res = $stmt_media->get_result();
-        while ($m = $media_res->fetch_assoc()) {
-            $folder_media[] = $m;
+        if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+            $stmt_media = $conn->prepare("SELECT * FROM gallery_media WHERE folder_id = ? ORDER BY id DESC");
+            if ($stmt_media) {
+                $stmt_media->bind_param("i", $current_folder['id']);
+                $stmt_media->execute();
+                $media_res = $stmt_media->get_result();
+                while ($m = $media_res->fetch_assoc()) {
+                    $folder_media[] = $m;
+                }
+                $stmt_media->close();
+            }
+        }
+        if (empty($folder_media) && isset($pdo) && $pdo instanceof PDO) {
+            $stmt_m = $pdo->prepare("SELECT * FROM gallery_media WHERE folder_id = ? ORDER BY id DESC");
+            $stmt_m->execute([$current_folder['id']]);
+            $folder_media = $stmt_m->fetchAll(PDO::FETCH_ASSOC);
         }
     } else {
-        header("Location: medialibrary.php");
+        header("Location: " . $current_page_file);
         exit;
     }
 } else {
-    // Root View: Fetch Folders with photo counts
+    // Root View: Fetch Folders with photo counts into standard array
     $folders_query = "SELECT f.*, COUNT(m.id) AS total_photos 
                       FROM gallery_folders f 
                       LEFT JOIN gallery_media m ON f.id = m.folder_id 
                       GROUP BY f.id 
                       ORDER BY f.created_at DESC";
-    $folders_result = $conn->query($folders_query);
+    $folders_list = [];
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+        $res = $conn->query($folders_query);
+        if ($res) {
+            while ($rf = $res->fetch_assoc()) $folders_list[] = $rf;
+        }
+    }
+    if (empty($folders_list) && isset($pdo) && $pdo instanceof PDO) {
+        $folders_list = $pdo->query($folders_query)->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 $msg = $_GET['msg'] ?? '';
@@ -684,7 +996,13 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                 <div class="alert-banner alert-error" id="statusAlert">
                     <div class="alert-text">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <?= $error === 'empty_folder_name' ? 'Please provide a valid folder name.' : 'An error occurred. Please try again.' ?>
+                        <?php
+                            if ($error === 'empty_folder_name') echo 'Please provide a valid folder name.';
+                            elseif ($error === 'no_files_selected') echo 'Please select at least one photo to upload.';
+                            elseif ($error === 'invalid_folder') echo 'Please choose a valid folder to upload into.';
+                            elseif ($error === 'upload_failed') echo 'Upload failed: ' . (!empty($_GET['details']) ? htmlspecialchars(urldecode($_GET['details'])) : 'Please check file format and size.');
+                            else echo 'An error occurred. Please try again.';
+                        ?>
                     </div>
                     <button type="button" class="btn-close-alert" onclick="document.getElementById('statusAlert').remove();">&times;</button>
                 </div>
@@ -696,11 +1014,11 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                 <!-- ======================================================== -->
                 <div class="gallery-nav-bar">
                     <div class="breadcrumbs">
-                        <a href="medialibrary.php" class="breadcrumb-item"><i class="bi bi-folder-fill"></i> Media Library</a>
+                        <a href="<?= $current_page_file ?>" class="breadcrumb-item"><i class="bi bi-folder-fill"></i> Media Library</a>
                         <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
                         <span class="breadcrumb-current"><?= htmlspecialchars($current_folder['name']) ?></span>
                     </div>
-                    <a href="medialibrary.php" class="btn-back-folders">
+                    <a href="<?= $current_page_file ?>" class="btn-back-folders">
                         <i class="bi bi-arrow-left"></i> Back to Folders
                     </a>
                 </div>
@@ -722,7 +1040,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                         <button type="button" class="btn-danger-action" onclick="confirmDeleteFolder(<?= $current_folder['id'] ?>, '<?= htmlspecialchars(addslashes($current_folder['name'])) ?>')">
                             <i class="bi bi-trash3"></i> Delete
                         </button>
-                        <button type="button" class="btn-create-folder" onclick="openModal('uploadMediaModal')">
+                        <button type="button" class="btn-create-folder" onclick="openUploadModal(<?= $current_folder['id'] ?>)">
                             <i class="bi bi-cloud-arrow-up-fill"></i> Upload Images
                         </button>
                     </div>
@@ -758,7 +1076,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                                         </div>
                                         <div class="media-meta">
                                             <span><?= date('M d, Y', strtotime($media['created_at'])) ?></span>
-                                            <button type="button" class="btn-delete-icon" title="Delete Image" onclick="confirmDeleteMedia(<?= $media['id'] ?>, <?= $current_folder['id'] ?>)">
+                                            <button type="button" class="btn-delete-icon" title="Delete Image" onclick="confirmDeleteMedia(<?= (int)$media['id'] ?>, <?= (int)$current_folder['id'] ?>, '<?= htmlspecialchars(addslashes($media['file_name'])) ?>')">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </div>
@@ -771,7 +1089,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                             <div class="empty-icon-box"><i class="bi bi-images"></i></div>
                             <h3>No photos in this folder yet</h3>
                             <p>Upload photos to categorize them under "<strong><?= htmlspecialchars($current_folder['name']) ?></strong>".</p>
-                            <button type="button" class="btn-create-folder" onclick="openModal('uploadMediaModal')">
+                            <button type="button" class="btn-create-folder" onclick="openUploadModal(<?= (int)$current_folder['id'] ?>, '<?= htmlspecialchars(addslashes($current_folder['name'])) ?>')">
                                 <i class="bi bi-cloud-arrow-up-fill"></i> Upload Images
                             </button>
                         </div>
@@ -787,21 +1105,30 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                         <h2 class="category-main-title">Media Categories & Folders</h2>
                         <p class="category-sub-title">Organize photos into folders (e.g., Meeting, Sports, Community Events).</p>
                     </div>
-                    <button class="btn-create-folder" onclick="openModal('createFolderModal')">
-                        <i class="bi bi-folder-plus"></i> + Create Folder
-                    </button>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary-action" onclick="openModal('createFolderModal')" style="padding: 10px 18px; font-weight: 600; font-size: 0.92rem; border-radius: 8px;">
+                            <i class="bi bi-folder-plus"></i> + Create Folder
+                        </button>
+                        <button type="button" class="btn-create-folder" onclick="openUploadModal()" style="padding: 10px 18px; font-weight: 600; font-size: 0.92rem; border-radius: 8px; background: #0f766e;">
+                            <i class="bi bi-cloud-arrow-up-fill"></i> + Upload Images
+                        </button>
+                    </div>
                 </div>
 
-                <?php if ($folders_result && $folders_result->num_rows > 0): ?>
+                <?php if (!empty($folders_list)): ?>
                     <div class="category-cards-grid">
-                        <?php while ($f = $folders_result->fetch_assoc()): ?>
+                        <?php foreach ($folders_list as $f): 
+                            $f_id = (int)($f['id'] ?? 0);
+                            $f_name = $f['name'] ?? 'Album';
+                            $f_link = $current_page_file . "?folder_id=" . $f_id . "&folder_name=" . urlencode($f_name);
+                        ?>
                             <div class="category-folder-card">
                                 <div class="folder-icon-badge">
                                     <i class="bi bi-folder-fill"></i>
                                 </div>
 
-                                <a href="medialibrary.php?folder_id=<?= $f['id'] ?>" class="folder-card-title-link">
-                                    <h3 class="folder-card-title"><?= htmlspecialchars($f['name']) ?></h3>
+                                <a href="<?= $f_link ?>" class="folder-card-title-link">
+                                    <h3 class="folder-card-title"><?= htmlspecialchars($f_name) ?></h3>
                                 </a>
 
                                 <p class="folder-card-desc">
@@ -812,23 +1139,26 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
 
                                 <div class="folder-card-meta">
                                     <span class="photo-count-pill">
-                                        <i class="bi bi-image"></i> <?= $f['total_photos'] ?> <?= $f['total_photos'] == 1 ? 'Photo' : 'Photos' ?>
+                                        <i class="bi bi-image"></i> <?= (int)($f['total_photos'] ?? 0) ?> <?= ((int)($f['total_photos'] ?? 0) == 1) ? 'Photo' : 'Photos' ?>
                                     </span>
                                     <span class="folder-created-date">
-                                        <?= date('M d, Y', strtotime($f['created_at'])) ?>
+                                        <?= !empty($f['created_at']) ? date('M d, Y', strtotime($f['created_at'])) : date('M d, Y') ?>
                                     </span>
                                 </div>
 
                                 <div class="folder-card-footer">
-                                    <a href="medialibrary.php?folder_id=<?= $f['id'] ?>" class="btn-open-album">
+                                    <a href="<?= $f_link ?>" class="btn-open-album">
                                         Open Album <i class="bi bi-chevron-right"></i>
                                     </a>
-                                    <button type="button" class="btn-card-trash" title="Delete Folder" onclick="confirmDeleteFolder(<?= $f['id'] ?>, '<?= htmlspecialchars(addslashes($f['name'])) ?>')">
+                                    <button type="button" class="btn-upload-direct" title="Upload photos directly to this album" onclick="openUploadModal(<?= $f_id ?>, '<?= htmlspecialchars(addslashes($f_name)) ?>')" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;">
+                                        <i class="bi bi-cloud-arrow-up"></i> Upload
+                                    </button>
+                                    <button type="button" class="btn-card-trash" title="Delete Folder" onclick="confirmDeleteFolder(<?= $f_id ?>, '<?= htmlspecialchars(addslashes($f_name)) ?>')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
                             </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <div class="media-container-white">
@@ -858,7 +1188,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                 <h2><i class="bi bi-folder-plus"></i> Create New Folder</h2>
                 <span class="close-modal" onclick="closeModal('createFolderModal')">&times;</span>
             </div>
-            <form action="medialibrary.php" method="POST">
+            <form action="<?= $current_page_file ?>" method="POST">
                 <input type="hidden" name="action" value="create_folder">
                 <div class="modal-body">
                     <div class="form-group">
@@ -885,7 +1215,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                 <h2><i class="bi bi-pencil-square"></i> Edit Folder Details</h2>
                 <span class="close-modal" onclick="closeModal('editFolderModal')">&times;</span>
             </div>
-            <form action="medialibrary.php" method="POST">
+            <form action="<?= $current_page_file ?>" method="POST">
                 <input type="hidden" name="action" value="edit_folder">
                 <input type="hidden" name="folder_id" id="editFolderId" value="">
                 <div class="modal-body">
@@ -906,41 +1236,72 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
         </div>
     </div>
 
-    <!-- 3. Upload Images Modal -->
-    <?php if ($current_folder): ?>
+    <!-- 3. Upload Images Modal (Always Available & Supports Any Target Folder) -->
     <div id="uploadMediaModal" class="modal">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h2><i class="bi bi-cloud-arrow-up-fill"></i> Upload Images to "<?= htmlspecialchars($current_folder['name']) ?>"</h2>
+                <h2><i class="bi bi-cloud-arrow-up-fill" style="color:#0f766e;"></i> <span id="uploadModalTitle"><?= $current_folder ? 'Upload Images to "' . htmlspecialchars($current_folder['name']) . '"' : 'Upload Images to Gallery' ?></span></h2>
                 <span class="close-modal" onclick="closeModal('uploadMediaModal')">&times;</span>
             </div>
-            <form action="medialibrary.php" method="POST" enctype="multipart/form-data">
+            <form action="<?= $current_page_file ?>" method="POST" enctype="multipart/form-data" onsubmit="return validateUploadForm(this)">
                 <input type="hidden" name="action" value="upload_media">
-                <input type="hidden" name="folder_id" value="<?= $current_folder['id'] ?>">
+                <input type="hidden" name="target_folder_name" id="uploadFolderName" value="<?= $current_folder ? htmlspecialchars($current_folder['name']) : '' ?>">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Select Photos <span style="color:#ef4444;">*</span></label>
-                        <div class="upload-dropzone" onclick="document.getElementById('mediaFileInput').click()">
+                        <label style="font-weight:700; color:#1e293b; margin-bottom:6px; display:block;">Target Folder <span style="color:#ef4444;">*</span></label>
+                        <?php if (count($all_folders) > 0): ?>
+                            <select name="folder_id" id="uploadFolderSelect" class="form-control" required style="font-weight: 600; font-size: 0.95rem; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;" onchange="updateUploadFolderName(this)">
+                                <option value="" disabled <?= empty($current_folder) ? 'selected' : '' ?>>-- Choose Folder to upload into --</option>
+                                <?php foreach ($all_folders as $f_opt): ?>
+                                    <option value="<?= $f_opt['id'] ?>" data-name="<?= htmlspecialchars($f_opt['name']) ?>" <?= ($current_folder && ($current_folder['id'] == $f_opt['id'] || $current_folder['name'] == $f_opt['name'])) ? 'selected' : '' ?>>
+                                        📁 <?= htmlspecialchars($f_opt['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php else: ?>
+                            <div style="background:#fffbeb; color:#92400e; padding:12px; border-radius:8px; border:1px solid #fde68a; font-size:0.9rem;">
+                                <i class="bi bi-exclamation-circle"></i> No folders exist yet. Please click <strong>"+ Create Folder"</strong> first before uploading photos.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group" style="margin-top:16px;">
+                        <label style="font-weight:700; color:#1e293b; margin-bottom:6px; display:block;">Select Photos <span style="color:#ef4444;">*</span></label>
+                        <label for="mediaFileInput" class="upload-dropzone" id="uploadDropzone" style="display: block; cursor: pointer; user-select: none;">
                             <i class="bi bi-cloud-arrow-up dropzone-icon"></i>
-                            <p class="dropzone-text">Click or drag images here to select files</p>
-                            <span class="dropzone-hint">Supports JPG, PNG, WEBP, GIF (Multiple photos supported)</span>
-                            <input type="file" id="mediaFileInput" name="media_files[]" multiple accept="image/*" style="display:none;" required onchange="handleFileSelect(this)">
+                            <p class="dropzone-text">Click anywhere here or drag photos to upload</p>
+                            <span class="dropzone-hint">Supports JPG, JPEG, PNG, WEBP, GIF (Multiple photos supported)</span>
+                            <div style="margin-top: 12px;">
+                                <span class="btn-browse-trigger" style="background: #0f766e; color: #ffffff; border-radius: 6px; padding: 8px 18px; font-weight: 600; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(15,118,110,0.2);">
+                                    <i class="bi bi-images"></i> Browse Photos
+                                </span>
+                            </div>
+                            <input type="file" id="mediaFileInput" name="media_files[]" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/*" style="display: none;" onchange="handleFileSelect(this)">
+                        </label>
+
+                        <!-- Fallback Direct File Picker -->
+                        <div style="margin-top: 10px; padding: 8px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: #64748b;"><i class="bi bi-folder2-open"></i> Or choose files directly:</span>
+                            <input type="file" id="mediaFileInputDirect" name="media_files_direct[]" multiple accept="image/*" onchange="handleDirectFileSelect(this)" style="font-size: 0.82rem; color: #334155;">
                         </div>
+
                         <div id="selectedFilesList" class="selected-files-list"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Common Caption / Title (Optional)</label>
-                        <input type="text" name="caption" class="form-control" placeholder="e.g., Barangay Assembly 2026">
+
+                    <div class="form-group" style="margin-top:16px;">
+                        <label style="font-weight:700; color:#1e293b; margin-bottom:6px; display:block;">Common Caption / Title (Optional)</label>
+                        <input type="text" name="caption" class="form-control" placeholder="e.g., Barangay Assembly 2026" style="padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeModal('uploadMediaModal')">Cancel</button>
-                    <button type="submit" class="btn-submit"><i class="bi bi-cloud-arrow-up-fill"></i> Start Upload</button>
+                    <button type="submit" id="btnUploadSubmit" class="btn-submit" <?= empty($all_folders) ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '' ?>>
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Start Upload
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-    <?php endif; ?>
 
     <!-- 4. Delete Confirmation Modal -->
     <div id="deleteConfirmModal" class="modal">
@@ -949,10 +1310,12 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
                 <h2><i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;"></i> Confirm Deletion</h2>
                 <span class="close-modal" onclick="closeModal('deleteConfirmModal')">&times;</span>
             </div>
-            <form action="medialibrary.php" method="POST">
+            <form action="<?= $current_page_file ?>" method="POST">
                 <input type="hidden" name="action" id="deleteAction" value="">
                 <input type="hidden" name="folder_id" id="deleteFolderId" value="">
+                <input type="hidden" name="folder_name" id="deleteFolderName" value="">
                 <input type="hidden" name="media_id" id="deleteMediaId" value="">
+                <input type="hidden" name="file_name" id="deleteFileName" value="">
                 <div class="modal-body">
                     <p id="deleteConfirmMessage" style="font-size: 0.95rem; color:#475569; margin:0; line-height:1.5;">Are you sure?</p>
                 </div>
@@ -988,27 +1351,96 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
 
     function confirmDeleteFolder(id, name) {
         document.getElementById('deleteAction').value = 'delete_folder';
-        document.getElementById('deleteFolderId').value = id;
+        document.getElementById('deleteFolderId').value = id || '';
+        document.getElementById('deleteFolderName').value = name || '';
         document.getElementById('deleteMediaId').value = '';
+        document.getElementById('deleteFileName').value = '';
         document.getElementById('deleteConfirmMessage').innerHTML = 
             'Are you sure you want to delete the folder "<strong>' + name + '</strong>"? <br><span style="color:#ef4444; font-size:0.85rem;">All images inside this folder will also be permanently deleted from the system and disk.</span>';
         openModal('deleteConfirmModal');
     }
 
-    function confirmDeleteMedia(mediaId, folderId) {
+    function confirmDeleteMedia(mediaId, folderId, fileName = '') {
         document.getElementById('deleteAction').value = 'delete_media';
-        document.getElementById('deleteFolderId').value = folderId;
-        document.getElementById('deleteMediaId').value = mediaId;
+        document.getElementById('deleteFolderId').value = folderId || '';
+        document.getElementById('deleteFolderName').value = '';
+        document.getElementById('deleteMediaId').value = mediaId || '';
+        document.getElementById('deleteFileName').value = fileName || '';
         document.getElementById('deleteConfirmMessage').innerHTML = 'Are you sure you want to permanently delete this photo?';
         openModal('deleteConfirmModal');
     }
 
+    function updateUploadFolderName(select) {
+        if (!select) return;
+        const opt = select.options[select.selectedIndex];
+        if (opt) {
+            const rawName = opt.getAttribute('data-name') || opt.text.replace('📁 ', '').trim();
+            const fnInput = document.getElementById('uploadFolderName');
+            if (fnInput) fnInput.value = rawName;
+            const titleEl = document.getElementById('uploadModalTitle');
+            if (titleEl && opt.value) {
+                titleEl.innerText = 'Upload Images to "' + rawName + '"';
+            }
+        }
+    }
+
+    function openUploadModal(folderId = null, folderName = null) {
+        const modal = document.getElementById('uploadMediaModal');
+        if (!modal) return;
+        const select = document.getElementById('uploadFolderSelect');
+        const fnInput = document.getElementById('uploadFolderName');
+        const titleEl = document.getElementById('uploadModalTitle');
+
+        if (select) {
+            if (folderId) {
+                select.value = folderId;
+            } else if (folderName) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].getAttribute('data-name') === folderName) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            const selectedOpt = select.options[select.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const optName = selectedOpt.getAttribute('data-name') || selectedOpt.text.replace('📁 ', '').trim();
+                if (titleEl) titleEl.innerText = 'Upload Images to "' + optName + '"';
+                if (fnInput) fnInput.value = optName;
+            } else if (folderName) {
+                if (titleEl) titleEl.innerText = 'Upload Images to "' + folderName + '"';
+                if (fnInput) fnInput.value = folderName;
+            } else {
+                if (titleEl) titleEl.innerText = 'Upload Images to Gallery';
+            }
+        }
+        openModal('uploadMediaModal');
+    }
+
     function handleFileSelect(input) {
+        if (input && input.files) {
+            displaySelectedFiles(input.files);
+        }
+    }
+
+    function handleDirectFileSelect(input) {
+        if (input && input.files) {
+            displaySelectedFiles(input.files);
+        }
+    }
+
+    function displaySelectedFiles(files) {
         const listContainer = document.getElementById('selectedFilesList');
+        if (!listContainer) return;
         listContainer.innerHTML = '';
-        if (input.files && input.files.length > 0) {
-            for (let i = 0; i < input.files.length; i++) {
-                const f = input.files[i];
+        if (files && files.length > 0) {
+            const countBanner = document.createElement('div');
+            countBanner.style.cssText = 'font-size: 0.86rem; font-weight: 700; color: #0f766e; margin-top: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;';
+            countBanner.innerHTML = `<span><i class="bi bi-check2-circle"></i> ${files.length} photo(s) selected</span> <span style="font-weight: 500; font-size: 0.78rem; color: #64748b;">Ready to upload</span>`;
+            listContainer.appendChild(countBanner);
+
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
                 const item = document.createElement('div');
                 item.className = 'selected-file-chip';
                 item.innerHTML = '<i class="bi bi-image" style="color:#0f766e;"></i> ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
@@ -1017,33 +1449,69 @@ body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin:
         }
     }
 
-    // Drag and Drop enhancements on Dropzone
-    const dropzone = document.querySelector('.upload-dropzone');
-    if (dropzone) {
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+    function validateUploadForm(form) {
+        const folderSelect = document.getElementById('uploadFolderSelect');
+        const folderNameInput = document.getElementById('uploadFolderName');
+        if ((!folderSelect || !folderSelect.value) && (!folderNameInput || !folderNameInput.value)) {
+            alert('Please select a folder to upload the images into.');
+            if (folderSelect) folderSelect.focus();
+            return false;
         }
 
+        const f1 = document.getElementById('mediaFileInput');
+        const f2 = document.getElementById('mediaFileInputDirect');
+        const hasF1 = f1 && f1.files && f1.files.length > 0;
+        const hasF2 = f2 && f2.files && f2.files.length > 0;
+
+        if (!hasF1 && !hasF2) {
+            alert('Please select at least one photo before clicking "Start Upload".');
+            return false;
+        }
+
+        const submitBtn = document.getElementById('btnUploadSubmit');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Uploading... Please wait';
+            setTimeout(() => {
+                submitBtn.disabled = true;
+            }, 100);
+        }
+        return true;
+    }
+
+    // Drag and Drop enhancements on Dropzone
+    const dropzone = document.getElementById('uploadDropzone') || document.querySelector('.upload-dropzone');
+    if (dropzone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, () => dropzone.style.background = '#ccfbf1', false);
+            dropzone.addEventListener(eventName, () => {
+                dropzone.style.background = '#ccfbf1';
+                dropzone.style.borderColor = '#0d9488';
+            }, false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, () => dropzone.style.background = '#f0fdfa', false);
+            dropzone.addEventListener(eventName, () => {
+                dropzone.style.background = '#f0fdfa';
+                dropzone.style.borderColor = '#0f766e';
+            }, false);
         });
 
         dropzone.addEventListener('drop', (e) => {
             const dt = e.dataTransfer;
-            const files = dt.files;
-            const fileInput = document.getElementById('mediaFileInput');
-            if (fileInput && files.length > 0) {
-                fileInput.files = files;
-                handleFileSelect(fileInput);
+            if (dt && dt.files && dt.files.length > 0) {
+                const fileInput = document.getElementById('mediaFileInput');
+                if (fileInput) {
+                    try {
+                        fileInput.files = dt.files;
+                    } catch (err) {}
+                }
+                displaySelectedFiles(dt.files);
             }
         });
     }

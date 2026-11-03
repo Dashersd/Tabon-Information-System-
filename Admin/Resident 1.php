@@ -1,5 +1,8 @@
 <?php
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: ../login.php");
     exit();
@@ -12,6 +15,52 @@ $target_file = "purok1";
 $table_name = "purok1_locations";
 $spotmap_page = "Purok 1.php";
 $resident_page = "Resident 1.php";
+
+// Self-handling deletion (prevents cross-page session drops & controlpanel redirect on InfinityFree)
+if (isset($_GET['delete_id']) || (isset($_POST['action']) && $_POST['action'] === 'delete')) {
+    $deleteId = (int)($_GET['delete_id'] ?? $_POST['delete_id'] ?? 0);
+    $houseNo  = trim($_GET['house_number'] ?? $_POST['house_number'] ?? '');
+
+    if ($deleteId > 0 || !empty($houseNo)) {
+        $deleted = false;
+        if (isset($pdo) && $pdo instanceof PDO) {
+            try {
+                $sel = null;
+                if ($deleteId > 0) {
+                    $sel = $pdo->prepare("SELECT id, house_image, marker_image FROM `$table_name` WHERE id = ? LIMIT 1");
+                    $sel->execute([$deleteId]);
+                } elseif (!empty($houseNo)) {
+                    $sel = $pdo->prepare("SELECT id, house_image, marker_image FROM `$table_name` WHERE house_number = ? LIMIT 1");
+                    $sel->execute([$houseNo]);
+                }
+                $row = $sel ? $sel->fetch(PDO::FETCH_ASSOC) : null;
+                $actualId = $row ? (int)$row['id'] : $deleteId;
+
+                if ($actualId > 0) {
+                    $del = $pdo->prepare("DELETE FROM `$table_name` WHERE id = ?");
+                    $del->execute([$actualId]);
+                    $deleted = true;
+                } elseif (!empty($houseNo)) {
+                    $del = $pdo->prepare("DELETE FROM `$table_name` WHERE house_number = ?");
+                    $del->execute([$houseNo]);
+                    $deleted = true;
+                }
+
+                if ($row) {
+                    $imgPaths = [$row['house_image'] ?? '', $row['marker_image'] ?? ''];
+                    foreach ($imgPaths as $img) {
+                        if (!empty($img) && strpos($img, 'uploads/') === 0) {
+                            if (file_exists(__DIR__ . '/' . $img)) @unlink(__DIR__ . '/' . $img);
+                            elseif (file_exists($img)) @unlink($img);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+        header("Location: " . $resident_page . "?deleted=" . ($deleted ? '1' : '0'));
+        exit();
+    }
+}
 
 $records = [];
 try {
@@ -226,10 +275,15 @@ try {
             </div>
         </div>
 
-        <?php if (isset($_GET['deleted'])): ?>
+        <?php if (isset($_GET['deleted']) && $_GET['deleted'] === '1'): ?>
             <div class="alert-banner alert-danger">
                 <div><i class="fa-solid fa-circle-check"></i> Household record successfully deleted.</div>
                 <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#991b1b;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] === '0'): ?>
+            <div class="alert-banner" style="background: #fffbeb; border-left: 5px solid #f59e0b; color: #92400e; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div><i class="fa-solid fa-triangle-exclamation"></i> Record could not be found or was already deleted.</div>
+                <button onclick="this.parentElement.style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:#92400e;">&times;</button>
             </div>
         <?php endif; ?>
 
@@ -292,7 +346,7 @@ try {
                                     <a href="<?= $spotmap_page ?>?edit_id=<?= $record['id'] ?>" class="action-btn edit-btn" title="Edit details and position on map">
                                         <i class="fa-solid fa-pen-to-square"></i> Edit
                                     </a>
-                                    <a href="process_household.php?delete_id=<?= $record['id'] ?>&target_file=<?= $target_file ?>&return=<?= $resident_page ?>" 
+                                    <a href="?delete_id=<?= $record['id'] ?>&house_number=<?= urlencode($record['house_number']) ?>" 
                                        class="action-btn delete-btn" 
                                        onclick="return confirm('Are you sure you want to delete House #<?= htmlspecialchars(addslashes($record['house_number'])) ?>?');" 
                                        title="Remove household from map">
