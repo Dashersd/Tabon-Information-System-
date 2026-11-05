@@ -254,7 +254,7 @@ if (empty($public_legends)) {
                                 $left = (float)($leg['left_position'] ?? 50);
                                 $name_safe = htmlspecialchars($leg['name'] ?? 'Landmark');
                             ?>
-                                <div class="saved-legend-marker public-legend-marker draggable-map-pin" 
+                                <div class="saved-legend-marker public-legend-marker" 
                                      id="public-marker-<?= (int)$leg['id'] ?>"
                                      style="top: <?= $top ?>%; left: <?= $left ?>%;"
                                      data-id="<?= (int)$leg['id'] ?>"
@@ -295,7 +295,7 @@ if (empty($public_legends)) {
                         <!-- Purok 1 Markers -->
                         <div id="purok1-markers" style="display: none;">
                             <?php foreach($purok1 as $m): ?>
-                                <div class="saved-marker draggable-map-pin" 
+                                <div class="saved-marker public-house-marker" 
                                      data-pin-key="purok1_house_<?= htmlspecialchars($m['house_number']) ?>"
                                      data-initial-top="<?= htmlspecialchars($m['coordinate_y']) ?>"
                                      data-initial-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
@@ -303,7 +303,7 @@ if (empty($public_legends)) {
                                      data-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
                                      data-title="House #<?= htmlspecialchars($m['house_number']) ?>"
                                      style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: grab; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
+                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -311,7 +311,7 @@ if (empty($public_legends)) {
                         <!-- Purok 2 Markers -->
                         <div id="purok2-markers" style="display: none;">
                             <?php foreach($purok2 as $m): ?>
-                                <div class="saved-marker draggable-map-pin" 
+                                <div class="saved-marker public-house-marker" 
                                      data-pin-key="purok2_house_<?= htmlspecialchars($m['house_number']) ?>"
                                      data-initial-top="<?= htmlspecialchars($m['coordinate_y']) ?>"
                                      data-initial-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
@@ -319,7 +319,7 @@ if (empty($public_legends)) {
                                      data-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
                                      data-title="House #<?= htmlspecialchars($m['house_number']) ?>"
                                      style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: grab; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
+                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -327,7 +327,7 @@ if (empty($public_legends)) {
                         <!-- Purok 3 Markers -->
                         <div id="purok3-markers" style="display: none;">
                             <?php foreach($purok3 as $m): ?>
-                                <div class="saved-marker draggable-map-pin" 
+                                <div class="saved-marker public-house-marker" 
                                      data-pin-key="purok3_house_<?= htmlspecialchars($m['house_number']) ?>"
                                      data-initial-top="<?= htmlspecialchars($m['coordinate_y']) ?>"
                                      data-initial-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
@@ -335,7 +335,7 @@ if (empty($public_legends)) {
                                      data-left="<?= htmlspecialchars($m['coordinate_x']) ?>"
                                      data-title="House #<?= htmlspecialchars($m['house_number']) ?>"
                                      style="position: absolute; left: <?= htmlspecialchars($m['coordinate_x']) ?>%; top: <?= htmlspecialchars($m['coordinate_y']) ?>%; transform: translate(-50%, -100%); z-index: 10;">
-                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: grab; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
+                                    <img src="<?= htmlspecialchars(get_public_marker_image($m['marker_image'] ?? '')) ?>" alt="Marker" draggable="false" style="width: <?= htmlspecialchars($m['marker_width']) ?>px; height: <?= htmlspecialchars($m['marker_height']) ?>px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); user-select: none; -webkit-user-drag: none;" title="House #<?= htmlspecialchars($m['house_number']) ?>" data-image="<?= htmlspecialchars(get_public_house_photo($m['house_image'] ?? '')) ?>" data-house="<?= htmlspecialchars($m['house_number']) ?>" data-husband="<?= htmlspecialchars($m['husband_name']) ?>" data-spouse="<?= htmlspecialchars($m['spouse_name'] ?? '') ?>" data-children="<?= htmlspecialchars($m['children'] ?? '[]') ?>" onclick="openPublicHouseholdModal(this)">
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -749,18 +749,24 @@ if (empty($public_legends)) {
         }
 
         function restorePersistedPinPositions() {
-            const savedMap = getSavedCoordinatesMap();
-            if (!savedMap || Object.keys(savedMap).length === 0) return;
-
-            document.querySelectorAll('.draggable-map-pin').forEach(pin => {
-                const key = pin.getAttribute('data-pin-key');
-                if (key && savedMap[key]) {
-                    pin.style.top = savedMap[key].top;
-                    pin.style.left = savedMap[key].left;
-                    pin.setAttribute('data-top', savedMap[key].top);
-                    pin.setAttribute('data-left', savedMap[key].left);
+            // Public house markers and official landmarks are strictly fixed by Admin database
+            // Clean up any stale dragged house coordinates from public visitor's localStorage
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_COORDS);
+                if (raw) {
+                    const savedMap = JSON.parse(raw);
+                    let changed = false;
+                    Object.keys(savedMap).forEach(k => {
+                        if (k.startsWith('purok') || k.startsWith('legend_')) {
+                            delete savedMap[k];
+                            changed = true;
+                        }
+                    });
+                    if (changed) {
+                        localStorage.setItem(STORAGE_KEY_COORDS, JSON.stringify(savedMap));
+                    }
                 }
-            });
+            } catch(e) {}
         }
 
         function resetAllPinPositions() {
@@ -882,7 +888,8 @@ if (empty($public_legends)) {
         }
 
         function initDraggablePins() {
-            document.querySelectorAll('.draggable-map-pin').forEach(pin => {
+            // Official house markers and legend markers are fixed (not draggable by public users)
+            document.querySelectorAll('.custom-dropped-marker.draggable-map-pin').forEach(pin => {
                 makePinDraggable(pin);
             });
         }

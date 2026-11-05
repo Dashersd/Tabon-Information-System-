@@ -750,10 +750,31 @@
 
 
 /* =====================================================
-   DRAGGABLE & ADJUSTABLE PINS (SPOT MAP)
+   FIXED PUBLIC PINS & OPTIONAL CUSTOM PINS (SPOT MAP)
    ===================================================== */
 .saved-marker,
-.saved-legend-marker,
+.saved-legend-marker {
+    cursor: pointer !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-user-drag: none !important;
+    touch-action: auto !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.22s ease;
+}
+
+.saved-marker *,
+.saved-legend-marker * {
+    cursor: pointer !important;
+}
+
+.saved-marker:hover,
+.saved-legend-marker:hover {
+    cursor: pointer !important;
+    transform: translate(-50%, -106%) scale(1.12) !important;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45)) brightness(1.08);
+    z-index: 50 !important;
+}
+
 .custom-dropped-marker {
     cursor: grab !important;
     user-select: none !important;
@@ -763,8 +784,6 @@
     transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.22s ease;
 }
 
-.saved-marker:hover,
-.saved-legend-marker:hover,
 .custom-dropped-marker:hover {
     cursor: grab !important;
     transform: translate(-50%, -106%) scale(1.08) !important;
