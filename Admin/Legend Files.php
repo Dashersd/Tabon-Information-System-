@@ -644,7 +644,7 @@ if (empty($records) && file_exists($json_cache_file)) {
                 <li>
                     <a class="dropdown-btn active"><i class="fa-solid fa-map-location-dot"></i> SpotMap Manage <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container" style="display: block;">
-                        <a href="Legend.php">Legend SpotMap</a>
+                        <a href="Legend.php">Legend</a>
                         <a href="Purok 1.php">Purok Mesaya</a>
                         <a href="Purok 2.php">Purok Metamed</a>
                         <a href="Purok 3.php">Purok Melitebangay</a>
@@ -654,9 +654,9 @@ if (empty($records) && file_exists($json_cache_file)) {
                     <a class="dropdown-btn active"><i class="fa-solid fa-users"></i> Household <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container" style="display: block;">
                         <a href="Legend Files.php" class="active" style="color: #2c6e49; font-weight: 700;">Legend Files</a>
-                        <a href="Resident 1.php">Resident 1</a>
-                        <a href="Resident 2.php">Resident 2</a>
-                        <a href="Resident 3.php">Resident 3</a>
+                        <a href="Resident 1.php">Resident 1 (Mesaya)</a>
+                        <a href="Resident 2.php">Resident 2 (Metamed)</a>
+                        <a href="Resident 3.php">Resident 3 (Melitebangay)</a>
                     </div>
                 </li>
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>

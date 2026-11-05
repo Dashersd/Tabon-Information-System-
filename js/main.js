@@ -81,21 +81,110 @@ onDOMReady(() => {
     // Check prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Pre-create Lightbox element to avoid temporal dead zone
+    // Pre-create Lightbox element with close button and prev/next navigation arrows
     const lightbox = document.createElement('div');
     lightbox.className = 'lightbox';
     lightbox.innerHTML = `
+        <button class="lightbox-nav-btn lightbox-prev" aria-label="Previous image" title="Previous image">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="lightbox-nav-btn lightbox-next" aria-label="Next image" title="Next image">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
         <div class="lightbox-content">
             <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
             <img src="" alt="Expanded View">
             <div class="carousel-lightbox-caption" style="color:#ffffff; font-size:1.05rem; margin-top:12px; font-weight:600; text-align:center; font-family:'Montserrat',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.6);"></div>
+            <div class="lightbox-counter" style="color:#94a3b8; font-size:0.82rem; margin-top:6px; font-weight:600; font-family:'Montserrat',sans-serif;"></div>
         </div>
     `;
     document.body.appendChild(lightbox);
 
     const lightboxImg = lightbox.querySelector('img');
     const lightboxCaption = lightbox.querySelector('.carousel-lightbox-caption');
+    const lightboxCounter = lightbox.querySelector('.lightbox-counter');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
+    const lightboxPrev = lightbox.querySelector('.lightbox-prev');
+    const lightboxNext = lightbox.querySelector('.lightbox-next');
+
+    let activeLightboxList = [];
+    let activeLightboxIndex = 0;
+
+    function renderCurrentLightboxItem() {
+        if (!activeLightboxList.length) return;
+        const item = activeLightboxList[activeLightboxIndex];
+        if (!item) return;
+
+        lightboxImg.src = item.img;
+        lightboxImg.alt = item.title || 'Gallery image';
+
+        if (lightboxCaption) {
+            let captionHtml = `<div style="font-size:1.25rem; font-weight:700; color:#ffffff; margin-bottom:8px; font-family:'Montserrat',sans-serif; text-shadow:0 2px 5px rgba(0,0,0,0.85);">${item.title || ''}</div>`;
+            if (item.folder || item.date) {
+                captionHtml += `<div style="display:inline-flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;">`;
+                if (item.folder) {
+                    captionHtml += `<span style="display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:50px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.18); color:#fbbf24; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;"><i class="fa-solid fa-folder"></i> ${item.folder}</span>`;
+                }
+                if (item.date) {
+                    captionHtml += `<span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; background:rgba(15,23,42,0.88); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; font-size:0.75rem; font-weight:600;"><i class="fa-regular fa-clock" style="color:#fbbf24;"></i> ${item.date}</span>`;
+                }
+                captionHtml += `</div>`;
+            }
+            lightboxCaption.innerHTML = captionHtml;
+        }
+
+        if (lightboxCounter) {
+            lightboxCounter.textContent = `${activeLightboxIndex + 1} of ${activeLightboxList.length}`;
+        }
+    }
+
+    function openLightboxWithItems(items, startIndex = 0) {
+        if (!items || !items.length) return;
+        activeLightboxList = items;
+        activeLightboxIndex = Math.max(0, Math.min(items.length - 1, startIndex));
+        renderCurrentLightboxItem();
+        lightbox.classList.add('active');
+        isPaused = true;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function stepLightbox(dir) {
+        if (!activeLightboxList.length) return;
+        activeLightboxIndex = (activeLightboxIndex + dir + activeLightboxList.length) % activeLightboxList.length;
+        renderCurrentLightboxItem();
+    }
+
+    const closeLightbox = () => {
+        lightbox.classList.remove('active');
+        isPaused = false;
+        lastTime = performance.now();
+        const fullGalleryModal = document.getElementById('fullGalleryModal');
+        if (fullGalleryModal && fullGalleryModal.style.display === 'block') {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    };
+
+    if (lightboxPrev) lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); stepLightbox(-1); });
+    if (lightboxNext) lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); stepLightbox(1); });
+    if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (lightbox.classList.contains('active')) {
+            if (e.key === 'ArrowLeft') stepLightbox(-1);
+            else if (e.key === 'ArrowRight') stepLightbox(1);
+            else if (e.key === 'Escape') closeLightbox();
+            return;
+        }
+        const fullGalleryModal = document.getElementById('fullGalleryModal');
+        if (fullGalleryModal && fullGalleryModal.style.display === 'block' && e.key === 'Escape') {
+            closeFullGalleryModal();
+        }
+    });
 
     function init() {
         // Find original cards
@@ -295,45 +384,159 @@ onDOMReady(() => {
         }
         const card = e.target.closest('.card');
         if (card) {
-            const img = card.querySelector('img');
-            const dataImg = card.getAttribute('data-img') || (img ? img.src : '');
-            lightboxImg.src = dataImg;
+            const allCards = Array.from(track.querySelectorAll('.card'));
+            const originalCards = allCards.slice(0, originalCardCount);
+            const items = originalCards.map(c => {
+                const img = c.querySelector('img');
+                return {
+                    img: c.getAttribute('data-img') || (img ? img.src : ''),
+                    title: c.getAttribute('data-title') || (img ? img.getAttribute('alt') : '') || '',
+                    folder: c.getAttribute('data-folder') || '',
+                    date: c.getAttribute('data-date') || ''
+                };
+            });
 
-            const title = card.getAttribute('data-title') || (img ? img.getAttribute('alt') : '') || '';
-            const folder = card.getAttribute('data-folder') || '';
-            const date = card.getAttribute('data-date') || '';
-
-            if (lightboxCaption) {
-                let captionHtml = `<div style="font-size:1.25rem; font-weight:700; color:#ffffff; margin-bottom:8px; font-family:'Montserrat',sans-serif; text-shadow:0 2px 5px rgba(0,0,0,0.85);">${title}</div>`;
-                if (folder || date) {
-                    captionHtml += `<div style="display:inline-flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;">`;
-                    if (folder) {
-                        captionHtml += `<span style="display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:50px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.18); color:#fbbf24; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;"><i class="fa-solid fa-folder"></i> ${folder}</span>`;
-                    }
-                    if (date) {
-                        captionHtml += `<span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; background:rgba(15,23,42,0.88); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; font-size:0.75rem; font-weight:600;"><i class="fa-regular fa-clock" style="color:#fbbf24;"></i> ${date}</span>`;
-                    }
-                    captionHtml += `</div>`;
-                }
-                lightboxCaption.innerHTML = captionHtml;
+            const cardImg = card.getAttribute('data-img') || (card.querySelector('img') ? card.querySelector('img').src : '');
+            let clickedIndex = items.findIndex(it => it.img === cardImg);
+            if (clickedIndex < 0) {
+                const cardIndex = allCards.indexOf(card);
+                clickedIndex = cardIndex >= 0 ? (cardIndex % originalCardCount) : 0;
             }
-            lightbox.classList.add('active');
-            isPaused = true;
+
+            openLightboxWithItems(items, clickedIndex);
         }
     });
 
-    const closeLightbox = () => {
-        lightbox.classList.remove('active');
-        isPaused = false;
-        lastTime = performance.now();
+    // ----------------------------------------------------
+    // Full Gallery Expanded Modal & Filtering
+    // ----------------------------------------------------
+    const btnOpenFullGallery = document.getElementById('btnOpenFullGallery');
+    const fullGalleryModal = document.getElementById('fullGalleryModal');
+    const btnCloseFullGallery = document.getElementById('btnCloseFullGallery');
+    const fullGalleryGrid = document.getElementById('fullGalleryGrid');
+
+    function syncCustomPinsToGalleryGrid() {
+        if (!fullGalleryGrid) return;
+        try {
+            const rawCustom = localStorage.getItem('brgy_tabon_custom_pins');
+            if (!rawCustom) return;
+            const customPins = JSON.parse(rawCustom);
+            if (!Array.isArray(customPins)) return;
+
+            // Remove any previously injected custom pin cards to prevent duplicate cards
+            fullGalleryGrid.querySelectorAll('.custom-pin-gallery-card').forEach(el => el.remove());
+
+            customPins.forEach((pin, idx) => {
+                if (!pin || !pin.image_path) return;
+                const card = document.createElement('div');
+                card.className = 'full-gallery-card custom-pin-gallery-card';
+                card.setAttribute('data-category', 'map');
+                card.setAttribute('data-img', pin.image_path);
+                card.setAttribute('data-title', pin.title || `Custom Pin #${idx + 1}`);
+                card.setAttribute('data-folder', 'Spot Map Pin');
+                card.setAttribute('data-date', pin.created_at ? new Date(pin.created_at).toLocaleDateString() : 'Dropped Pin');
+                card.style.cssText = 'background: #ffffff; border: 1.5px solid #22c55e; border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column;';
+                card.innerHTML = `
+                    <div style="position: relative; width: 100%; height: 185px; overflow: hidden; background: #0f172a;">
+                        <img src="${pin.image_path}" alt="${pin.title || 'Custom Pin'}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(34,197,94,0.92); color: #ffffff; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px;">
+                            <i class="fa-solid fa-location-dot"></i> Custom Pin
+                        </div>
+                    </div>
+                    <div style="padding: 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="font-weight: 700; font-size: 0.92rem; color: #1e293b; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${pin.title || 'Custom Pin'}
+                        </div>
+                        <div style="font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-regular fa-clock" style="color: #f59e0b;"></i>
+                            ${pin.created_at ? new Date(pin.created_at).toLocaleDateString() : 'Recently Added'}
+                        </div>
+                    </div>
+                `;
+                fullGalleryGrid.prepend(card);
+            });
+
+            const countSpan = document.getElementById('modalTotalCount');
+            if (countSpan) {
+                countSpan.textContent = fullGalleryGrid.querySelectorAll('.full-gallery-card').length;
+            }
+        } catch (e) {
+            console.warn('Could not sync custom pins to gallery grid:', e);
+        }
+    }
+
+    window.closeFullGalleryModal = function() {
+        if (!fullGalleryModal) return;
+        fullGalleryModal.style.display = 'none';
+        if (!lightbox.classList.contains('active')) {
+            document.body.style.overflow = '';
+        }
     };
 
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
-            closeLightbox();
-        }
-    });
+    if (btnOpenFullGallery && fullGalleryModal) {
+        btnOpenFullGallery.addEventListener('click', () => {
+            syncCustomPinsToGalleryGrid();
+            fullGalleryModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    if (btnCloseFullGallery) {
+        btnCloseFullGallery.addEventListener('click', () => {
+            window.closeFullGalleryModal();
+        });
+    }
+
+    if (fullGalleryModal) {
+        fullGalleryModal.addEventListener('click', (e) => {
+            if (e.target === fullGalleryModal) {
+                window.closeFullGalleryModal();
+            }
+        });
+    }
+
+    // Modal category filter tabs
+    const filterBtns = document.querySelectorAll('.gallery-modal-filter-btn');
+    if (filterBtns.length && fullGalleryGrid) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.getAttribute('data-filter');
+                const cards = fullGalleryGrid.querySelectorAll('.full-gallery-card');
+                cards.forEach(c => {
+                    const cat = c.getAttribute('data-category');
+                    if (filter === 'all' || cat === filter) {
+                        c.style.display = 'flex';
+                    } else {
+                        c.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    // Grid card click to open lightbox
+    if (fullGalleryGrid) {
+        fullGalleryGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.full-gallery-card');
+            if (!card) return;
+
+            const visibleCards = Array.from(fullGalleryGrid.querySelectorAll('.full-gallery-card')).filter(c => c.style.display !== 'none');
+            const items = visibleCards.map(c => {
+                const img = c.querySelector('img');
+                return {
+                    img: c.getAttribute('data-img') || (img ? img.src : ''),
+                    title: c.getAttribute('data-title') || '',
+                    folder: c.getAttribute('data-folder') || '',
+                    date: c.getAttribute('data-date') || ''
+                };
+            });
+
+            const clickedIdx = visibleCards.indexOf(card);
+            openLightboxWithItems(items, clickedIdx >= 0 ? clickedIdx : 0);
+        });
+    }
 
     init();
 });

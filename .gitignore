@@ -1,1 +1,6 @@
 *.log
+uploads/verified_ids/*
+!uploads/verified_ids/.gitkeep
+uploads/chat_files/*
+!uploads/chat_files/.gitkeep
+*.flag

@@ -32,6 +32,58 @@ if ($media_res) {
         }
     }
 }
+
+// Fetch Map Page uploaded images (Purok 1, 2, 3 locations & Landmarks)
+$map_photos_count = 0;
+foreach ([1, 2, 3] as $pNum) {
+    $tbl = "purok{$pNum}_locations";
+    $pQuery = "SELECT id, house_number, husband_name, house_image, created_at FROM `{$tbl}` WHERE house_image IS NOT NULL AND house_image != '' ORDER BY id DESC";
+    $pRes = $conn->query($pQuery);
+    if ($pRes) {
+        while ($pRow = $pRes->fetch_assoc()) {
+            $img = $pRow['house_image'];
+            $cleanPath = (strpos($img, 'Admin/') === 0) ? $img : 'Admin/' . ltrim($img, '/');
+            if (file_exists($cleanPath)) {
+                $media_items[] = [
+                    'id' => 'map_p' . $pNum . '_' . $pRow['id'],
+                    'folder_id' => 'map',
+                    'file_path' => $cleanPath,
+                    'web_path' => $cleanPath,
+                    'caption' => 'House #' . $pRow['house_number'] . ' (' . ($pRow['husband_name'] ?: 'Resident') . ')',
+                    'file_name' => basename($cleanPath),
+                    'folder_name' => "Purok {$pNum} Map",
+                    'created_at' => $pRow['created_at'] ?? date('Y-m-d H:i:s'),
+                    'is_map' => true
+                ];
+                $map_photos_count++;
+            }
+        }
+    }
+}
+
+// Fetch Landmark images from sm_legends
+$legendQuery = "SELECT id, name, image_path, created_at FROM sm_legends WHERE image_path IS NOT NULL AND image_path != '' ORDER BY id DESC";
+$legendRes = $conn->query($legendQuery);
+if ($legendRes) {
+    while ($lRow = $legendRes->fetch_assoc()) {
+        $rawPath = $lRow['image_path'];
+        $cleanPath = (strpos($rawPath, 'Admin/') === 0) ? $rawPath : 'Admin/' . ltrim($rawPath, '/');
+        if (file_exists($cleanPath)) {
+            $media_items[] = [
+                'id' => 'legend_' . $lRow['id'],
+                'folder_id' => 'map',
+                'file_path' => $cleanPath,
+                'web_path' => $cleanPath,
+                'caption' => $lRow['name'],
+                'file_name' => basename($cleanPath),
+                'folder_name' => 'Spot Map Landmark',
+                'created_at' => $lRow['created_at'] ?? date('Y-m-d H:i:s'),
+                'is_map' => true
+            ];
+            $map_photos_count++;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -130,13 +182,16 @@ if ($media_res) {
         <!-- Category Filter Tabs -->
         <div class="filter-tabs-wrapper">
             <button type="button" class="filter-chip-btn active" onclick="filterGallery('all', this)">
-                <i class="bi bi-images"></i> All Photos (<?= count($media_items) ?>)
+                <i class="bi bi-images"></i> All Photos (<span id="galleryAllCount"><?= count($media_items) ?></span>)
             </button>
             <?php foreach ($folders as $folder): ?>
                 <button type="button" class="filter-chip-btn" onclick="filterGallery('folder-<?= $folder['id'] ?>', this)">
                     <i class="bi bi-folder2"></i> <?= htmlspecialchars($folder['name']) ?> (<?= $folder['media_count'] ?>)
                 </button>
             <?php endforeach; ?>
+            <button type="button" class="filter-chip-btn" onclick="filterGallery('folder-map', this)">
+                <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Spot Map Locations (<span id="galleryMapCount"><?= $map_photos_count ?></span>)
+            </button>
         </div>
 
         <!-- Photos Grid -->
@@ -147,7 +202,12 @@ if ($media_res) {
                     $m_folder = !empty($media['folder_name']) ? $media['folder_name'] : 'General';
                     $m_date = !empty($media['created_at']) ? date('M d, Y • h:i A', strtotime($media['created_at'])) : date('M d, Y • h:i A');
                 ?>
-                    <div class="grid-item folder-<?= $media['folder_id'] ?>" onclick="viewLightbox('<?= htmlspecialchars($media['web_path']) ?>', '<?= htmlspecialchars(addslashes($m_title)) ?>', '<?= htmlspecialchars(addslashes($m_folder)) ?>', '<?= htmlspecialchars(addslashes($m_date)) ?>')">
+                    <div class="grid-item folder-<?= $media['folder_id'] ?> <?= !empty($media['is_map']) ? 'is-map-item' : '' ?>" 
+                         data-img="<?= htmlspecialchars($media['web_path']) ?>" 
+                         data-title="<?= htmlspecialchars($m_title) ?>" 
+                         data-folder="<?= htmlspecialchars($m_folder) ?>" 
+                         data-date="<?= htmlspecialchars($m_date) ?>" 
+                         onclick="openItemLightbox(this)">
                         <div class="grid-thumb-box">
                             <img src="<?= htmlspecialchars($media['web_path']) ?>" alt="<?= htmlspecialchars($m_title) ?>" loading="lazy">
                             <div class="card-overlay">
@@ -164,7 +224,14 @@ if ($media_res) {
                             </div>
                         </div>
                         <div class="item-info">
-                            <span class="item-tag"><i class="bi bi-folder-fill" style="color:#d97706; margin-right:3px;"></i> <?= htmlspecialchars($m_folder) ?></span>
+                            <span class="item-tag">
+                                <?php if (!empty($media['is_map'])): ?>
+                                    <i class="fa-solid fa-location-dot" style="color:#10b981; margin-right:3px;"></i>
+                                <?php else: ?>
+                                    <i class="bi bi-folder-fill" style="color:#d97706; margin-right:3px;"></i>
+                                <?php endif; ?>
+                                <?= htmlspecialchars($m_folder) ?>
+                            </span>
                             <div class="item-caption" title="<?= htmlspecialchars($m_title) ?>">
                                 <?= htmlspecialchars($m_title) ?>
                             </div>
@@ -185,11 +252,18 @@ if ($media_res) {
     </main>
 
     <!-- Fullscreen Lightbox Modal -->
-    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
+    <div id="lightboxModal" class="lightbox-modal">
+        <button class="lightbox-nav-btn lightbox-prev" id="galleryLbPrev" aria-label="Previous image" title="Previous image">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="lightbox-nav-btn lightbox-next" id="galleryLbNext" aria-label="Next image" title="Next image">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <span class="lightbox-close" id="galleryLbClose" aria-label="Close lightbox">&times;</span>
         <div class="lightbox-container" onclick="event.stopPropagation()">
             <img src="" alt="Fullscreen preview" id="lightboxImg" class="lightbox-img">
             <div id="lightboxCaption" class="lightbox-caption"></div>
+            <div id="lightboxCounter" class="lightbox-counter" style="color: #cbd5e1; font-size: 0.85rem; margin-top: 8px; font-weight: 600; font-family: 'Montserrat', sans-serif; text-align: center;"></div>
         </div>
     </div>
 
@@ -242,9 +316,22 @@ if ($media_res) {
 
     <!-- Interactive Scripts -->
     <script>
+    let activeCategory = 'all';
+    let activeLightboxList = [];
+    let activeLightboxIndex = 0;
+
+    const lightbox = document.getElementById('lightboxModal');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    const lightboxClose = document.getElementById('galleryLbClose');
+    const lightboxPrev = document.getElementById('galleryLbPrev');
+    const lightboxNext = document.getElementById('galleryLbNext');
+
     function filterGallery(category, btn) {
+        activeCategory = category;
         document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
 
         const items = document.querySelectorAll('.public-grid .grid-item');
         let visibleCount = 0;
@@ -258,36 +345,146 @@ if ($media_res) {
         });
     }
 
-    function viewLightbox(src, caption, folder, date) {
-        const lightbox = document.getElementById('lightboxModal');
-        const img = document.getElementById('lightboxImg');
-        const cap = document.getElementById('lightboxCaption');
-        if (lightbox && img) {
-            img.src = src;
-            let captionHtml = `<div style="font-size:1.25rem; font-weight:700; color:#ffffff; margin-bottom:8px; font-family:'Montserrat',sans-serif; text-shadow:0 2px 5px rgba(0,0,0,0.85);">${caption}</div>`;
-            if (folder || date) {
-                captionHtml += `<div style="display:inline-flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;">`;
-                if (folder) {
-                    captionHtml += `<span style="display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:50px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.18); color:#fbbf24; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;"><i class="fa-solid fa-folder"></i> ${folder}</span>`;
-                }
-                if (date) {
-                    captionHtml += `<span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; background:rgba(15,23,42,0.88); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; font-size:0.75rem; font-weight:600;"><i class="fa-regular fa-clock" style="color:#fbbf24;"></i> ${date}</span>`;
-                }
-                captionHtml += `</div>`;
+    function renderLightboxContent() {
+        if (!activeLightboxList.length) return;
+        const item = activeLightboxList[activeLightboxIndex];
+        if (!item) return;
+
+        lightboxImg.src = item.img;
+        lightboxImg.alt = item.title || 'Preview';
+
+        let captionHtml = `<div style="font-size:1.25rem; font-weight:700; color:#ffffff; margin-bottom:8px; font-family:'Montserrat',sans-serif; text-shadow:0 2px 5px rgba(0,0,0,0.85);">${item.title}</div>`;
+        if (item.folder || item.date) {
+            captionHtml += `<div style="display:inline-flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;">`;
+            if (item.folder) {
+                captionHtml += `<span style="display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:50px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.18); color:#fbbf24; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;"><i class="fa-solid fa-folder"></i> ${item.folder}</span>`;
             }
-            cap.innerHTML = captionHtml;
-            lightbox.style.display = 'flex';
+            if (item.date) {
+                captionHtml += `<span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; background:rgba(15,23,42,0.88); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; font-size:0.75rem; font-weight:600;"><i class="fa-regular fa-clock" style="color:#fbbf24;"></i> ${item.date}</span>`;
+            }
+            captionHtml += `</div>`;
+        }
+        lightboxCaption.innerHTML = captionHtml;
+
+        if (lightboxCounter) {
+            lightboxCounter.textContent = `${activeLightboxIndex + 1} of ${activeLightboxList.length}`;
         }
     }
 
+    function openItemLightbox(el) {
+        // Collect all currently visible grid items
+        const visibleItems = Array.from(document.querySelectorAll('.public-grid .grid-item')).filter(it => it.style.display !== 'none');
+        activeLightboxList = visibleItems.map(it => ({
+            img: it.getAttribute('data-img') || (it.querySelector('img') ? it.querySelector('img').src : ''),
+            title: it.getAttribute('data-title') || '',
+            folder: it.getAttribute('data-folder') || '',
+            date: it.getAttribute('data-date') || ''
+        }));
+
+        activeLightboxIndex = visibleItems.indexOf(el);
+        if (activeLightboxIndex < 0) activeLightboxIndex = 0;
+
+        renderLightboxContent();
+        lightbox.style.display = 'flex';
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function stepGalleryLightbox(dir) {
+        if (!activeLightboxList.length) return;
+        activeLightboxIndex = (activeLightboxIndex + dir + activeLightboxList.length) % activeLightboxList.length;
+        renderLightboxContent();
+    }
+
     function closeLightbox() {
-        const lightbox = document.getElementById('lightboxModal');
-        if (lightbox) lightbox.style.display = 'none';
+        if (lightbox) {
+            lightbox.style.display = 'none';
+            lightbox.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    }
+
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stepGalleryLightbox(-1);
+        });
+    }
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stepGalleryLightbox(1);
+        });
+    }
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeLightbox();
+        });
+    }
+    if (lightbox) {
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
     }
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeLightbox();
+        if (!lightbox || !lightbox.classList.contains('active')) return;
+        if (e.key === 'ArrowLeft') stepGalleryLightbox(-1);
+        else if (e.key === 'ArrowRight') stepGalleryLightbox(1);
+        else if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Sync any custom dropped pins from localStorage into the gallery
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            const rawCustom = localStorage.getItem('brgy_tabon_custom_pins');
+            if (!rawCustom) return;
+            const pins = JSON.parse(rawCustom);
+            if (!Array.isArray(pins) || !pins.length) return;
+
+            const grid = document.getElementById('publicGalleryGrid');
+            if (!grid) return;
+
+            let addedCount = 0;
+            pins.forEach((p, idx) => {
+                if (!p || !p.image_path) return;
+                const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Dropped Pin';
+                const div = document.createElement('div');
+                div.className = 'grid-item folder-map is-map-item custom-pin-item';
+                div.setAttribute('data-img', p.image_path);
+                div.setAttribute('data-title', p.title || `Custom Pin #${idx + 1}`);
+                div.setAttribute('data-folder', 'Spot Map Pin');
+                div.setAttribute('data-date', dateStr);
+                div.onclick = function() { openItemLightbox(this); };
+                div.innerHTML = `
+                    <div class="grid-thumb-box">
+                        <img src="${p.image_path}" alt="${p.title || 'Custom Pin'}" loading="lazy">
+                        <div class="card-overlay">
+                            <div class="card-overlay-btn" title="View Fullscreen"><i class="fa-solid fa-expand"></i></div>
+                            <div class="card-overlay-title">${p.title || 'Custom Pin'}</div>
+                            <div class="card-overlay-folder"><i class="fa-solid fa-folder"></i> SPOT MAP PIN</div>
+                            <div class="card-overlay-date"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <span class="item-tag"><i class="fa-solid fa-location-dot" style="color:#10b981; margin-right:3px;"></i> Spot Map Pin</span>
+                        <div class="item-caption" title="${p.title || 'Custom Pin'}">${p.title || 'Custom Pin'}</div>
+                        <div class="item-date"><i class="fa-regular fa-clock" style="margin-right: 4px; color:#f59e0b;"></i> ${dateStr}</div>
+                    </div>
+                `;
+                grid.prepend(div);
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                const allSpan = document.getElementById('galleryAllCount');
+                if (allSpan) allSpan.textContent = parseInt(allSpan.textContent || '0', 10) + addedCount;
+                const mapSpan = document.getElementById('galleryMapCount');
+                if (mapSpan) mapSpan.textContent = parseInt(mapSpan.textContent || '0', 10) + addedCount;
+            }
+        } catch (e) {
+            console.warn('Could not inject custom pins into gallery:', e);
         }
     });
     </script>

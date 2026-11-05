@@ -1521,9 +1521,9 @@ body.feedback-chat-page .main-content {
                     <a class="dropdown-btn"><i class="fa-solid fa-users"></i> Household <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container">
                         <a href="Legend Files.php">Legend Files</a>
-                        <a href="Resident 1.php">Resident 1</a>
-                        <a href="Resident 2.php">Resident 2</a>
-                        <a href="Resident 3.php">Resident 3</a>
+                        <a href="Resident 1.php">Resident 1 (Mesaya)</a>
+                        <a href="Resident 2.php">Resident 2 (Metamed)</a>
+                        <a href="Resident 3.php">Resident 3 (Melitebangay)</a>
                     </div>
                 </li>
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
@@ -2184,12 +2184,16 @@ body.feedback-chat-page .main-content {
                     if (['zip'].includes(fileExt)) iconClass = 'bi-file-earmark-zip-fill';
                     if (['xls','xlsx'].includes(fileExt)) iconClass = 'bi-file-earmark-excel-fill';
 
+                    const attachHref = (msg.file_attachment.startsWith('http') || msg.file_attachment.startsWith('/') || msg.file_attachment.startsWith('../')) 
+                        ? msg.file_attachment 
+                        : ('../' + msg.file_attachment);
+
                     attachmentHtml = `
-                        <a href="${msg.file_attachment}" target="_blank" download class="msg-attachment-card">
+                        <a href="${attachHref}" target="_blank" download class="msg-attachment-card">
                             <i class="bi ${iconClass}"></i>
                             <div>
                                 <span>${escapeHtml(fileName)}</span>
-                                <small style="display:block; font-size:0.7rem; color:#64748b; font-weight:normal;">Click to download</small>
+                                <small style="display:block; font-size:0.7rem; color:#64748b; font-weight:normal;">Click to view ID card</small>
                             </div>
                         </a>
                     `;

@@ -259,9 +259,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <a class="dropdown-btn"><i class="fa-solid fa-users"></i> Household <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container">
                         <a href="Legend Files.php">Legend Files</a>
-                        <a href="Resident 1.php">Resident 1</a>
-                        <a href="Resident 2.php">Resident 2</a>
-                        <a href="Resident 3.php">Resident 3</a>
+                        <a href="Resident 1.php">Resident 1 (Mesaya)</a>
+                        <a href="Resident 2.php">Resident 2 (Metamed)</a>
+                        <a href="Resident 3.php">Resident 3 (Melitebangay)</a>
                     </div>
                 </li>
 

@@ -2,20 +2,87 @@
 require_once 'db_connect.php';
 date_default_timezone_set('Asia/Manila');
 
-// Fetch gallery photos for 3D carousel
+// Fetch gallery photos for 3D carousel preview (limited to latest 5-6 items)
 $carousel_images = [];
+$all_gallery_images = [];
+
 try {
-    $carousel_query = "SELECT m.*, f.name as folder_name 
-                       FROM gallery_media m 
-                       JOIN gallery_folders f ON m.folder_id = f.id 
-                       ORDER BY m.id DESC LIMIT 16";
-    $c_res = $conn->query($carousel_query);
+    // 1. All Media Library photos
+    $g_query = "SELECT m.*, f.name as folder_name 
+                FROM gallery_media m 
+                JOIN gallery_folders f ON m.folder_id = f.id 
+                ORDER BY m.id DESC";
+    $c_res = $conn->query($g_query);
     if ($c_res) {
         while ($row = $c_res->fetch_assoc()) {
             $checkPath = (strpos($row['file_path'], 'Admin/') === 0) ? $row['file_path'] : 'Admin/' . $row['file_path'];
             if (file_exists($checkPath)) {
                 $row['web_src'] = $checkPath;
-                $carousel_images[] = $row;
+                $row['source_type'] = 'gallery';
+                $row['title'] = !empty($row['caption']) ? $row['caption'] : (!empty($row['file_name']) ? pathinfo($row['file_name'], PATHINFO_FILENAME) : 'Community Highlight');
+                $all_gallery_images[] = $row;
+
+                // Preview carousel gets at most 6 items
+                if (count($carousel_images) < 6) {
+                    $carousel_images[] = $row;
+                }
+            }
+        }
+    }
+
+    // 2. Fetch Map Page Uploaded Photos (Purok 1, 2, 3 locations)
+    $purok_queries = [
+        ['table' => 'purok1_locations', 'name' => 'Purok Mesaya (Purok 1)'],
+        ['table' => 'purok2_locations', 'name' => 'Purok Metamed (Purok 2)'],
+        ['table' => 'purok3_locations', 'name' => 'Purok Melitebangay (Purok 3)']
+    ];
+
+    foreach ($purok_queries as $pq) {
+        $q = "SELECT id, house_number, husband_name, house_image, created_at FROM `{$pq['table']}` WHERE house_image IS NOT NULL AND house_image != '' ORDER BY id DESC";
+        $p_res = $conn->query($q);
+        if ($p_res) {
+            while ($p_row = $p_res->fetch_assoc()) {
+                $img = $p_row['house_image'];
+                $checkP = (strpos($img, 'Admin/') === 0) ? $img : 'Admin/' . ltrim($img, '/');
+                if (file_exists($checkP)) {
+                    $item = [
+                        'id' => 'map_' . $pq['table'] . '_' . $p_row['id'],
+                        'web_src' => $checkP,
+                        'title' => 'House #' . $p_row['house_number'] . ' (' . $p_row['husband_name'] . ')',
+                        'folder_name' => $pq['name'],
+                        'created_at' => $p_row['created_at'],
+                        'source_type' => 'map'
+                    ];
+                    $all_gallery_images[] = $item;
+
+                    // If carousel has fewer than 6 photos, supplement with map photos
+                    if (count($carousel_images) < 6) {
+                        $carousel_images[] = $item;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Landmarks from sm_legends with photos
+    $leg_res = $conn->query("SELECT id, name, image_path, created_at FROM sm_legends WHERE image_path IS NOT NULL AND image_path != ''");
+    if ($leg_res) {
+        while ($l_row = $leg_res->fetch_assoc()) {
+            $limg = $l_row['image_path'];
+            $checkL = (strpos($limg, 'Admin/') === 0) ? $limg : 'Admin/' . ltrim($limg, '/');
+            if (file_exists($checkL)) {
+                $item = [
+                    'id' => 'landmark_' . $l_row['id'],
+                    'web_src' => $checkL,
+                    'title' => $l_row['name'],
+                    'folder_name' => 'Spot Map - Landmark',
+                    'created_at' => $l_row['created_at'] ?? date('Y-m-d H:i:s'),
+                    'source_type' => 'map'
+                ];
+                $all_gallery_images[] = $item;
+                if (count($carousel_images) < 6) {
+                    $carousel_images[] = $item;
+                }
             }
         }
     }
@@ -380,7 +447,73 @@ function get_home_announcement_date($when_date, $created_at) {
                 <?php endif; ?>
             </div>
         </div>
+
+        <!-- Gallery View More Controls -->
+        <div class="gallery-view-more-container" style="text-align: center; margin-top: 25px; margin-bottom: 35px; display: flex; align-items: center; justify-content: center;">
+            <a href="gallery.php" class="btn-gallery-link" style="background: #000000; color: #ffffff; font-weight: 700; font-size: 0.92rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px; border-radius: 50px; border: 1.5px solid #000000; transition: all 0.25s ease; box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+                <i class="fa-solid fa-book-open" style="color: #ffffff;"></i> Go to Gallery Page &rarr;
+            </a>
+        </div>
     </section>
+
+    <!-- Full Gallery Expanded Modal (Displays ALL images, including those uploaded from the Map page) -->
+    <div id="fullGalleryModal" class="full-gallery-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; overflow-y: auto; padding: 30px 20px; box-sizing: border-box;">
+        <div class="full-gallery-modal-content" style="max-width: 1200px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+            <!-- Modal Header -->
+            <div style="padding: 22px 30px; background: #223c3b; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #f59e0b;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.55rem; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-images" style="color: #f59e0b;"></i> Complete Community Photo Gallery
+                    </h2>
+                    <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.88rem;">All official community media, event highlights, and spot map location photos.</p>
+                </div>
+                <button type="button" id="btnCloseFullGallery" style="background: none; border: none; color: #ffffff; font-size: 2.2rem; cursor: pointer; line-height: 1; padding: 2px 10px; border-radius: 8px; transition: color 0.2s;">&times;</button>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div style="padding: 14px 30px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <button type="button" class="gallery-modal-filter-btn active" data-filter="all">All Photos (<span id="modalTotalCount"><?= count($all_gallery_images) ?></span>)</button>
+                <button type="button" class="gallery-modal-filter-btn" data-filter="gallery">Media Library</button>
+                <button type="button" class="gallery-modal-filter-btn" data-filter="map">Spot Map Locations</button>
+            </div>
+
+            <!-- Full Gallery Items Grid -->
+            <div id="fullGalleryGrid" style="padding: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; max-height: calc(85vh - 160px); overflow-y: auto;">
+                <?php if (!empty($all_gallery_images)): ?>
+                    <?php foreach ($all_gallery_images as $item): ?>
+                        <div class="full-gallery-card" 
+                             data-category="<?= htmlspecialchars($item['source_type']) ?>" 
+                             data-img="<?= htmlspecialchars($item['web_src']) ?>" 
+                             data-title="<?= htmlspecialchars($item['title']) ?>" 
+                             data-folder="<?= htmlspecialchars($item['folder_name']) ?>" 
+                             data-date="<?= htmlspecialchars(!empty($item['created_at']) ? date('M d, Y • h:i A', strtotime($item['created_at'])) : 'Community Highlight') ?>" 
+                             style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column;">
+                            <div style="position: relative; width: 100%; height: 185px; overflow: hidden; background: #0f172a;">
+                                <img src="<?= htmlspecialchars($item['web_src']) ?>" alt="<?= htmlspecialchars($item['title']) ?>" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                <div style="position: absolute; top: 10px; left: 10px; background: rgba(34,60,59,0.9); color: #ffffff; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <?= htmlspecialchars($item['folder_name']) ?>
+                                </div>
+                            </div>
+                            <div style="padding: 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                                <div style="font-weight: 700; font-size: 0.92rem; color: #1e293b; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <?= htmlspecialchars($item['title']) ?>
+                                </div>
+                                <div style="font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-regular fa-clock" style="color: #f59e0b;"></i>
+                                    <?= htmlspecialchars(!empty($item['created_at']) ? date('M d, Y', strtotime($item['created_at'])) : 'Recent') ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748b;">
+                        <i class="fa-solid fa-images" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+                        No gallery photos published yet.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
     <!-- Services Section (Expanded) -->
         <?php 

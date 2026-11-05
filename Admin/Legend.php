@@ -128,11 +128,190 @@ $conn->query("CREATE TABLE IF NOT EXISTS `sm_settings` (
 // Mark legends as permanently initialized so dummy records never auto-seed
 $conn->query("INSERT INTO `sm_settings` (`setting_key`, `setting_value`) VALUES ('legends_seeded', '1') ON DUPLICATE KEY UPDATE `setting_value` = '1'");
 
+// Regional Zoom Sequence Step Settings
+$zoom_step_defaults = [
+    0 => ['name' => 'Philippines Map', 'target' => 'Mindanao', 'image' => '../Images/Map/Philippines.png', 'top' => 74.00, 'left' => 60.00, 'label' => 'Mindanao'],
+    1 => ['name' => 'Mindanao Map', 'target' => 'Zamboanga del Sur', 'image' => '../Images/Map/mindanao.jpg', 'top' => 57.00, 'left' => 30.50, 'label' => 'Zamboanga del Sur'],
+    2 => ['name' => 'Zamboanga del Sur Map', 'target' => 'Lapuyan', 'image' => '../Images/Map/Zamboanga del Sur.jpg', 'top' => 46.50, 'left' => 51.20, 'label' => 'Lapuyan'],
+    3 => ['name' => 'Lapuyan Map', 'target' => 'Barangay Tabon', 'image' => '../Images/Map/Lapuyan.jpg', 'top' => 45.80, 'left' => 33.80, 'label' => 'Barangay Tabon'],
+];
+$zoom_steps = $zoom_step_defaults;
+try {
+    $q_zoom = $conn->query("SELECT setting_key, setting_value FROM sm_settings WHERE setting_key LIKE 'zoom_%'");
+    if ($q_zoom) {
+        while ($zr = $q_zoom->fetch_assoc()) {
+            $zk = $zr['setting_key'];
+            $zv = trim($zr['setting_value']);
+            foreach ([0, 1, 2, 3] as $idx) {
+                if ($zk === "zoom_pin_step{$idx}_top" && $zv !== '') $zoom_steps[$idx]['top'] = (float)$zv;
+                if ($zk === "zoom_pin_step{$idx}_left" && $zv !== '') $zoom_steps[$idx]['left'] = (float)$zv;
+                if ($zk === "zoom_pin_step{$idx}_label" && $zv !== '') $zoom_steps[$idx]['label'] = $zv;
+                if ($zk === "zoom_map_step{$idx}_image" && !empty($zv) && file_exists(__DIR__ . '/../' . ltrim($zv, '/'))) {
+                    $zoom_steps[$idx]['image'] = '../' . ltrim($zv, '/');
+                }
+            }
+        }
+    }
+} catch (\Throwable $e) {}
+
+// Aerial Legend Map Settings
+$settingKey = 'legend_map_image';
+$custom_legend_map = null;
+$default_legend_map = "../public/image/Maruing Map/Aerial View.png";
+$legend_map_src = $default_legend_map;
+try {
+    $q_map = $conn->query("SELECT setting_value FROM sm_settings WHERE setting_key = '" . $conn->real_escape_string($settingKey) . "' LIMIT 1");
+    if ($q_map && $r_map = $q_map->fetch_assoc()) {
+        $cVal = trim($r_map['setting_value']);
+        $chk = __DIR__ . '/../' . ltrim($cVal, '/');
+        if (!empty($cVal) && file_exists($chk)) {
+            $custom_legend_map = $cVal;
+            $legend_map_src = '../' . ltrim($cVal, '/');
+        }
+    }
+} catch (\Throwable $e) {}
+
 // --- 2. Request Handling (POST / AJAX) ---
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $action = $_POST['action'] ?? '';
+
+    // Action: Update Legend Aerial Map Image
+        // Action: Save Regional Zoom Sequence Pins
+    if ($action === 'save_zoom_pins') {
+        foreach ([0, 1, 2, 3] as $idx) {
+            $topVal = isset($_POST["step_{$idx}_top"]) ? floatval($_POST["step_{$idx}_top"]) : null;
+            $leftVal = isset($_POST["step_{$idx}_left"]) ? floatval($_POST["step_{$idx}_left"]) : null;
+            $labelVal = isset($_POST["step_{$idx}_label"]) ? trim($_POST["step_{$idx}_label"]) : null;
+            if ($topVal !== null) {
+                $topVal = max(0, min(100, $topVal));
+                $k = "zoom_pin_step{$idx}_top";
+                $v = sprintf("%.2f", $topVal);
+                $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+                $stmt->bind_param("sss", $k, $v, $v);
+                $stmt->execute();
+            }
+            if ($leftVal !== null) {
+                $leftVal = max(0, min(100, $leftVal));
+                $k = "zoom_pin_step{$idx}_left";
+                $v = sprintf("%.2f", $leftVal);
+                $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+                $stmt->bind_param("sss", $k, $v, $v);
+                $stmt->execute();
+            }
+            if (!empty($labelVal)) {
+                $k = "zoom_pin_step{$idx}_label";
+                $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+                $stmt->bind_param("sss", $k, $labelVal, $labelVal);
+                $stmt->execute();
+            }
+        }
+        header("Location: Legend.php?zoom_pins_saved=1");
+        exit();
+    }
+
+    // Action: Reset Regional Zoom Sequence Pins to Default
+    // Action: Save a Single Zoom Pin (Instant Save per Stage)
+    if ($action === 'save_single_zoom_pin') {
+        $idx = isset($_POST['stage_index']) ? intval($_POST['stage_index']) : 0;
+        $idx = max(0, min(3, $idx));
+
+        $topVal = isset($_POST['top']) ? floatval($_POST['top']) : null;
+        $leftVal = isset($_POST['left']) ? floatval($_POST['left']) : null;
+        $labelVal = isset($_POST['label']) ? trim($_POST['label']) : null;
+
+        if ($topVal !== null) {
+            $topVal = max(0, min(100, $topVal));
+            $k = "zoom_pin_step{$idx}_top";
+            $v = sprintf("%.2f", $topVal);
+            $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+            $stmt->bind_param("sss", $k, $v, $v);
+            $stmt->execute();
+        }
+        if ($leftVal !== null) {
+            $leftVal = max(0, min(100, $leftVal));
+            $k = "zoom_pin_step{$idx}_left";
+            $v = sprintf("%.2f", $leftVal);
+            $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+            $stmt->bind_param("sss", $k, $v, $v);
+            $stmt->execute();
+        }
+        if (!empty($labelVal)) {
+            $k = "zoom_pin_step{$idx}_label";
+            $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+            $stmt->bind_param("sss", $k, $labelVal, $labelVal);
+            $stmt->execute();
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Pin saved successfully!',
+            'stage_index' => $idx,
+            'top' => $topVal,
+            'left' => $leftVal,
+            'label' => $labelVal
+        ]);
+        exit();
+    }
+
+    if ($action === 'reset_zoom_pins') {
+        $conn->query("DELETE FROM sm_settings WHERE setting_key LIKE 'zoom_%'");
+        header("Location: Legend.php?zoom_pins_reset=1");
+        exit();
+    }
+
+if ($action === 'update_legend_map') {
+        if (!empty($_FILES['legend_map_image']['name']) && $_FILES['legend_map_image']['error'] === UPLOAD_ERR_OK) {
+            $f = $_FILES['legend_map_image'];
+            $maxBytes = 5 * 1024 * 1024;
+            $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+            $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $f['tmp_name']);
+            finfo_close($finfo);
+            if ($f['size'] > $maxBytes) {
+                header("Location: Legend.php?error=file_too_large");
+                exit();
+            } elseif (!in_array($ext, $allowedExts) || !in_array($mime, $allowedMimes)) {
+                header("Location: Legend.php?error=invalid_file_type");
+                exit();
+            } else {
+                $uploadDir = __DIR__ . '/uploads/legend_maps/';
+                if (!is_dir($uploadDir)) @mkdir($uploadDir, 0777, true);
+                $newFileName = 'map_legend_' . time() . '.' . $ext;
+                $destPath = $uploadDir . $newFileName;
+                if (move_uploaded_file($f['tmp_name'], $destPath)) {
+                    $dbRelPath = 'Admin/uploads/legend_maps/' . $newFileName;
+                    $stmt = $conn->prepare("INSERT INTO sm_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+                    $stmt->bind_param("sss", $settingKey, $dbRelPath, $dbRelPath);
+                    $stmt->execute();
+                    header("Location: Legend.php?map_updated=1");
+                    exit();
+                } else {
+                    header("Location: Legend.php?error=upload_failed");
+                    exit();
+                }
+            }
+        } else {
+            header("Location: Legend.php?error=no_file");
+            exit();
+        }
+    }
+
+    // Action: Reset Legend Aerial Map Image
+    if ($action === 'reset_legend_map') {
+        $sel = $conn->query("SELECT setting_value FROM sm_settings WHERE setting_key = '" . $conn->real_escape_string($settingKey) . "' LIMIT 1");
+        if ($sel && $row = $sel->fetch_assoc()) {
+            $oldPath = __DIR__ . '/../' . ltrim($row['setting_value'], '/');
+            if (file_exists($oldPath)) @unlink($oldPath);
+        }
+        $conn->query("DELETE FROM sm_settings WHERE setting_key = '" . $conn->real_escape_string($settingKey) . "'");
+        header("Location: Legend.php?map_reset=1");
+        exit();
+    }
 
     // Action: Add Legend
     if ($action === 'add_legend') {
@@ -717,6 +896,15 @@ function get_legend_photo_url($path) {
 @keyframes bounceRight {
     from { transform: translateX(0); }
     to { transform: translateX(4px); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin {
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
 }
 
 /* =========================================================
@@ -1967,7 +2155,58 @@ function get_legend_photo_url($path) {
                 </div>
             </div>
 
-            <!-- 2. Interactive Aerial Spot Map Interface (#aerialMapContainer) -->
+            <?php if (isset($_GET['zoom_pins_saved'])): ?>
+            <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; color: #1e40af; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(59,130,246,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem;">
+                    <i class="bi bi-check-circle-fill" style="color: #3b82f6; font-size: 1.3rem;"></i>
+                    <span>Regional zoom sequence pins updated! Visitors on the public Spot Map will now see the pin at the new coordinates on each map.</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#1e40af; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['zoom_pins_reset'])): ?>
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; color: #166534; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(34,197,94,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem;">
+                    <i class="bi bi-arrow-counterclockwise" style="color: #16a34a; font-size: 1.3rem;"></i>
+                    <span>All regional zoom sequence pins have been reset back to default official coordinates.</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#166534; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['map_updated'])): ?>
+            <div style="background: #ecfdf5; border: 1.5px solid #6ee7b7; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; color: #065f46; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(16,185,129,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem;">
+                    <i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 1.3rem;"></i>
+                    <span>Aerial Map image updated successfully! Both the Admin canvas and public Spot Map now show the new background map.</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#065f46; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['map_reset'])): ?>
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; color: #166534; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(34,197,94,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem;">
+                    <i class="bi bi-arrow-counterclockwise" style="color: #16a34a; font-size: 1.3rem;"></i>
+                    <span>Aerial Map image has been reset back to the default background map.</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#166534; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        <?php elseif (isset($_GET['error']) && in_array($_GET['error'], ['file_too_large', 'invalid_file_type', 'upload_failed', 'no_file'])): ?>
+            <div style="background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; color: #991b1b; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(239,68,68,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem;">
+                    <i class="bi bi-exclamation-triangle-fill" style="color: #ef4444; font-size: 1.3rem;"></i>
+                    <span>
+                        <?php
+                        $err = $_GET['error'];
+                        if ($err === 'file_too_large') echo 'The uploaded map image exceeds the maximum 5 MB file size limit.';
+                        elseif ($err === 'invalid_file_type') echo 'Invalid image format. Only JPG, PNG, and WEBP formats are accepted.';
+                        elseif ($err === 'upload_failed') echo 'Failed to upload map image to server. Please check directory permissions.';
+                        elseif ($err === 'no_file') echo 'Please select a valid image file before submitting.';
+                        else echo 'An error occurred while updating the map.';
+                        ?>
+                    </span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#991b1b; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        <?php endif; ?>
+
+        <!-- 2. Interactive Aerial Spot Map Interface (#aerialMapContainer) -->
             <div class="aerial-map-card">
                 <div class="map-card-toolbar">
                     <div class="map-toolbar-info">
@@ -1975,6 +2214,12 @@ function get_legend_photo_url($path) {
                         <span class="map-coordinate-live" id="liveCoordBadge">Active Pin: Top 50.00%, Left 50.00%</span>
                     </div>
                     <div class="map-toolbar-actions">
+                        <button type="button" class="btn-map-action" onclick="openZoomPinsModal()" title="Adjust Overview & Regional Zoom Pins" style="background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; font-weight: 600;">
+                            <i class="bi bi-geo-alt-fill" style="color: #60a5fa;"></i> Adjust Overview Pins
+                        </button>
+                        <button type="button" class="btn-map-action" onclick="openChangeMapModal()" title="Change Aerial Map Image" style="background: #223c3b; color: #ffffff; border-color: #223c3b; font-weight: 600;">
+                            <i class="bi bi-image" style="color: #f59e0b;"></i> Change Map Image
+                        </button>
                         <button type="button" class="btn-map-action" onclick="resetActivePinToCenter()" title="Center Pin">
                             <i class="bi bi-arrows-collapse"></i> Center Pin
                         </button>
@@ -1990,7 +2235,7 @@ function get_legend_photo_url($path) {
                     </div>
 
                     <!-- High-Resolution Aerial Map Background -->
-                    <img src="../public/image/Maruing Map/Aerial View.png" 
+                    <img src="<?= htmlspecialchars($legend_map_src) ?>" 
                          alt="Aerial Spot Map" 
                          class="map-viewport-image" 
                          id="aerialMapImage"
@@ -2633,6 +2878,188 @@ function get_legend_photo_url($path) {
         </div>
     </div>
 
+    <!-- 8. Adjust Regional Zoom Pins Modal (#zoomPinsModal) -->
+    <div class="modal-backdrop" id="zoomPinsModal" onclick="handleBackdropClick(event, 'zoomPinsModal')">
+        <div class="modal-dialog" style="max-width: 780px; width: 95%; border-radius: 16px; overflow: hidden;">
+            <!-- Header -->
+            <div class="modal-header" style="background: #1e3a8a; color: #ffffff; border-bottom: 3px solid #3b82f6; padding: 16px 22px;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-geo-alt-fill" style="color: #60a5fa;"></i> Adjust Overview Zoom Sequence Pins
+                    </h3>
+                    <p style="margin: 4px 0 0; font-size: 0.8rem; color: #bfdbfe;">Select a map stage, then click or drag the red pin to set where visitors click to zoom deeper.</p>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeZoomPinsModal()" style="background: none; border: none; color: #ffffff; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- Form -->
+            <form method="post" action="Legend.php" style="padding: 20px;">
+                <input type="hidden" name="action" value="save_zoom_pins">
+
+                <!-- Stage Tabs Navigation -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+                    <button type="button" class="zoom-tab-btn active" onclick="switchZoomPinTab(0)" id="zoomTabBtn_0" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #3b82f6; background: #3b82f6; color: #ffffff; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>1. Philippines &rarr; Mindanao</span>
+                    </button>
+                    <button type="button" class="zoom-tab-btn" onclick="switchZoomPinTab(1)" id="zoomTabBtn_1" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>2. Mindanao &rarr; Zamboanga</span>
+                    </button>
+                    <button type="button" class="zoom-tab-btn" onclick="switchZoomPinTab(2)" id="zoomTabBtn_2" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>3. Zamboanga &rarr; Lapuyan</span>
+                    </button>
+                    <button type="button" class="zoom-tab-btn" onclick="switchZoomPinTab(3)" id="zoomTabBtn_3" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>4. Lapuyan &rarr; Tabon</span>
+                    </button>
+                </div>
+
+                <!-- Interactive Canvas Window -->
+                <div id="zoomPinCanvasContainer" style="position: relative; width: 100%; height: 380px; background: #0f172a; border-radius: 12px; overflow: hidden; border: 2px solid #334155; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); cursor: crosshair;">
+                    <!-- Background Map Image -->
+                    <img id="zoomPinCanvasImg" src="<?= htmlspecialchars($zoom_steps[0]['image']) ?>" alt="Map Preview" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none;">
+
+                    <!-- Helper Badge -->
+                    <div style="position: absolute; top: 12px; left: 12px; background: rgba(15,23,42,0.85); color: #93c5fd; padding: 5px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); pointer-events: none;">
+                        <i class="bi bi-arrows-move"></i> Drag red pin or click map to reposition
+                    </div>
+
+                    <!-- Draggable Red Pin -->
+                    <div id="zoomDraggablePin" style="position: absolute; top: <?= htmlspecialchars($zoom_steps[0]['top']) ?>%; left: <?= htmlspecialchars($zoom_steps[0]['left']) ?>%; transform: translate(-50%, -100%); cursor: grab; z-index: 50; user-select: none; touch-action: none;">
+                        <!-- Badge -->
+                        <div id="zoomPinBadge" style="background: rgba(15, 23, 42, 0.9); color: #ffffff; padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; white-space: nowrap; margin-bottom: 3px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
+                            <i class="bi bi-search" style="font-size: 9px; color: #f59e0b;"></i> <span id="zoomPinBadgeLabel"><?= htmlspecialchars($zoom_steps[0]['label']) ?></span>
+                        </div>
+                        <div style="text-align: center; line-height: 1;">
+                            <i class="bi bi-geo-alt-fill" style="color: #ef4444; font-size: 32px; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.45));"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step Specific Hidden Coordinates & Inputs -->
+                <?php foreach ([0, 1, 2, 3] as $idx): ?>
+                    <input type="hidden" name="step_<?= $idx ?>_top" id="input_step_<?= $idx ?>_top" value="<?= htmlspecialchars($zoom_steps[$idx]['top']) ?>">
+                    <input type="hidden" name="step_<?= $idx ?>_left" id="input_step_<?= $idx ?>_left" value="<?= htmlspecialchars($zoom_steps[$idx]['left']) ?>">
+                    <input type="hidden" name="step_<?= $idx ?>_label" id="input_step_<?= $idx ?>_label" value="<?= htmlspecialchars($zoom_steps[$idx]['label']) ?>">
+                <?php endforeach; ?>
+
+                <!-- Current Stage Fine-Tuning Controls -->
+                <div style="margin-top: 14px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Top Position (%)</label>
+                            <input type="number" step="0.1" min="0" max="100" id="current_step_top_display" onchange="manualZoomCoordChange()" style="width: 85px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; color: #1e293b;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Left Position (%)</label>
+                            <input type="number" step="0.1" min="0" max="100" id="current_step_left_display" onchange="manualZoomCoordChange()" style="width: 85px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; color: #1e293b;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Pin Label Text</label>
+                            <input type="text" id="current_step_label_display" oninput="manualZoomLabelChange(this.value)" style="width: 140px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #1e293b;">
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" onclick="resetCurrentStepPinToDefault()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 7px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" title="Reset this pin to default position">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset Pin
+                        </button>
+                        <button type="button" id="btnSaveCurrentZoomPin" onclick="saveCurrentStepPin()" style="background: #16a34a; color: #ffffff; border: 1px solid #15803d; padding: 7px 16px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.3); transition: all 0.2s ease;" title="Save current pin coordinates immediately">
+                            <i class="bi bi-floppy-fill" id="btnSaveCurrentZoomPinIcon"></i> <span id="btnSaveCurrentZoomPinText">Save Pin</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Actions -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 18px; flex-wrap: wrap; gap: 10px;">
+                    <button type="submit" form="formResetAllZoomPins" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                        <i class="bi bi-trash"></i> Reset All 4 Steps to Defaults
+                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="closeZoomPinsModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                            Cancel
+                        </button>
+                        <button type="submit" style="background: #1e3a8a; color: #ffffff; border: none; padding: 9px 24px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(30,58,138,0.3);">
+                            <i class="bi bi-check-lg"></i> Save All Zoom Pins
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <form id="formResetAllZoomPins" method="post" action="Legend.php" onsubmit="return confirm('Reset all 4 regional zoom sequence pins back to official defaults?');">
+                <input type="hidden" name="action" value="reset_zoom_pins">
+            </form>
+        </div>
+    </div>
+
+<!-- 7. Change Aerial Map Image Modal (#changeMapModal) -->
+    <div class="modal-backdrop" id="changeMapModal" onclick="handleBackdropClick(event, 'changeMapModal')">
+        <div class="modal-dialog" style="max-width: 540px; border-radius: 16px; overflow: hidden;">
+            <div class="modal-header" style="background: #223c3b; color: #ffffff; border-bottom: 3px solid #2c6e49;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-image-fill" style="color: #f59e0b;"></i> Change Aerial Map Image
+                </h3>
+                <button type="button" class="btn-close-modal" onclick="closeChangeMapModal()" style="background: none; border: none; color: #ffffff; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="Legend.php" style="padding: 24px;" onsubmit="return validateLegendMapUpload(this);">
+                <input type="hidden" name="action" value="update_legend_map">
+
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                        Current Aerial Map Image
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px;">
+                        <img src="<?= htmlspecialchars($legend_map_src) ?>" alt="Current Aerial Map" style="width: 80px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+                        <div style="font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                            <strong><?= $custom_legend_map ? 'Custom Uploaded Aerial Map' : 'Default Official Aerial Map' ?></strong>
+                            <div style="color: #64748b; font-size: 0.75rem; word-break: break-all;"><?= htmlspecialchars(basename($legend_map_src)) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 0.88rem; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <i class="bi bi-cloud-arrow-up-fill" style="color: #2c6e49;"></i> Select New Map Image <span style="color:#e11d48;">*</span>
+                    </label>
+                    <input type="file" name="legend_map_image" id="legend_map_image" accept="image/jpeg,image/png,image/webp" class="form-control" required onchange="previewLegendMapImage(this)" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box;">
+                    <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 5px;">
+                        Accepts JPG, PNG, or WEBP (Max 5 MB). This updates the background map in both the Admin canvas and the public Spot Map aerial view.
+                    </small>
+
+                    <div id="legend_map_preview_box" style="display: none; margin-top: 12px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #166534; margin-bottom: 6px;">New Map Preview:</div>
+                        <img id="legend_map_preview_img" src="" alt="New Map Preview" style="width: 100%; max-height: 180px; object-fit: contain; border-radius: 6px; border: 1px solid #86efac; background: #ffffff;">
+                    </div>
+
+                    <div id="legend_map_error_msg" style="display: none; margin-top: 8px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; font-weight: 600;"></div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
+                    <?php if ($custom_legend_map): ?>
+                        <button type="submit" form="formResetLegendMap" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset to Default
+                        </button>
+                    <?php else: ?>
+                        <div></div>
+                    <?php endif; ?>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="closeChangeMapModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                            Cancel
+                        </button>
+                        <button type="submit" style="background: #2c6e49; color: #ffffff; border: none; padding: 9px 22px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(44,110,73,0.3);">
+                            <i class="bi bi-check-lg"></i> Upload & Apply Map
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <?php if ($custom_legend_map): ?>
+                <form id="formResetLegendMap" method="post" action="Legend.php" onsubmit="return confirm('Reset aerial map image back to the original default map?');">
+                    <input type="hidden" name="action" value="reset_legend_map">
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Floating Toast Notification (#adminToast) -->
     <div class="admin-toast" id="adminToast">
         <i class="bi bi-check-circle-fill" id="adminToastIcon" style="font-size: 20px;"></i>
@@ -3151,6 +3578,331 @@ function get_legend_photo_url($path) {
         }
 
         // --- Toast System ---
+        // --- Regional Zoom Pins Modal System ---
+        const ZOOM_STEPS_CONFIG = <?= json_encode($zoom_steps, JSON_UNESCAPED_SLASHES) ?>;
+        const ZOOM_DEFAULTS_CONFIG = <?= json_encode($zoom_step_defaults, JSON_UNESCAPED_SLASHES) ?>;
+        let currentZoomStageIndex = 0;
+        let isDraggingZoomPin = false;
+
+        function openZoomPinsModal() {
+            const m = document.getElementById('zoomPinsModal');
+            if (m) {
+                m.classList.add('show');
+                switchZoomPinTab(0);
+            }
+        }
+
+        function closeZoomPinsModal() {
+            const m = document.getElementById('zoomPinsModal');
+            if (m) m.classList.remove('show');
+        }
+
+        function switchZoomPinTab(idx) {
+            currentZoomStageIndex = idx;
+            // Update tab styles
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById('zoomTabBtn_' + i);
+                if (btn) {
+                    if (i === idx) {
+                        btn.style.background = '#3b82f6';
+                        btn.style.borderColor = '#3b82f6';
+                        btn.style.color = '#ffffff';
+                    } else {
+                        btn.style.background = '#f8fafc';
+                        btn.style.borderColor = '#cbd5e1';
+                        btn.style.color = '#475569';
+                    }
+                }
+            }
+
+            // Reset Save Pin button state on tab switch
+            const saveBtn = document.getElementById("btnSaveCurrentZoomPin");
+            const saveIcon = document.getElementById("btnSaveCurrentZoomPinIcon");
+            const saveTxt = document.getElementById("btnSaveCurrentZoomPinText");
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = "1";
+                saveBtn.style.background = "#16a34a";
+            }
+            if (saveIcon) saveIcon.className = "bi bi-floppy-fill";
+            if (saveTxt) saveTxt.textContent = "Save Pin";
+
+            // Update image and pin
+            const cfg = ZOOM_STEPS_CONFIG[idx];
+            const imgEl = document.getElementById('zoomPinCanvasImg');
+            const pinEl = document.getElementById('zoomDraggablePin');
+            const badgeLabel = document.getElementById('zoomPinBadgeLabel');
+            const topInput = document.getElementById('input_step_' + idx + '_top');
+            const leftInput = document.getElementById('input_step_' + idx + '_left');
+            const labelInput = document.getElementById('input_step_' + idx + '_label');
+            const topDisp = document.getElementById('current_step_top_display');
+            const leftDisp = document.getElementById('current_step_left_display');
+            const labelDisp = document.getElementById('current_step_label_display');
+
+            const curTop = parseFloat(topInput.value) || cfg.top;
+            const curLeft = parseFloat(leftInput.value) || cfg.left;
+            const curLabel = labelInput.value || cfg.label;
+
+            if (imgEl) imgEl.src = cfg.image;
+            if (pinEl) {
+                pinEl.style.top = curTop.toFixed(2) + '%';
+                pinEl.style.left = curLeft.toFixed(2) + '%';
+            }
+            if (badgeLabel) badgeLabel.textContent = curLabel;
+            if (topDisp) topDisp.value = curTop.toFixed(1);
+            if (leftDisp) leftDisp.value = curLeft.toFixed(1);
+            if (labelDisp) labelDisp.value = curLabel;
+        }
+
+        function setZoomPinPosition(topPct, leftPct) {
+            topPct = Math.max(2, Math.min(98, parseFloat(topPct) || 0));
+            leftPct = Math.max(2, Math.min(98, parseFloat(leftPct) || 0));
+            const pinEl = document.getElementById('zoomDraggablePin');
+            const topInput = document.getElementById('input_step_' + currentZoomStageIndex + '_top');
+            const leftInput = document.getElementById('input_step_' + currentZoomStageIndex + '_left');
+            const topDisp = document.getElementById('current_step_top_display');
+            const leftDisp = document.getElementById('current_step_left_display');
+
+            if (pinEl) {
+                pinEl.style.top = topPct.toFixed(2) + '%';
+                pinEl.style.left = leftPct.toFixed(2) + '%';
+            }
+            if (topInput) topInput.value = topPct.toFixed(2);
+            if (leftInput) leftInput.value = leftPct.toFixed(2);
+            if (topDisp) topDisp.value = topPct.toFixed(1);
+            if (leftDisp) leftDisp.value = leftPct.toFixed(1);
+        }
+
+        function manualZoomCoordChange() {
+            const topDisp = document.getElementById('current_step_top_display');
+            const leftDisp = document.getElementById('current_step_left_display');
+            if (topDisp && leftDisp) {
+                setZoomPinPosition(topDisp.value, leftDisp.value);
+            }
+        }
+
+        function manualZoomLabelChange(val) {
+            const labelInput = document.getElementById('input_step_' + currentZoomStageIndex + '_label');
+            const badgeLabel = document.getElementById('zoomPinBadgeLabel');
+            if (labelInput) labelInput.value = val;
+            if (badgeLabel) badgeLabel.textContent = val || 'Target';
+        }
+
+        function saveCurrentStepPin() {
+            const idx = currentZoomStageIndex;
+            const topDisp = document.getElementById('current_step_top_display');
+            const leftDisp = document.getElementById('current_step_left_display');
+            const labelDisp = document.getElementById('current_step_label_display');
+            const topInput = document.getElementById('input_step_' + idx + '_top');
+            const leftInput = document.getElementById('input_step_' + idx + '_left');
+            const labelInput = document.getElementById('input_step_' + idx + '_label');
+
+            const topVal = topDisp ? topDisp.value : (topInput ? topInput.value : '50');
+            const leftVal = leftDisp ? leftDisp.value : (leftInput ? leftInput.value : '50');
+            const labelVal = labelDisp ? labelDisp.value : (labelInput ? labelInput.value : 'Target');
+
+            // Sync hidden inputs & current in-memory config
+            if (topInput) topInput.value = topVal;
+            if (leftInput) leftInput.value = leftVal;
+            if (labelInput) labelInput.value = labelVal;
+            if (typeof ZOOM_STEPS_CONFIG !== 'undefined' && ZOOM_STEPS_CONFIG[idx]) {
+                ZOOM_STEPS_CONFIG[idx].top = parseFloat(topVal);
+                ZOOM_STEPS_CONFIG[idx].left = parseFloat(leftVal);
+                ZOOM_STEPS_CONFIG[idx].label = labelVal;
+            }
+
+            const btn = document.getElementById('btnSaveCurrentZoomPin');
+            const icon = document.getElementById('btnSaveCurrentZoomPinIcon');
+            const txt = document.getElementById('btnSaveCurrentZoomPinText');
+
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.75';
+            }
+            if (icon) icon.className = 'bi bi-arrow-repeat spin';
+            if (txt) txt.textContent = 'Saving...';
+
+            const formData = new FormData();
+            formData.append('action', 'save_single_zoom_pin');
+            formData.append('stage_index', idx);
+            formData.append('top', topVal);
+            formData.append('left', leftVal);
+            formData.append('label', labelVal);
+
+            fetch('Legend.php', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.background = '#059669';
+                }
+                if (icon) icon.className = 'bi bi-check-circle-fill';
+                if (txt) txt.textContent = 'Saved! ✓';
+
+                const stageNames = [
+                    'Philippines → Mindanao',
+                    'Mindanao → Zamboanga',
+                    'Zamboanga → Lapuyan',
+                    'Lapuyan → Tabon'
+                ];
+                const stageName = stageNames[idx] || ('Stage ' + (idx + 1));
+                if (typeof showToast === 'function') {
+                    showToast('✓ Pin for ' + stageName + ' saved successfully! (' + topVal + '%, ' + leftVal + '%)');
+                }
+
+                setTimeout(() => {
+                    if (btn) btn.style.background = '#16a34a';
+                    if (icon) icon.className = 'bi bi-floppy-fill';
+                    if (txt) txt.textContent = 'Save Pin';
+                }, 2500);
+            })
+            .catch(err => {
+                console.error('Error saving zoom pin:', err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.background = '#dc2626';
+                }
+                if (icon) icon.className = 'bi bi-exclamation-triangle-fill';
+                if (txt) txt.textContent = 'Error!';
+                if (typeof showToast === 'function') {
+                    showToast('Failed to save pin coordinates. Please try again.', true);
+                }
+
+                setTimeout(() => {
+                    if (btn) btn.style.background = '#16a34a';
+                    if (icon) icon.className = 'bi bi-floppy-fill';
+                    if (txt) txt.textContent = 'Save Pin';
+                }, 3000);
+            });
+        }
+
+        function resetCurrentStepPinToDefault() {
+            const def = ZOOM_DEFAULTS_CONFIG[currentZoomStageIndex];
+            if (def) {
+                setZoomPinPosition(def.top, def.left);
+                manualZoomLabelChange(def.label);
+                const labelDisp = document.getElementById('current_step_label_display');
+                if (labelDisp) labelDisp.value = def.label;
+            }
+        }
+
+        // Attach drag & click events to Zoom Canvas
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('zoomPinCanvasContainer');
+            const pin = document.getElementById('zoomDraggablePin');
+
+            if (canvas && pin) {
+                function updateCoordsFromEvent(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const leftPct = ((clientX - rect.left) / rect.width) * 100;
+                    const topPct = ((clientY - rect.top) / rect.height) * 100;
+                    setZoomPinPosition(topPct, leftPct);
+                }
+
+                pin.addEventListener('mousedown', function(e) {
+                    isDraggingZoomPin = true;
+                    pin.style.cursor = 'grabbing';
+                    e.stopPropagation();
+                });
+
+                window.addEventListener('mousemove', function(e) {
+                    if (!isDraggingZoomPin) return;
+                    updateCoordsFromEvent(e);
+                });
+
+                window.addEventListener('mouseup', function() {
+                    if (isDraggingZoomPin) {
+                        isDraggingZoomPin = false;
+                        if (pin) pin.style.cursor = 'grab';
+                    }
+                });
+
+                pin.addEventListener('touchstart', function(e) { isDraggingZoomPin = true; e.stopPropagation(); }, { passive: true });
+                window.addEventListener('touchmove', function(e) { if (!isDraggingZoomPin) return; updateCoordsFromEvent(e); }, { passive: true });
+                window.addEventListener('touchend', function() { isDraggingZoomPin = false; });
+
+                canvas.addEventListener('click', function(e) {
+                    if (e.target.closest('#zoomDraggablePin')) return;
+                    updateCoordsFromEvent(e);
+                });
+            }
+        });
+
+// --- Change Map Image Modal Functions ---
+        function openChangeMapModal() {
+            const m = document.getElementById('changeMapModal');
+            if (m) m.classList.add('show');
+        }
+        function closeChangeMapModal() {
+            const m = document.getElementById('changeMapModal');
+            if (m) m.classList.remove('show');
+        }
+        function previewLegendMapImage(input) {
+            const previewBox = document.getElementById('legend_map_preview_box');
+            const previewImg = document.getElementById('legend_map_preview_img');
+            const errorBox = document.getElementById('legend_map_error_msg');
+            if (!input || !input.files || !input.files[0]) {
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+            const file = input.files[0];
+            const maxBytes = 5 * 1024 * 1024;
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            if (errorBox) errorBox.style.display = 'none';
+            if (file.size > maxBytes) {
+                if (errorBox) {
+                    errorBox.textContent = 'File too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB). Maximum allowed size is 5 MB.';
+                    errorBox.style.display = 'block';
+                }
+                input.value = '';
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+            if (!allowed.includes(file.type)) {
+                if (errorBox) {
+                    errorBox.textContent = 'Invalid file type. Please upload a JPG, PNG, or WEBP image.';
+                    errorBox.style.display = 'block';
+                }
+                input.value = '';
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (previewImg) previewImg.src = e.target.result;
+                if (previewBox) previewBox.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        function validateLegendMapUpload(form) {
+            const fileInput = form.querySelector('#legend_map_image');
+            const errorBox = document.getElementById('legend_map_error_msg');
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                if (errorBox) {
+                    errorBox.textContent = 'Please choose an image file to upload.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+            const file = fileInput.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                if (errorBox) {
+                    errorBox.textContent = 'File exceeds 5 MB. Please select a smaller image.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+            return true;
+        }
+
         function showToast(msg, isError = false) {
             const toast = document.getElementById('adminToast');
             const icon = document.getElementById('adminToastIcon');
@@ -3178,7 +3930,15 @@ function get_legend_photo_url($path) {
                     openEditModal(parseInt(editIdParam, 10));
                 }, 400);
             }
-            if (urlParams.get('msg') === 'added') {
+            if (urlParams.get('zoom_pins_saved') === '1') {
+                showToast('Regional zoom sequence pins updated successfully!');
+            } else if (urlParams.get('zoom_pins_reset') === '1') {
+                showToast('Regional zoom pins reset to default.');
+            } else if (urlParams.get('map_updated') === '1') {
+                showToast('Aerial Map image updated successfully!');
+            } else if (urlParams.get('map_reset') === '1') {
+                showToast('Aerial Map image reset to default.');
+            } else if (urlParams.get('msg') === 'added') {
                 showToast('Legend landmark successfully pinned to Spot Map!');
             } else if (urlParams.get('msg') === 'updated') {
                 showToast('Legend landmark details updated successfully!');

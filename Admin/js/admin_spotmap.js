@@ -183,8 +183,100 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // =========================================================================
-    // 2. LIVE MARKER PREVIEW & DRAGGABLE ENGINE
+    // 2. LIVE MARKER PREVIEW, IMAGE VALIDATION & DRAGGABLE ENGINE
     // =========================================================================
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    function validateImageFile(file, errorElId) {
+        const errorEl = document.getElementById(errorElId);
+        if (!file) {
+            if (errorEl) errorEl.style.display = 'none';
+            return true;
+        }
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        const validExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+        const validType = ALLOWED_IMAGE_TYPES.includes(file.type) || validExt;
+
+        if (!validType) {
+            const msg = 'Invalid file format. Please upload a JPG, PNG, or WEBP image.';
+            if (errorEl) {
+                errorEl.textContent = msg;
+                errorEl.style.display = 'block';
+            }
+            showNotificationToast(msg, 'error');
+            return false;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+            const msg = `File size is ${sizeMb} MB. Maximum allowed size is 5 MB.`;
+            if (errorEl) {
+                errorEl.textContent = msg;
+                errorEl.style.display = 'block';
+            }
+            showNotificationToast(msg, 'error');
+            return false;
+        }
+
+        if (errorEl) {
+            errorEl.style.display = 'none';
+            errorEl.textContent = '';
+        }
+        return true;
+    }
+
+    function formatFileSize(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // House Image (Location Photo) Validation & Live Thumbnail Preview
+    if (houseInput) {
+        houseInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const previewBox = document.getElementById('house_image_preview_box');
+            const previewThumb = document.getElementById('house_image_preview_thumb');
+            const previewName = document.getElementById('house_image_preview_name');
+            const previewSize = document.getElementById('house_image_preview_size');
+
+            if (!file) {
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+
+            if (!validateImageFile(file, 'house_image_error_msg')) {
+                houseInput.value = '';
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                if (previewThumb) previewThumb.src = ev.target.result;
+                if (previewName) previewName.textContent = file.name;
+                if (previewSize) previewSize.textContent = formatFileSize(file.size);
+                if (previewBox) previewBox.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        const btnClearHouse = document.getElementById('btn_clear_house_image');
+        if (btnClearHouse) {
+            btnClearHouse.addEventListener('click', function () {
+                houseInput.value = '';
+                const previewBox = document.getElementById('house_image_preview_box');
+                if (previewBox) previewBox.style.display = 'none';
+                const errorMsg = document.getElementById('house_image_error_msg');
+                if (errorMsg) errorMsg.style.display = 'none';
+            });
+        }
+    }
+
     function ensurePreviewMarker() {
         if (!previewMarker && mapContainer) {
             previewMarker = document.createElement('img');
@@ -220,24 +312,55 @@ document.addEventListener('DOMContentLoaded', function () {
         previewMarker.style.height = h + 'px';
     }
 
-    // Load file from input
+    // Load marker icon file from input
     if (markerInput) {
         markerInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    const marker = ensurePreviewMarker();
-                    marker.src = event.target.result;
-                    marker.style.display = 'block';
-                    updatePreviewSize();
-                    const top = topInput ? parseFloat(topInput.value) || 50 : 50;
-                    const left = leftInput ? parseFloat(leftInput.value) || 50 : 50;
-                    updatePreviewPosition(top, left);
-                };
-                reader.readAsDataURL(file);
+            const previewBox = document.getElementById('marker_image_preview_box');
+            const previewThumb = document.getElementById('marker_image_preview_thumb');
+            const previewName = document.getElementById('marker_image_preview_name');
+            const previewSize = document.getElementById('marker_image_preview_size');
+
+            if (!file) {
+                if (previewBox) previewBox.style.display = 'none';
+                return;
             }
+
+            if (!validateImageFile(file, 'marker_image_error_msg')) {
+                markerInput.value = '';
+                if (previewBox) previewBox.style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                if (previewThumb) previewThumb.src = event.target.result;
+                if (previewName) previewName.textContent = file.name;
+                if (previewSize) previewSize.textContent = formatFileSize(file.size);
+                if (previewBox) previewBox.style.display = 'flex';
+
+                const marker = ensurePreviewMarker();
+                marker.src = event.target.result;
+                marker.style.display = 'block';
+                updatePreviewSize();
+                const top = topInput ? parseFloat(topInput.value) || 50 : 50;
+                const left = leftInput ? parseFloat(leftInput.value) || 50 : 50;
+                updatePreviewPosition(top, left);
+            };
+            reader.readAsDataURL(file);
         });
+
+        const btnClearMarker = document.getElementById('btn_clear_marker_image');
+        if (btnClearMarker) {
+            btnClearMarker.addEventListener('click', function () {
+                markerInput.value = '';
+                const previewBox = document.getElementById('marker_image_preview_box');
+                if (previewBox) previewBox.style.display = 'none';
+                const errorMsg = document.getElementById('marker_image_error_msg');
+                if (errorMsg) errorMsg.style.display = 'none';
+                if (previewMarker) previewMarker.style.display = 'none';
+            });
+        }
     }
 
     // Direct drag and drop of marker graphic onto map canvas
@@ -684,6 +807,30 @@ document.addEventListener('DOMContentLoaded', function () {
         if (markerInput) markerInput.removeAttribute('required');
         if (houseInput) houseInput.removeAttribute('required');
 
+        // Show thumbnail preview for current house image
+        const housePreviewBox = document.getElementById('house_image_preview_box');
+        const houseThumb = document.getElementById('house_image_preview_thumb');
+        const houseName = document.getElementById('house_image_preview_name');
+        const houseSize = document.getElementById('house_image_preview_size');
+        if (housePreviewBox && houseThumb && houseImgSrc) {
+            houseThumb.src = houseImgSrc;
+            if (houseName) houseName.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Current Location Photo Attached';
+            if (houseSize) houseSize.textContent = 'Keep this image, or choose another to replace';
+            housePreviewBox.style.display = 'flex';
+        }
+
+        // Show thumbnail preview for current marker icon
+        const markerPreviewBox = document.getElementById('marker_image_preview_box');
+        const markerThumb = document.getElementById('marker_image_preview_thumb');
+        const markerName = document.getElementById('marker_image_preview_name');
+        const markerSize = document.getElementById('marker_image_preview_size');
+        if (markerPreviewBox && markerThumb && markerSrc) {
+            markerThumb.src = markerSrc;
+            if (markerName) markerName.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Current Pin Graphic';
+            if (markerSize) markerSize.textContent = 'Keep this icon, or choose another to replace';
+            markerPreviewBox.style.display = 'flex';
+        }
+
         // Show image notice badges if present
         let housePreviewBadge = document.getElementById('house_image_preview');
         if (!housePreviewBadge && houseInput && houseInput.parentNode) {
@@ -762,6 +909,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (housePreviewBadge) housePreviewBadge.style.display = 'none';
         const markerPreviewBadge = document.getElementById('marker_image_preview');
         if (markerPreviewBadge) markerPreviewBadge.style.display = 'none';
+
+        const housePreviewBox = document.getElementById('house_image_preview_box');
+        if (housePreviewBox) housePreviewBox.style.display = 'none';
+        const markerPreviewBox = document.getElementById('marker_image_preview_box');
+        if (markerPreviewBox) markerPreviewBox.style.display = 'none';
+
+        const houseError = document.getElementById('house_image_error_msg');
+        if (houseError) { houseError.style.display = 'none'; houseError.textContent = ''; }
+        const markerError = document.getElementById('marker_image_error_msg');
+        if (markerError) { markerError.style.display = 'none'; markerError.textContent = ''; }
 
         if (saveBtn) {
             saveBtn.innerHTML = '<i class="fa-solid fa-map-pin"></i> Save to Map';

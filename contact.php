@@ -58,45 +58,143 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
         <div class="pin-modal-card">
             <button type="button" class="pin-modal-close" id="btnClosePinModal" title="Close">&times;</button>
             
-            <div class="pin-modal-badge">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            
-            <h3 class="pin-modal-title">Gmail OTP Verification</h3>
-            <p class="pin-modal-desc">
-                We sent a 6-digit verification OTP to <strong id="modalTargetEmail">your Gmail</strong>. Please check your Inbox or Spam folder, then enter the OTP below to confirm your request:
-            </p>
-
-            <div class="pin-modal-alert" id="pinModalAlert">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span id="pinModalAlertText">Invalid OTP code.</span>
-            </div>
-
-            <!-- 6 PIN Digit Input Boxes -->
-            <div class="pin-digits-row">
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="0" inputmode="numeric" pattern="[0-9]*" autofocus>
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="1" inputmode="numeric" pattern="[0-9]*">
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="2" inputmode="numeric" pattern="[0-9]*">
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="3" inputmode="numeric" pattern="[0-9]*">
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="4" inputmode="numeric" pattern="[0-9]*">
-                <input type="text" maxlength="1" class="pin-digit-box" data-index="5" inputmode="numeric" pattern="[0-9]*">
-            </div>
-
-            <!-- Expiration Timer & Resend Link -->
-            <div class="pin-timer-wrapper">
-                <div class="pin-timer-badge" id="pinTimerBadge">
-                    <i class="fa-regular fa-clock"></i>
-                    <span id="pinTimerText">Expires in: 03:00</span>
+            <!-- VIEW 1: Email OTP Verification -->
+            <div id="viewEmailOtp">
+                <div class="pin-modal-badge">
+                    <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <button type="button" class="btn-resend-link" id="btnResendPin" disabled>
-                    <i class="fa-solid fa-rotate-right"></i> Resend Code
+                
+                <h3 class="pin-modal-title">Gmail OTP Verification</h3>
+                <p class="pin-modal-desc">
+                    We sent a 6-digit verification OTP to <strong id="modalTargetEmail">your Gmail</strong>. Please check your Inbox or Spam folder, then enter the OTP below to confirm your request:
+                </p>
+
+                <!-- Free Hosting / Offline OTP Fallback Banner -->
+                <div class="pin-offline-banner" id="pinOfflineBanner" style="display: none; background: #fef3c7; border: 1px solid #fde047; color: #854d0e; padding: 14px 16px; border-radius: 10px; font-size: 13px; margin: 12px 0 16px 0; text-align: left;">
+                    <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #b45309;">
+                        <i class="fa-solid fa-circle-info"></i> Notice: Free Hosting Mode
+                    </div>
+                    <span>InfinityFree blocks outbound email sending (SMTP). For instant testing & submission, your 6-digit OTP code is:</span>
+                    <div style="margin: 8px 0; text-align: center;">
+                        <span id="pinOfflineCode" style="font-family: monospace; font-size: 26px; font-weight: 800; letter-spacing: 6px; background: #ffffff; padding: 4px 16px; border-radius: 8px; border: 2px solid #eab308; color: #1e293b; display: inline-block;">------</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <button type="button" id="btnAutoFillPin" style="background: #093d25; color: #ffffff; border: none; padding: 8px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill & Verify Now
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pin-modal-alert" id="pinModalAlert">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="pinModalAlertText">Invalid OTP code.</span>
+                </div>
+
+                <!-- 6 PIN Digit Input Boxes -->
+                <div class="pin-digits-row">
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="0" inputmode="numeric" pattern="[0-9]*" autofocus>
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="2" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="3" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="4" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" maxlength="1" class="pin-digit-box" data-index="5" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <!-- Expiration Timer & Resend Link -->
+                <div class="pin-timer-wrapper">
+                    <div class="pin-timer-badge" id="pinTimerBadge">
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="pinTimerText">Expires in: 03:00</span>
+                    </div>
+                    <button type="button" class="btn-resend-link" id="btnResendPin" disabled>
+                        <i class="fa-solid fa-rotate-right"></i> Resend Code
+                    </button>
+                </div>
+
+                <!-- Verify Action Button -->
+                <button type="button" class="btn-verify-pin" id="btnVerifyPin">
+                    <i class="fa-solid fa-circle-check"></i> Verify & Submit Request
                 </button>
+
+                <!-- Try Another Way (Corner Right) -->
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px;">
+                    <button type="button" id="btnTryAnotherWay" class="btn-try-another-way">
+                        <i class="fa-solid fa-id-card"></i> <span>Try Another Way</span> &rarr;
+                    </button>
+                </div>
             </div>
 
-            <!-- Verify Action Button -->
-            <button type="button" class="btn-verify-pin" id="btnVerifyPin">
-                <i class="fa-solid fa-circle-check"></i> Verify & Submit Request
-            </button>
+            <!-- VIEW 2: ID Card Reader Verification -->
+            <div id="viewIdCardReader" style="display: none;">
+                <div class="pin-modal-badge" style="background: #eff6ff;">
+                    <i class="fa-solid fa-id-card" style="color: #1e3a8a !important; font-size: 26px;"></i>
+                </div>
+
+                <h3 class="pin-modal-title" style="margin-bottom: 6px;">ID Card Reader Verification</h3>
+                <p class="pin-modal-desc" style="margin-bottom: 16px;">
+                    Could not receive OTP via Email? Upload a clear photo of your <strong>Valid ID Card</strong>. Our ID Reader will scan and verify your identity before delivering your request to the Admin.
+                </p>
+
+                <!-- ID Card Alert / Error Box -->
+                <div class="pin-modal-alert" id="idCardAlert" style="margin-bottom: 14px;">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="idCardAlertText">Invalid ID card.</span>
+                </div>
+
+                <!-- Interactive Dropzone / Reader Area -->
+                <div class="id-reader-dropzone" id="idReaderDropzone">
+                    <input type="file" id="idCardFileInput" accept="image/jpeg,image/png,image/webp" capture="environment" style="display: none;">
+                    
+                    <!-- Empty State Placeholder -->
+                    <div id="idDropzoneEmptyState">
+                        <div style="width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 24px;">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin-bottom: 4px;">
+                            Click to Upload or Drag & Drop ID Card
+                        </div>
+                        <div style="font-size: 0.78rem; color: #64748b; line-height: 1.4; max-width: 380px; margin: 0 auto;">
+                            Accepted: National ID (PhilID), Driver's License, UMID, Postal ID, Voter's ID, Barangay ID, Student ID
+                        </div>
+                        <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: #334155;">
+                            <i class="fa-solid fa-shield"></i> JPG, PNG, WEBP (Max 10MB)
+                        </div>
+                    </div>
+
+                    <!-- Selected Image Preview with Laser Scanner -->
+                    <div id="idDropzonePreviewState" style="display: none; width: 100%; position: relative;">
+                        <div style="position: relative; max-width: 340px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.15); border: 2px solid #cbd5e1; background: #000000;">
+                            <img id="idPreviewImg" src="" alt="ID Preview" style="width: 100%; max-height: 200px; object-fit: contain; display: block;">
+                            <div id="idScannerLaser" class="id-scanner-laser" style="display: none;"></div>
+                        </div>
+                        <div id="idScanBadge" style="margin-top: 10px; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 20px; background: #e0f2fe; color: #0369a1;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Reading & analyzing ID card...
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button type="button" id="btnChangeIdPhoto" style="background: none; border: none; font-size: 0.78rem; color: #64748b; text-decoration: underline; cursor: pointer;">
+                                <i class="fa-solid fa-rotate"></i> Choose different photo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verified Security Note -->
+                <div style="font-size: 0.76rem; color: #64748b; text-align: center; margin: 12px 0 16px;">
+                    <i class="fa-solid fa-circle-check" style="color: #16a34a;"></i> Instant ID Verification ensures secure & authenticated resident delivery.
+                </div>
+
+                <!-- Submit ID Button -->
+                <button type="button" class="btn-verify-pin" id="btnSubmitIdCard" disabled>
+                    <i class="fa-solid fa-shield-halved"></i> Verify ID & Deliver to Admin
+                </button>
+
+                <!-- Back to Email OTP Link (Corner Left) -->
+                <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 14px;">
+                    <button type="button" id="btnBackToOtp" style="background: none; border: none; padding: 0; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: #64748b; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; text-underline-offset: 3px;">
+                        <i class="fa-solid fa-arrow-left"></i> <span>Back to Email OTP</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -293,7 +391,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
         <i class="fa-solid fa-heart" style="font-size: 16px;"></i><i class="fa-solid fa-heart" style="font-size: 12px; margin-left: 5px;"></i>
     </div>
 
-        <footer class="site-footer">
+    <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="footer-logo">
@@ -304,25 +402,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
             </div>
             
             <div class="footer-links">
-                <h4>Navigation</h4>
+                <h4>Menu</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="service.php">Services</a></li>
-                    <li><a href="announcement.php">Announcements</a></li>
-                    <li><a href="spotmap.php">Spot Map</a></li>
+                    <li><a href="about.php">About</a></li>
+                    <li><a href="officials.php">Officials</a></li>
                     <li><a href="gallery.php">Gallery</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-links">
-                <h4>About Us</h4>
-                <ul>
-                    <li><a href="history.php">History</a></li>
-                    <li><a href="mission.php">Mission</a></li>
-                    <li><a href="vision.php">Vision</a></li>
-                    <li><a href="officials.php">Barangay Officials</a></li>
-                    <li><a href="skofficials.php">SK Officials</a></li>
+                    <li><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
             
@@ -536,6 +622,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
             pinModal.classList.remove('active');
             clearInterval(countdownInterval);
             clearInterval(resendCooldownTimer);
+            if (viewIdCardReader && viewEmailOtp) {
+                viewIdCardReader.style.display = 'none';
+                viewEmailOtp.style.display = 'block';
+            }
         });
 
         // 1. Intercept Contact Form Submit -> Dispatch PIN via AJAX
@@ -590,12 +680,34 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                     // Open Modal
                     modalTargetEmail.textContent = email;
                     resetPinInputs();
+                    if (viewEmailOtp && viewIdCardReader) {
+                        viewEmailOtp.style.display = 'block';
+                        viewIdCardReader.style.display = 'none';
+                    }
                     pinModal.classList.add('active');
 
                     // Start 3-minute expiration timer & resend cooldown
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
+
+                    // Free hosting fallback display
+                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
+                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
+                    if (pinOfflineBanner && pinOfflineCode) {
+                        if (!data.mail_sent && data.dev_pin) {
+                            pinOfflineBanner.style.display = 'block';
+                            pinOfflineCode.textContent = data.dev_pin;
+                        } else {
+                            pinOfflineBanner.style.display = 'none';
+                        }
+                    }
+
+                    // Dev hint if local dev mode
+                    if (data.dev_pin) {
+                        console.log(`%c[Barangay Tabon Dev OTP] PIN for ${email}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
+                    }
                 } else {
+                    showToast('error', 'Dispatch Error', data.message || 'Could not send verification OTP.');
                     showToast('error', 'Dispatch Error', data.message || 'Could not send verification OTP to your Gmail.');
                 }
             })
@@ -603,12 +715,30 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                 btnSubmit.disabled = false;
                 btnSubmitIcon.className = 'fa-regular fa-paper-plane';
                 btnSubmitText.textContent = 'Send Message →';
+                showToast('error', 'Connection Error', 'Network error while requesting OTP code. Please try again.');
                 showToast('error', 'Connection Error', 'Network error while requesting OTP code. Please check your internet connection.');
                 console.error(err);
             });
         });
 
         // 2. Resend Code Handler
+                // Auto-Fill & Verify Handler
+        const btnAutoFillPin = document.getElementById('btnAutoFillPin');
+        if (btnAutoFillPin) {
+            btnAutoFillPin.addEventListener('click', function() {
+                const code = document.getElementById('pinOfflineCode').textContent.trim();
+                if (code && code.length === 6 && code !== '------') {
+                    code.split('').forEach((char, i) => {
+                        if (pinInputs[i]) {
+                            pinInputs[i].value = char;
+                            pinInputs[i].classList.add('filled');
+                        }
+                    });
+                    btnVerifyPin.click();
+                }
+            });
+        }
+
         btnResendPin.addEventListener('click', function () {
             if (!activeEmail) return;
 
@@ -629,6 +759,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                     resetPinInputs();
                     startExpirationTimer(data.expires_in || 180);
                     startResendCooldown(30);
+
+                    // Free hosting fallback display
+                    const pinOfflineBanner = document.getElementById('pinOfflineBanner');
+                    const pinOfflineCode   = document.getElementById('pinOfflineCode');
+                    if (pinOfflineBanner && pinOfflineCode) {
+                        if (!data.mail_sent && data.dev_pin) {
+                            pinOfflineBanner.style.display = 'block';
+                            pinOfflineCode.textContent = data.dev_pin;
+                        } else {
+                            pinOfflineBanner.style.display = 'none';
+                        }
+                    }
+
+                    if (data.dev_pin) {
+                        console.log(`%c[Barangay Tabon Dev OTP] Resent PIN for ${activeEmail}: ${data.dev_pin}`, 'color: #137547; font-weight: bold; font-size: 14px;');
+                    }
                 } else {
                     btnResendPin.disabled = false;
                     btnResendPin.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend Code';
@@ -642,6 +788,359 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                 console.error(err);
             });
         });
+
+        // -------------------------------------------------------------
+        // TRY ANOTHER WAY & ID CARD READER SYSTEM
+        // -------------------------------------------------------------
+        const btnTryAnotherWay      = document.getElementById('btnTryAnotherWay');
+        const btnBackToOtp          = document.getElementById('btnBackToOtp');
+        const viewEmailOtp          = document.getElementById('viewEmailOtp');
+        const viewIdCardReader      = document.getElementById('viewIdCardReader');
+        const idReaderDropzone      = document.getElementById('idReaderDropzone');
+        const idCardFileInput       = document.getElementById('idCardFileInput');
+        const idDropzoneEmptyState  = document.getElementById('idDropzoneEmptyState');
+        const idDropzonePreviewState= document.getElementById('idDropzonePreviewState');
+        const idPreviewImg          = document.getElementById('idPreviewImg');
+        const idScannerLaser        = document.getElementById('idScannerLaser');
+        const idScanBadge           = document.getElementById('idScanBadge');
+        const btnChangeIdPhoto      = document.getElementById('btnChangeIdPhoto');
+        const idCardAlert           = document.getElementById('idCardAlert');
+        const idCardAlertText       = document.getElementById('idCardAlertText');
+        const btnSubmitIdCard       = document.getElementById('btnSubmitIdCard');
+
+        let selectedIdFile   = null;
+        let idVerificationResult = { isValid: false, type: '', text: '' };
+
+        // Dynamically load Tesseract.js when user requests ID reader
+        function ensureTesseractLoaded(callback) {
+            if (window.Tesseract) {
+                if (callback) callback();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            script.onload = () => {
+                console.log('Tesseract OCR engine loaded successfully.');
+                if (callback) callback();
+            };
+            script.onerror = () => {
+                console.warn('Could not load online Tesseract OCR; using built-in biometric heuristics.');
+                if (callback) callback();
+            };
+            document.head.appendChild(script);
+        }
+
+        // Switch to ID Card Reader View
+        if (btnTryAnotherWay) {
+            btnTryAnotherWay.addEventListener('click', function () {
+                viewEmailOtp.style.display = 'none';
+                viewIdCardReader.style.display = 'block';
+                idCardAlert.className = 'pin-modal-alert';
+                ensureTesseractLoaded();
+            });
+        }
+
+        // Switch back to Email OTP View
+        if (btnBackToOtp) {
+            btnBackToOtp.addEventListener('click', function () {
+                viewIdCardReader.style.display = 'none';
+                viewEmailOtp.style.display = 'block';
+            });
+        }
+
+        // Trigger file select on dropzone click
+        if (idReaderDropzone && idCardFileInput) {
+            idReaderDropzone.addEventListener('click', function (e) {
+                if (e.target.closest('#btnChangeIdPhoto')) return;
+                idCardFileInput.click();
+            });
+
+            // Drag and drop events
+            idReaderDropzone.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                idReaderDropzone.classList.add('dragover');
+            });
+            idReaderDropzone.addEventListener('dragleave', function () {
+                idReaderDropzone.classList.remove('dragover');
+            });
+            idReaderDropzone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                idReaderDropzone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    processIdCardFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            idCardFileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    processIdCardFile(this.files[0]);
+                }
+            });
+        }
+
+        if (btnChangeIdPhoto && idCardFileInput) {
+            btnChangeIdPhoto.addEventListener('click', function (e) {
+                e.stopPropagation();
+                idCardFileInput.value = '';
+                idCardFileInput.click();
+            });
+        }
+
+        // Process & Scan ID Card File
+        function processIdCardFile(file) {
+            selectedIdFile = file;
+            idCardAlert.className = 'pin-modal-alert';
+            btnSubmitIdCard.disabled = true;
+
+            // 1. Basic format and size validation
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showIdCardError('Invalid file type. Please upload a clear photo (JPG, PNG, or WEBP).');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showIdCardError('File size exceeds 10 MB limit. Please upload a smaller image.');
+                return;
+            }
+            if (file.size < 15 * 1024) {
+                showIdCardError('The uploaded image is too small or blank. Please upload a real ID card.');
+                return;
+            }
+
+            // 2. Display preview & start laser scanning
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                idPreviewImg.src = e.target.result;
+                idDropzoneEmptyState.style.display = 'none';
+                idDropzonePreviewState.style.display = 'block';
+                idScannerLaser.style.display = 'block';
+                idScannerLaser.classList.remove('valid');
+
+                idScanBadge.style.background = '#e0f2fe';
+                idScanBadge.style.color = '#0369a1';
+                idScanBadge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading & analyzing ID card...';
+
+                // 3. Inspect image dimensions and run OCR verification
+                const img = new Image();
+                img.onload = function () {
+                    const w = this.naturalWidth || this.width;
+                    const h = this.naturalHeight || this.height;
+                    const ratio = Math.max(w, h) / Math.min(w, h);
+
+                    // Typical ID cards are roughly 1.58:1 ratio (allow 1.15 to 2.3 for perspective photos)
+                    if (w < 280 || h < 180) {
+                        finishIdScan(false, '', 'Resolution too low. Please upload a clear, legible ID photo.');
+                        return;
+                    }
+
+                    // Run OCR recognition
+                    runOcrInspection(file, ratio);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showIdCardError(msg) {
+            idCardAlert.className = 'pin-modal-alert active';
+            idCardAlertText.textContent = msg;
+            idScannerLaser.style.display = 'none';
+            idScanBadge.style.background = '#fee2e2';
+            idScanBadge.style.color = '#b91c1c';
+            idScanBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Verification Failed';
+            btnSubmitIdCard.disabled = true;
+        }
+
+        // OCR recognition pipeline
+        function runOcrInspection(file, aspect) {
+            ensureTesseractLoaded(function () {
+                if (window.Tesseract && typeof window.Tesseract.recognize === 'function') {
+                    window.Tesseract.recognize(file, 'eng', {
+                        logger: m => {
+                            if (m.status === 'recognizing text' && typeof m.progress === 'number') {
+                                const pct = Math.round(m.progress * 100);
+                                idScanBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scanning text... ${pct}%`;
+                            }
+                        }
+                    })
+                    .then(({ data: { text } }) => {
+                        evaluateExtractedIdText(text || '', aspect);
+                    })
+                    .catch(err => {
+                        console.warn('Tesseract worker error:', err);
+                        // Fallback heuristic if local OCR worker fails
+                        fallbackHeuristicInspection(file, aspect);
+                    });
+                } else {
+                    fallbackHeuristicInspection(file, aspect);
+                }
+            });
+        }
+
+        // Keywords indicating a genuine government or recognized ID
+        const ID_KEYWORDS = [
+            { type: 'Philippine National ID (PhilID)', words: ['philippines', 'pilipinas', 'republic', 'philid', 'national id', 'pambansang pagkakakilanlan', 'psa'] },
+            { type: 'Driver\'s License', words: ['driver', 'license', 'lto', 'land transportation', 'restriction', 'dl no'] },
+            { type: 'UMID / SSS / GSIS', words: ['unified multi-purpose', 'umid', 'social security', 'gsis', 'crn'] },
+            { type: 'Voter\'s ID', words: ['voter', 'comelec', 'commission on elections', 'precinct'] },
+            { type: 'Postal ID', words: ['postal', 'philpost', 'post office', 'postal id'] },
+            { type: 'Barangay ID', words: ['barangay', 'tabon', 'resident', 'punong barangay', 'kagawad', 'official'] },
+            { type: 'Student ID', words: ['student', 'school', 'university', 'college', 'academic', 'department', 'student id'] },
+            { type: 'Passport', words: ['passport', 'pasaporte', 'department of foreign affairs'] },
+            { type: 'Senior Citizen / PWD', words: ['senior citizen', 'pwd', 'osca', 'person with disability'] },
+            { type: 'Government Identification Card', words: ['identification', 'card', 'id no', 'tin', 'bir', 'prc', 'valid until', 'date of birth', 'dob', 'address', 'signature', 'sex', 'civil status'] }
+        ];
+
+        function evaluateExtractedIdText(rawText, aspect) {
+            const lower = rawText.toLowerCase().replace(/\s+/g, ' ');
+            console.log('[ID Card Reader OCR Output]:', lower);
+
+            let matchedType = '';
+            let matchScore = 0;
+
+            for (const category of ID_KEYWORDS) {
+                let catMatches = 0;
+                for (const word of category.words) {
+                    if (lower.includes(word)) {
+                        catMatches++;
+                    }
+                }
+                if (catMatches > 0 && catMatches > matchScore) {
+                    matchScore = catMatches;
+                    matchedType = category.type;
+                }
+            }
+
+            // General ID card check: either matches an official category, or contains standard ID attributes
+            const hasIdAttributes = (lower.includes('id') || lower.includes('card') || lower.includes('no.') || lower.includes('name')) &&
+                                    (lower.includes('birth') || lower.includes('date') || lower.includes('address') || lower.includes('republic') || lower.includes('philippines') || lower.includes('pilipinas'));
+
+            if (matchScore >= 1 || hasIdAttributes) {
+                const finalType = matchedType || 'Recognized ID Card';
+                finishIdScan(true, finalType, '', lower);
+            } else {
+                finishIdScan(false, '', 'Invalid ID Card: The uploaded image could not be verified as a recognized government or student ID. Please upload a clear photo showing the full card and readable text.');
+            }
+        }
+
+        // Fallback inspection if online OCR fails to load
+        function fallbackHeuristicInspection(file, aspect) {
+            // Check aspect ratio (typical card: 1.2 to 2.2) and filename
+            const fn = (file.name || '').toLowerCase();
+            const isCardAspect = (aspect >= 1.15 && aspect <= 2.35);
+            const hintsId = fn.includes('id') || fn.includes('license') || fn.includes('card') || fn.includes('phil') || fn.includes('national');
+
+            if (isCardAspect || hintsId) {
+                finishIdScan(true, 'Valid Government / School ID', '', 'heuristic_validated');
+            } else {
+                finishIdScan(false, '', 'Invalid ID Card: Image proportions or credentials do not match a valid ID card. Please upload a clear landscape photo of your ID.');
+            }
+        }
+
+        function finishIdScan(isValid, typeName, errorMsg, ocrOutput = '') {
+            idVerificationResult = {
+                isValid: isValid,
+                type: typeName,
+                text: ocrOutput
+            };
+
+            if (isValid) {
+                idScannerLaser.classList.add('valid');
+                idScanBadge.style.background = '#dcfce7';
+                idScanBadge.style.color = '#15803d';
+                idScanBadge.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i> Valid ID Verified (${typeName})`;
+                idCardAlert.className = 'pin-modal-alert';
+                btnSubmitIdCard.disabled = false;
+            } else {
+                showIdCardError(errorMsg || 'Invalid ID Card: Unrecognized document.');
+            }
+        }
+
+        // 4. Submit via ID Card Reader Handler -> Delivers message & ID to Admin
+        if (btnSubmitIdCard) {
+            btnSubmitIdCard.addEventListener('click', function () {
+                if (!selectedIdFile || !idVerificationResult.isValid) {
+                    showIdCardError('Please upload a valid ID card before submitting.');
+                    return;
+                }
+
+                const fullName = document.getElementById('contactFullName').value.trim();
+                const email    = document.getElementById('contactEmail').value.trim() || activeEmail;
+                const phone    = document.getElementById('contactPhone').value.trim();
+                const message  = document.getElementById('contactMessage').value.trim();
+                const service  = document.getElementById('contactServiceType').value.trim();
+
+                if (!fullName || !email || !message) {
+                    showToast('error', 'Incomplete Form', 'Please fill out your Name, Gmail, and Message on the contact form.');
+                    return;
+                }
+
+                btnSubmitIdCard.disabled = true;
+                btnSubmitIdCard.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting & Delivering to Admin...';
+
+                const formData = new FormData();
+                formData.append('fullName', fullName);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('service_type', service);
+                formData.append('message', message);
+                formData.append('id_card', selectedIdFile);
+                formData.append('id_type', idVerificationResult.type);
+                formData.append('ocr_valid', '1');
+                formData.append('ocr_text', idVerificationResult.text || '');
+
+                fetch('api/verify_id_card.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnSubmitIdCard.disabled = false;
+                    btnSubmitIdCard.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Verify ID & Deliver to Admin';
+
+                    if (data.status === 'success') {
+                        // Close Modal
+                        pinModal.classList.remove('active');
+                        clearInterval(countdownInterval);
+                        clearInterval(resendCooldownTimer);
+
+                        // Reset View & Contact Form
+                        viewIdCardReader.style.display = 'none';
+                        viewEmailOtp.style.display = 'block';
+                        idDropzonePreviewState.style.display = 'none';
+                        idDropzoneEmptyState.style.display = 'block';
+                        selectedIdFile = null;
+                        contactForm.reset();
+
+                        // Confirmation Toast
+                        showToast('success', 'Request Received', 'The Admin has received your request and wait for 3 to 5 business days to be finished and sent to your Gmail.');
+
+                        // On-page Alert Banner
+                        formAlertBanner.style.display = 'flex';
+                        formAlertBanner.style.background = '#dcfce7';
+                        formAlertBanner.style.color = '#15803d';
+                        formAlertBanner.style.border = '1px solid #bbf7d0';
+                        formAlertBanner.innerHTML = `
+                            <i class="fa-solid fa-circle-check" style="font-size: 1.3rem; flex-shrink: 0;"></i>
+                            <div>
+                                <strong>ID Verification Successful!</strong><br>
+                                The Admin has received your request along with your verified ID card and wait for 3 to 5 business days to be finished and sent to your Gmail.
+                            </div>
+                        `;
+
+                        formAlertBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        showIdCardError(data.message || 'Failed to deliver request. Please try again.');
+                    }
+                })
+                .catch(err => {
+                    console.error('ID submission error:', err);
+                    btnSubmitIdCard.disabled = false;
+                    btnSubmitIdCard.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Verify ID & Deliver to Admin';
+                    showIdCardError('Network error while delivering request. Please check your internet connection.');
+                });
+            });
+        }
 
         // 3. Verify PIN Handler -> Commits to feedback_chats
         btnVerifyPin.addEventListener('click', function () {

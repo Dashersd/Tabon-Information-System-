@@ -220,9 +220,9 @@ try {
                     <a class="dropdown-btn active"><i class="fa-solid fa-users"></i> Household <i class="fa-solid fa-caret-down" style="margin-left: auto;"></i></a>
                     <div class="dropdown-container" style="display: block;">
                         <a href="Legend Files.php">Legend Files</a>
-                        <a href="Resident 1.php" class="active" style="color: #ffffff; font-weight: 600;">Resident 1</a>
-                        <a href="Resident 2.php">Resident 2</a>
-                        <a href="Resident 3.php">Resident 3</a>
+                        <a href="Resident 1.php" class="active" style="color: #ffffff; font-weight: 600;">Resident 1 (Mesaya)</a>
+                        <a href="Resident 2.php">Resident 2 (Metamed)</a>
+                        <a href="Resident 3.php">Resident 3 (Melitebangay)</a>
                     </div>
                 </li>
                 <li><a href="medialibrary.php"><i class="fa-regular fa-images"></i> Media Library</a></li>
