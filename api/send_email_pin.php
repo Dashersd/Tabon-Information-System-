@@ -95,15 +95,21 @@ try {
     $mailResult = send_barangay_pin_email($email, $fullName, $pin_code);
 
     if (empty($mailResult['mail_sent'])) {
+        // Fallback for environments where outbound SMTP is restricted (e.g. Free Hosting)
         echo json_encode([
-            'status'  => 'error',
-            'message' => 'Could not deliver verification OTP to ' . htmlspecialchars($email) . '. Please ensure your Gmail address is correct and active.'
+            'status'     => 'success',
+            'mail_sent'  => false,
+            'dev_pin'    => $pin_code,
+            'message'    => 'Verification OTP generated. (Hosting notice: Outbound SMTP blocked, code provided below).',
+            'email'      => $email,
+            'expires_in' => 180
         ]);
         exit();
     }
 
     echo json_encode([
         'status'     => 'success',
+        'mail_sent'  => true,
         'message'    => 'Verification OTP has been sent to your Gmail. Please check your Inbox or Spam folder.',
         'email'      => $email,
         'expires_in' => 180

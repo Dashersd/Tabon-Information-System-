@@ -54,15 +54,21 @@ try {
     $mailResult = send_barangay_pin_email($email, $record['full_name'], $new_pin);
 
     if (empty($mailResult['mail_sent'])) {
+        // Fallback for environments where outbound SMTP is restricted (e.g. Free Hosting)
         echo json_encode([
-            'status'  => 'error',
-            'message' => 'Could not resend OTP to ' . htmlspecialchars($email) . '. Please ensure your Gmail address is correct and active.'
+            'status'     => 'success',
+            'mail_sent'  => false,
+            'dev_pin'    => $new_pin,
+            'message'    => 'A fresh OTP code has been generated. (Hosting notice: Outbound SMTP blocked, code provided below).',
+            'email'      => $email,
+            'expires_in' => 180
         ]);
         exit();
     }
 
     echo json_encode([
         'status'     => 'success',
+        'mail_sent'  => true,
         'message'    => 'A fresh OTP Code has been sent to your Gmail. Please check your Inbox or Spam folder.',
         'email'      => $email,
         'expires_in' => 180

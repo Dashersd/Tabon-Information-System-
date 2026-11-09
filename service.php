@@ -157,7 +157,12 @@ if ($res) {
                         </div>
 
                         <div class="card-actions">
-                            <a href="<?= htmlspecialchars($service['button_url'] ?: 'contact.php') ?>" class="btn-request">
+                            <?php 
+                            $requestTargetUrl = (!empty($service['button_url']) && $service['button_url'] !== 'contact.php') 
+                                ? $service['button_url'] 
+                                : ('request_document.php?id=' . (int)$service['id']);
+                            ?>
+                            <a href="<?= htmlspecialchars($requestTargetUrl) ?>" class="btn-request">
                                 <?= htmlspecialchars($service['button_text'] ?: 'Request Document') ?>
                             </a>
                             <button type="button" class="btn-details" onclick='openPublicDetailModal(<?= json_encode($service, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'>
@@ -347,7 +352,11 @@ if ($res) {
         }
 
         const link = document.getElementById('detailModalLink');
-        link.href = svc.button_url || 'contact.php';
+        let targetUrl = svc.button_url;
+        if (!targetUrl || targetUrl === 'contact.php' || targetUrl.trim() === '') {
+            targetUrl = 'request_document.php?id=' + encodeURIComponent(svc.id);
+        }
+        link.href = targetUrl;
         link.textContent = svc.button_text || 'Proceed to Request';
 
         document.getElementById('serviceDetailModal').style.display = 'flex';
