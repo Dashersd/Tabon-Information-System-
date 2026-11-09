@@ -89,7 +89,7 @@ try {
 
             $is_service_request = (
                 !empty($service_type) && 
-                !in_array(strtolower($service_type), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry'])
+                !in_array(strtolower($service_type), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry', 'citizen feedback'])
             );
 
             $thread_unread = (int)$row['unread_count'];
@@ -163,7 +163,7 @@ try {
             if (preg_match('/\[Service:\s*([^\]]+)\]/i', $n_msg, $n_matches)) {
                 $n_svc = trim($n_matches[1]);
             }
-            $n_is_req = (!empty($n_svc) && !in_array(strtolower($n_svc), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry']));
+            $n_is_req = (!empty($n_svc) && !in_array(strtolower($n_svc), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry', 'citizen feedback']));
 
             // Filter notifications according to scope if requested
             if (($scope === 'requests' && !$n_is_req) || ($scope === 'feedback' && $n_is_req)) {
