@@ -331,16 +331,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
 
                 <form id="contactForm" action="contact.php" method="POST">
                     <input type="hidden" name="send_contact_msg" value="1">
-                    <?php
-                $preset_service = trim($_GET['service'] ?? '');
-                $service_options = [
-                    'Barangay Clearance',
-                    'Certificate of Indigency',
-                    'Business Clearance',
-                    'Certificate of Residency',
-                    'Other Inquiry'
-                ];
-                ?>
+                    <input type="hidden" name="service_type" id="contactServiceType" value="Citizen Feedback">
 
                     <div class="input-group">
                         <i class="fa-regular fa-user"></i>
@@ -356,26 +347,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                         <i class="fa-solid fa-phone"></i>
                         <input type="tel" name="phone" id="contactPhone" class="form-input" placeholder="Phone Number (e.g. 0917-xxx-xxxx)">
                     </div>
-
-                    <!-- Service Type Dropdown -->
-                    <div class="field-wrapper">
-                        <label for="contactServiceType" class="field-label">Service Type</label>
-                        <div class="select-group">
-                            <select name="service_type" id="contactServiceType" class="form-select" required>
-                                <option value="" disabled <?= empty($preset_service) ? 'selected' : '' ?>>Select service</option>
-                                <?php foreach ($service_options as $opt): ?>
-                                    <option value="<?= htmlspecialchars($opt) ?>" <?= (strcasecmp($preset_service, $opt) === 0) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($opt) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <i class="fa-solid fa-chevron-down select-arrow"></i>
-                        </div>
-                    </div>
                     
                     <div class="input-group textarea-group">
                         <i class="fa-regular fa-message"></i>
-                        <textarea name="message" id="contactMessage" class="form-input" placeholder="Message or Document Request *" required rows="4"></textarea>
+                        <textarea name="message" id="contactMessage" class="form-input" placeholder="Your Message, Feedback, or Inquiry *" required rows="4"></textarea>
                     </div>
 
                     <button type="submit" class="btn-submit" id="btnSubmitContact">
@@ -639,16 +614,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
             const email    = document.getElementById('contactEmail').value.trim();
             const phone    = document.getElementById('contactPhone').value.trim();
             const message  = document.getElementById('contactMessage').value.trim();
-            const service  = document.getElementById('contactServiceType').value.trim();
+            const service  = (document.getElementById('contactServiceType')?.value || 'Citizen Feedback').trim();
 
             if (!fullName || !email || !message) {
                 showToast('error', 'Incomplete Form', 'Please fill out your Name, Gmail address, and Message.');
-                return;
-            }
-
-            if (!service) {
-                showToast('error', 'Select Service Type', 'Please select what kind of service you need from the dropdown.');
-                document.getElementById('contactServiceType').focus();
                 return;
             }
 
@@ -1077,7 +1046,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['send_contact_
                 const email    = document.getElementById('contactEmail').value.trim() || activeEmail;
                 const phone    = document.getElementById('contactPhone').value.trim();
                 const message  = document.getElementById('contactMessage').value.trim();
-                const service  = document.getElementById('contactServiceType').value.trim();
+                const service  = (document.getElementById('contactServiceType')?.value || 'Citizen Feedback').trim();
 
                 if (!fullName || !email || !message) {
                     showToast('error', 'Incomplete Form', 'Please fill out your Name, Gmail, and Message on the contact form.');

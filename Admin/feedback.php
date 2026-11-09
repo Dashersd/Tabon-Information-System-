@@ -1702,11 +1702,6 @@ body.feedback-chat-page .main-content {
                         </div>
 
                         <div class="chat-header-actions">
-                            <!-- Send Document via Gmail Action Button -->
-                            <a href="#" class="btn-header-tool btn-send-email-doc" id="btn-send-doc-email" target="_blank" style="display: none; background: #000000; color: #ffffff; border-color: #000000;" title="Open Gmail composer to send response/documents">
-                                <i class="bi bi-envelope-check-fill"></i> <span>Send Document via Gmail</span>
-                            </a>
-
                             <!-- Manual Refresh Button -->
                             <button type="button" class="btn-header-tool" id="btn-refresh-chat" title="Refresh messages in this thread">
                                 <i class="bi bi-arrow-clockwise"></i> <span>Refresh</span>
@@ -1719,20 +1714,20 @@ body.feedback-chat-page .main-content {
                         <!-- Messages dynamically populated by JS -->
                     </div>
 
-                    <!-- Email Response Action Footer (Direct Gmail Reply) -->
-                    <div class="chat-email-reply-bar" id="chat-email-reply-bar" style="display: none;">
-                        <div class="email-reply-bar-meta">
-                            <div class="email-reply-bar-icon">
-                                <i class="bi bi-envelope-check-fill"></i>
+                    <!-- Read-Only Notice Footer -->
+                    <div class="feedback-readonly-bar" id="feedback-readonly-bar" style="display: none; padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; color: #475569;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">
+                                <i class="bi bi-eye-fill"></i>
                             </div>
-                            <div class="email-reply-bar-text">
-                                <div class="email-reply-bar-title">Official Resident Response</div>
-                                <div class="email-reply-bar-sub">Resident inquiries and document requests are responded to directly via verified Gmail.</div>
+                            <div style="font-size: 0.88rem; line-height: 1.45;">
+                                <div style="font-weight: 700; color: #1e293b;">Citizen Feedback (Read-Only)</div>
+                                <div style="color: #64748b;">This inbox is solely for reading and reviewing citizen feedback sent from the Contact Us page. Admin replies are disabled here.</div>
                             </div>
                         </div>
-                        <a href="#" class="btn-email-reply-action" id="btn-footer-send-email" target="_blank">
-                            <i class="bi bi-envelope-paper-fill"></i> <span>Send Response via Gmail</span>
-                        </a>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; color: #475569; white-space: nowrap;">
+                            <i class="bi bi-lock-fill text-muted"></i> Read-Only Mode
+                        </span>
                     </div>
 
                 </div>
@@ -2147,20 +2142,10 @@ body.feedback-chat-page .main-content {
             if (residentEmail) {
                 $('#chat-header-email-text').html(`${escapeHtml(residentEmail)} <span style="color:#137547; font-weight:700;"><i class="bi bi-shield-check"></i> Verified</span>`);
                 $('#chat-header-email').attr('href', `mailto:${residentEmail}`).show();
-
-                // Setup "Send Document via Gmail" action button (direct Gmail web composer)
-                const emailSubject = encodeURIComponent(`[Barangay Tabon] Official Response to your request: ${serviceTag}`);
-                const emailBody = encodeURIComponent(`Dear ${residentName},\n\nGood day!\n\nThis is an official response from Barangay Tabon regarding your request for "${serviceTag}".\n\nAttached is your requested document/form. Please review the details and let us know if you need any further assistance.\n\nWarm regards,\nBarangay Secretary\nBarangay Tabon Information System`);
-                
-                const gmailComposerUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(residentEmail)}&su=${emailSubject}&body=${emailBody}`;
-                $('#btn-send-doc-email').attr('href', gmailComposerUrl).show();
-                $('#btn-footer-send-email').attr('href', gmailComposerUrl);
-                $('#chat-email-reply-bar').show();
             } else {
                 $('#chat-header-email').hide();
-                $('#btn-send-doc-email').hide();
-                $('#chat-email-reply-bar').hide();
             }
+            $('#feedback-readonly-bar').show();
 
             // Render Messages
             messages.forEach(function(msg) {
@@ -2245,61 +2230,7 @@ body.feedback-chat-page .main-content {
             }
         }
 
-        // 7. Send Message & Handle Attachments
-        function sendAdminReply() {
-            if (!currentThreadId) return;
-
-            const messageText = $('#admin-reply-input').val().trim();
-            if (!messageText && !selectedFile) {
-                $('#admin-reply-input').focus();
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('session_id', currentThreadId);
-            formData.append('message', messageText);
-            if (selectedFile) {
-                formData.append('attachment', selectedFile);
-            }
-
-            const sendBtn = $('#btn-send-reply');
-            sendBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Sending...');
-
-            $.ajax({
-                url: 'api/admin_send_message.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: 'json',
-                success: function(res) {
-                    sendBtn.prop('disabled', false).html('<i class="bi bi-send-fill"></i> <span>Send Reply</span>');
-                    if (res.status === 'success') {
-                        // Reset input & preview
-                        $('#admin-reply-input').val('');
-                        clearFileSelection();
-
-                        // Immediate reload
-                        fetchMessages(currentThreadId, true);
-                        fetchSessions(false);
-                    } else {
-                        alert(res.message || 'Error sending reply');
-                    }
-                },
-                error: function() {
-                    sendBtn.prop('disabled', false).html('<i class="bi bi-send-fill"></i> <span>Send Reply</span>');
-                    alert('Server connection error. Please try again.');
-                }
-            });
-        }
-
-        function clearFileSelection() {
-            selectedFile = null;
-            $('#admin-file-input').val('');
-            $('#admin-file-preview-bar').removeClass('active');
-        }
-
-        // 8. Event Handlers
+        // 7. Event Handlers
         function bindEventHandlers() {
             // Select thread from sidebar click
             $(document).on('click', '.conversation-item', function() {
@@ -2342,44 +2273,6 @@ body.feedback-chat-page .main-content {
                     fetchMessages(currentThreadId, true);
                     setTimeout(() => icon.removeClass('fa-spin'), 600);
                 }
-            });
-
-            // Quick Reply Chips Click
-            $('.quick-reply-chip').on('click', function() {
-                const text = $(this).data('reply');
-                $('#admin-reply-input').val(text).focus();
-            });
-
-            // Enter key to send reply
-            $('#admin-reply-input').on('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendAdminReply();
-                }
-            });
-
-            // Send Reply button click
-            $('#btn-send-reply').on('click', function() {
-                sendAdminReply();
-            });
-
-            // Attach File Button click
-            $('#btn-attach-file').on('click', function() {
-                $('#admin-file-input').click();
-            });
-
-            // File Selected
-            $('#admin-file-input').on('change', function() {
-                if (this.files && this.files[0]) {
-                    selectedFile = this.files[0];
-                    $('#preview-file-name').text(selectedFile.name);
-                    $('#admin-file-preview-bar').addClass('active');
-                }
-            });
-
-            // Remove File Preview
-            $('#btn-remove-file').on('click', function() {
-                clearFileSelection();
             });
 
             // Live Search Filter
