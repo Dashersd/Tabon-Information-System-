@@ -77,6 +77,9 @@ if (empty($req_list)) {
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/contact.css?v=<?php echo time(); ?>">
 
+    <!-- Tesseract OCR Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
     <style>
         :root {
             --brand-green: #093d25;
@@ -792,7 +795,7 @@ if (empty($req_list)) {
             }
         }
 
-        // Process & Scan ID Card File
+        // Process & Scan ID Card File (Strict Landscape & OCR Verification)
         function processIdCardFile(file) {
             selectedIdFile = file;
             idCardAlert.className = 'pin-modal-alert';
@@ -800,7 +803,7 @@ if (empty($req_list)) {
 
             const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!validTypes.includes(file.type)) {
-                showIdCardError('Invalid file type. Please upload a clear photo (JPG, PNG, or WEBP).');
+                showIdCardError('Invalid file type. Please upload a clear image (JPG, PNG, or WEBP).');
                 return;
             }
             if (file.size > 10 * 1024 * 1024) {
@@ -822,19 +825,32 @@ if (empty($req_list)) {
 
                 idScanBadge.style.background = '#e0f2fe';
                 idScanBadge.style.color = '#0369a1';
-                idScanBadge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading & analyzing ID card...';
+                idScanBadge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking image dimensions...';
 
                 const img = new Image();
                 img.onload = function () {
                     const w = this.naturalWidth || this.width;
                     const h = this.naturalHeight || this.height;
-                    const ratio = Math.max(w, h) / Math.min(w, h);
 
-                    if (w < 280 || h < 180) {
-                        finishIdScan(false, '', 'Resolution too low. Please upload a clear, legible ID photo.');
+                    // 1. REJECT PORTRAIT PHOTOS: ID cards are strictly landscape (w > h)
+                    if (h >= w) {
+                        finishIdScan(false, '', 'Orientation Error: The uploaded photo is portrait (vertical). Real ID cards must be a horizontal (landscape) photo of an actual card. Personal portraits, selfies, or standing photos cannot be accepted.');
                         return;
                     }
-                    runOcrInspection(file, ratio);
+
+                    // 2. REJECT OUT-OF-PROPORTION IMAGES: Standard ID cards are ~1.58 ratio
+                    const aspect = w / h;
+                    if (aspect < 1.20 || aspect > 2.25) {
+                        finishIdScan(false, '', 'Proportion Error: The image proportions do not match standard ID cards. Please upload a clear horizontal photo of your physical ID card.');
+                        return;
+                    }
+
+                    if (w < 280 || h < 180) {
+                        finishIdScan(false, '', 'Resolution too low. Please upload a higher resolution, readable photo of your ID card.');
+                        return;
+                    }
+
+                    runOcrInspection(file, aspect);
                 };
                 img.src = e.target.result;
             };
@@ -847,18 +863,20 @@ if (empty($req_list)) {
             idScannerLaser.style.display = 'none';
             idScanBadge.style.background = '#fee2e2';
             idScanBadge.style.color = '#b91c1c';
-            idScanBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Verification Failed';
+            idScanBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Verification Rejected';
             btnSubmitIdCard.disabled = true;
         }
 
         function runOcrInspection(file, aspect) {
+            idScanBadge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Initializing OCR engine...';
+
             ensureTesseractLoaded(function () {
                 if (window.Tesseract && typeof window.Tesseract.recognize === 'function') {
                     window.Tesseract.recognize(file, 'eng', {
                         logger: m => {
                             if (m.status === 'recognizing text' && typeof m.progress === 'number') {
                                 const pct = Math.round(m.progress * 100);
-                                idScanBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scanning text... ${pct}%`;
+                                idScanBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scanning ID text... ${pct}%`;
                             }
                         }
                     })
@@ -866,11 +884,11 @@ if (empty($req_list)) {
                         evaluateExtractedIdText(text || '', aspect);
                     })
                     .catch(err => {
-                        console.warn('OCR processing error; running heuristics:', err);
-                        evaluateFallbackHeuristics(aspect);
+                        console.error('OCR recognition error:', err);
+                        finishIdScan(false, '', 'Could not scan text from this image. Please ensure the card text is clear, well-lit, and unblurred.');
                     });
                 } else {
-                    evaluateFallbackHeuristics(aspect);
+                    finishIdScan(false, '', 'OCR engine could not be loaded. Please check your internet connection or use Gmail OTP verification.');
                 }
             });
         }
@@ -878,50 +896,56 @@ if (empty($req_list)) {
         function evaluateExtractedIdText(rawText, aspect) {
             const clean = (rawText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
             
-            const officialKeywords = [
-                'republika', 'republic', 'pilipinas', 'philippines', 'identity', 'card',
-                'national', 'philid', 'psa', 'driver', 'license', 'lto', 'umid',
-                'postal', 'voter', 'commission', 'elections', 'comelec', 'sss', 'tin',
-                'philhealth', 'pag ibig', 'barangay', 'student', 'university', 'college',
-                'school', 'department', 'valid', 'signature', 'date of birth', 'address'
+            // Primary ID Issuers & Document Types
+            const primaryKeywords = [
+                'national id', 'philid', 'philsys', 'driver', 'license', 'lisensya', 'lto',
+                'land transportation', 'umid', 'sss', 'gsis', 'tin', 'bir', 'voter', 'comelec',
+                'postal', 'philpost', 'prc', 'passport', 'barangay', 'student id', 'student',
+                'university', 'college', 'school', 'academy', 'senior citizen', 'pwd', 'osca',
+                'republic of the philippines', 'republika ng pilipinas', 'identification card',
+                'identity card', 'philhealth', 'pag ibig', 'pag-ibig'
             ];
 
-            let matches = [];
-            officialKeywords.forEach(kw => {
-                if (clean.includes(kw)) {
-                    matches.push(kw);
-                }
-            });
+            // Secondary ID Fields & Indicators
+            const secondaryKeywords = [
+                'philippines', 'pilipinas', 'republic', 'republika', 'pamahalaan', 'surname',
+                'given name', 'middle name', 'apelyido', 'pangalan', 'date of birth', 'birthdate',
+                'kapanganakan', 'birth', 'dob', 'sex', 'kasarian', 'address', 'tirahan',
+                'blood', 'blood type', 'signature', 'lagda', 'id no', 'id number', 'crn',
+                'tin no', 'license no', 'precinct', 'student no', 'lrn', 'control no',
+                'valid until', 'expiration', 'date issued', 'citizenship', 'nationality', 'cardholder'
+            ];
+
+            const matchedPrimary = primaryKeywords.filter(kw => clean.includes(kw));
+            const matchedSecondary = secondaryKeywords.filter(kw => clean.includes(kw));
+            const hasNumbers = /[0-9]{4,}/.test(clean);
+            const totalMatches = matchedPrimary.length + matchedSecondary.length;
 
             let detectedType = 'Valid Government ID';
-            if (clean.includes('national') || clean.includes('philid') || clean.includes('psa')) detectedType = 'Philippine National ID (PhilID)';
+            if (clean.includes('national') || clean.includes('philid') || clean.includes('philsys')) detectedType = 'Philippine National ID (PhilID)';
             else if (clean.includes('driver') || clean.includes('license') || clean.includes('lto')) detectedType = "Driver's License";
             else if (clean.includes('postal')) detectedType = 'Postal ID';
             else if (clean.includes('umid') || clean.includes('sss')) detectedType = 'UMID / SSS ID';
             else if (clean.includes('voter') || clean.includes('comelec')) detectedType = "Voter's ID";
             else if (clean.includes('student') || clean.includes('school') || clean.includes('university') || clean.includes('college')) detectedType = 'Student ID Card';
             else if (clean.includes('barangay')) detectedType = 'Barangay Resident ID';
+            else if (clean.includes('prc')) detectedType = 'PRC ID';
+            else if (clean.includes('tin') || clean.includes('bir')) detectedType = 'TIN ID';
+            else if (clean.includes('philhealth')) detectedType = 'PhilHealth ID';
 
-            const hasNumbers = /[0-9]{4,}/.test(clean);
-            const isRecognized = matches.length >= 2 || (matches.length >= 1 && (hasNumbers || (aspect >= 1.25 && aspect <= 1.95)));
+            // Strict Validation Rules:
+            // 1. Must have at least 1 primary keyword + (a secondary field or a card number), OR
+            // 2. Must have at least 2 primary keywords, OR
+            // 3. Must have at least 3 valid keywords
+            const isCredibleId = (matchedPrimary.length >= 1 && (totalMatches >= 2 || hasNumbers)) ||
+                                 (matchedPrimary.length >= 2) ||
+                                 (totalMatches >= 3);
 
-            if (isRecognized) {
+            if (isCredibleId) {
                 finishIdScan(true, detectedType, null, rawText);
-            } else if (clean.trim().length > 25 && aspect >= 1.25 && aspect <= 1.95) {
-                finishIdScan(true, 'Verified Identification Card', null, rawText);
             } else {
-                finishIdScan(false, '', 'The uploaded image does not appear to be a valid government or student ID card. Please ensure the card details are clearly visible and unobstructed.');
+                finishIdScan(false, '', 'Verification Rejected: No official ID credentials detected. Random photos, personal portraits, selfies, or documents without valid ID markings cannot be accepted. Please upload a clear photo of your actual ID card.');
             }
-        }
-
-        function evaluateFallbackHeuristics(aspect) {
-            setTimeout(() => {
-                if (aspect >= 1.25 && aspect <= 1.95) {
-                    finishIdScan(true, 'Government / Student ID', null, '');
-                } else {
-                    finishIdScan(false, '', 'Unrecognized card format. Please upload a clear horizontal photo of your ID card.');
-                }
-            }, 800);
         }
 
         function finishIdScan(isValid, cardType, errorMsg, extractedText) {
@@ -1371,3 +1395,4 @@ if (empty($req_list)) {
     </script>
 </body>
 </html>
+

@@ -81,31 +81,78 @@ if ($width < 320 || $height < 200) {
     exit();
 }
 
-// Check ID validity via OCR or aspect ratio inspection
-$validKeywords = [
-    'philippines', 'pilipinas', 'republic', 'national id', 'philid', 'identification',
-    'driver', 'license', 'lto', 'land transportation', 'umid', 'sss', 'gsis', 'tin', 'bir',
-    'voter', 'comelec', 'postal', 'prc', 'passport', 'barangay', 'tabon', 'student', 'school',
-    'university', 'college', 'osca', 'pwd', 'senior citizen', 'id no', 'card', 'valid', 'signature',
-    'republika', 'republic of the philippines', 'kautusan', 'tin id', 'postal id', 'license no',
-    'birth', 'dob', 'address', 'sex', 'blood', 'civil status', 'cardholder'
+// 1. Enforce Landscape Orientation (All valid Philippine ID cards and Student IDs are landscape)
+if ($height >= $width) {
+    echo json_encode([
+        'status'  => 'error',
+        'code'    => 'PORTRAIT_REJECTED',
+        'message' => 'Verification Rejected: The uploaded photo is portrait-oriented. ID cards must be a horizontal (landscape) photo of an actual card. Personal portraits, selfies, or standing photos cannot be accepted.'
+    ]);
+    exit();
+}
+
+// 2. Enforce standard ID card aspect ratio (ISO/IEC 7810 ID-1 standard is 1.58)
+$aspect = $width / $height;
+if ($aspect < 1.20 || $aspect > 2.25) {
+    echo json_encode([
+        'status'  => 'error',
+        'code'    => 'INVALID_CARD_PROPORTION',
+        'message' => 'Verification Rejected: The uploaded image does not match the proportions of an ID card. Please upload a clear, horizontal photo of your physical ID card.'
+    ]);
+    exit();
+}
+
+// 3. Strict Verification of ID Card Keywords from OCR
+$primaryIdKeywords = [
+    'national id', 'philid', 'philsys', 'driver', 'license', 'lisensya', 'lto', 
+    'land transportation', 'umid', 'sss', 'gsis', 'tin', 'bir', 'voter', 
+    'comelec', 'postal', 'philpost', 'prc', 'passport', 'barangay', 'student id',
+    'student', 'university', 'college', 'school', 'academy', 'osca', 'pwd', 
+    'senior citizen', 'republic of the philippines', 'republika ng pilipinas',
+    'identification card', 'identity card', 'philhealth', 'pag ibig', 'pag-ibig'
 ];
 
-$matchedKeywords = [];
+$secondaryIdKeywords = [
+    'philippines', 'pilipinas', 'republic', 'republika', 'pamahalaan', 'surname', 
+    'given name', 'middle name', 'apelyido', 'pangalan', 'date of birth', 'birthdate', 
+    'kapanganakan', 'birth', 'dob', 'sex', 'kasarian', 'address', 'tirahan', 'blood', 
+    'blood type', 'signature', 'lagda', 'id no', 'id number', 'crn', 'tin no', 
+    'license no', 'precinct', 'student no', 'lrn', 'control no', 'valid until', 
+    'expiration', 'date issued', 'citizenship', 'nationality', 'cardholder'
+];
+
+$matchedPrimary = [];
+$matchedSecondary = [];
+
 if (!empty($ocr_text)) {
-    foreach ($validKeywords as $kw) {
-        if (strpos($ocr_text, $kw) !== false) {
-            $matchedKeywords[] = $kw;
+    foreach ($primaryIdKeywords as $pkw) {
+        if (strpos($ocr_text, $pkw) !== false) {
+            $matchedPrimary[] = $pkw;
+        }
+    }
+    foreach ($secondaryIdKeywords as $skw) {
+        if (strpos($ocr_text, $skw) !== false) {
+            $matchedSecondary[] = $skw;
         }
     }
 }
 
-// If client OCR ran and found NO keywords at all, and ocr_valid is false, reject as invalid ID
-if (!$ocr_valid && count($matchedKeywords) === 0 && !empty($ocr_text)) {
+$hasCardNumber = preg_match('/[0-9]{4,}/', $ocr_text);
+$totalMatches = count($matchedPrimary) + count($matchedSecondary);
+
+// An ID is verified ONLY if:
+// - It has at least 1 primary card issuer keyword + 1 secondary field/number, OR
+// - It has at least 2 primary keywords, OR
+// - It has at least 3 valid ID keywords overall
+$isCredibleId = (count($matchedPrimary) >= 1 && ($totalMatches >= 2 || $hasCardNumber)) ||
+                (count($matchedPrimary) >= 2) ||
+                ($totalMatches >= 3);
+
+if (!$isCredibleId) {
     echo json_encode([
         'status'  => 'error',
-        'code'    => 'INVALID_ID',
-        'message' => 'Invalid ID Card: The uploaded image could not be verified as a valid ID card. Please ensure the full ID is visible, text is readable, and it is a recognized government or school ID.'
+        'code'    => 'INVALID_ID_CREDENTIALS',
+        'message' => 'Verification Rejected: No official government or student ID credentials were detected in this image. Random portraits, selfies, landscapes, or unrelated photos cannot be accepted. Please upload a clear photo of your actual ID card.'
     ]);
     exit();
 }
