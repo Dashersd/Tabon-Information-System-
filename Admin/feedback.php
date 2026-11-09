@@ -1537,6 +1537,11 @@ body.feedback-chat-page .main-content {
                 <li><a href="services.php"><i class="fa-solid fa-bell-concierge"></i> Services</a></li>
                 <li><a href="announcements.php"><i class="fa-solid fa-bullhorn"></i> Announcement</a></li>
                 <li>
+                    <a href="request_services.php">
+                        <i class="fa-solid fa-file-signature"></i> Request Services
+                    </a>
+                </li>
+                <li>
                     <a href="feedback.php" class="active">
                         <i class="fa-solid fa-comments"></i> Feedback
                     </a>
@@ -1931,7 +1936,7 @@ body.feedback-chat-page .main-content {
         // 4. Fetch Sessions & Poll Inbox
         function fetchSessions(isInitialLoad) {
             $.ajax({
-                url: 'api/admin_fetch_sessions.php',
+                url: 'api/admin_fetch_sessions.php?scope=feedback',
                 type: 'GET',
                 dataType: 'json',
                 success: function(res) {

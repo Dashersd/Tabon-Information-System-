@@ -35,6 +35,8 @@ try {
         }
     }
 
+    $scope = strtolower(trim($_GET['scope'] ?? $_GET['category'] ?? 'all'));
+
     // 1. Query distinct thread sessions grouped by thread_id
     $sql = "SELECT 
                 c.thread_id,
@@ -50,13 +52,16 @@ try {
     $res = $conn->query($sql);
     $sessions = [];
 
+    $requests_unread_total = 0;
+    $feedback_unread_total = 0;
+
     if ($res) {
         while ($row = $res->fetch_assoc()) {
             $thread_id = $row['thread_id'];
 
             // Earliest message for resident details & service tag
             $first_data = null;
-            $first_stmt = $conn->prepare("SELECT sender_name, email, message, created_at FROM feedback_chats WHERE thread_id = ? ORDER BY created_at ASC, id ASC LIMIT 1");
+            $first_stmt = $conn->prepare("SELECT sender_name, email, message, file_attachment, file_name, created_at FROM feedback_chats WHERE thread_id = ? ORDER BY created_at ASC, id ASC LIMIT 1");
             if ($first_stmt) {
                 $first_stmt->bind_param("s", $thread_id);
                 $first_stmt->execute();
@@ -82,6 +87,29 @@ try {
                 $service_type = trim($matches[1]);
             }
 
+            $is_service_request = (
+                !empty($service_type) && 
+                !in_array(strtolower($service_type), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry'])
+            );
+
+            $thread_unread = (int)$row['unread_count'];
+            if ($is_service_request) {
+                $requests_unread_total += $thread_unread;
+            } else {
+                $feedback_unread_total += $thread_unread;
+            }
+
+            // Scope filter: 'requests' vs 'feedback'
+            if ($scope === 'requests' || $scope === 'services' || $scope === 'service_requests') {
+                if (!$is_service_request) {
+                    continue; // Skip general feedback/contact inquiry
+                }
+            } elseif ($scope === 'feedback' || $scope === 'contact') {
+                if ($is_service_request) {
+                    continue; // Skip document service requests
+                }
+            }
+
             $resident_name = !empty($first_data['sender_name']) ? $first_data['sender_name'] : 'Resident User';
             $email = !empty($first_data['email']) ? $first_data['email'] : null;
 
@@ -93,13 +121,17 @@ try {
                 $preview_msg = preg_replace('/\[Service:\s*[^\]]+\]\s*/i', '', $preview_msg);
             }
 
+            $has_id_card = !empty($first_data['file_attachment']) || !empty($last_data['file_attachment']);
+
             $sessions[] = [
                 'thread_id' => $thread_id,
                 'resident_name' => $resident_name,
                 'email' => $email,
                 'service_type' => $service_type,
+                'is_service_request' => $is_service_request,
+                'has_id_card' => $has_id_card,
                 'is_expired' => (bool)$row['is_expired'],
-                'unread_count' => (int)$row['unread_count'],
+                'unread_count' => $thread_unread,
                 'total_messages' => (int)$row['total_messages'],
                 'last_activity' => $row['last_activity'],
                 'last_activity_formatted' => date('h:i A', strtotime($row['last_activity'])),
@@ -113,21 +145,39 @@ try {
     $unread_res = $conn->query("SELECT COUNT(*) AS total_unread FROM feedback_chats WHERE sender_type = 'user' AND is_read = 0");
     $total_unread = $unread_res ? (int)$unread_res->fetch_assoc()['total_unread'] : 0;
 
+    $active_scope_unread = ($scope === 'requests' || $scope === 'services' || $scope === 'service_requests') 
+        ? $requests_unread_total 
+        : (($scope === 'feedback' || $scope === 'contact') ? $feedback_unread_total : $total_unread);
+
     // 3. Query top 10 unread notifications for bell dropdown
     $notif_res = $conn->query("SELECT id, thread_id, sender_name, email, message, created_at 
                                FROM feedback_chats 
                                WHERE sender_type = 'user' AND is_read = 0 
                                ORDER BY created_at DESC 
-                               LIMIT 10");
+                               LIMIT 15");
     $notifications = [];
     if ($notif_res) {
         while ($n = $notif_res->fetch_assoc()) {
-            $clean_msg = preg_replace('/\[Service:\s*[^\]]+\]\s*/i', '', $n['message']);
+            $n_msg = $n['message'];
+            $n_svc = 'General Inquiry';
+            if (preg_match('/\[Service:\s*([^\]]+)\]/i', $n_msg, $n_matches)) {
+                $n_svc = trim($n_matches[1]);
+            }
+            $n_is_req = (!empty($n_svc) && !in_array(strtolower($n_svc), ['contact inquiry', 'general inquiry', 'feedback', 'general', 'inquiry', 'contact', 'citizen inquiry']));
+
+            // Filter notifications according to scope if requested
+            if (($scope === 'requests' && !$n_is_req) || ($scope === 'feedback' && $n_is_req)) {
+                continue;
+            }
+
+            $clean_msg = preg_replace('/\[Service:\s*[^\]]+\]\s*/i', '', $n_msg);
             $notifications[] = [
                 'id' => (int)$n['id'],
                 'thread_id' => $n['thread_id'],
                 'sender_name' => $n['sender_name'],
                 'email' => $n['email'],
+                'service_type' => $n_svc,
+                'is_service_request' => $n_is_req,
                 'message' => safe_mb_truncate($clean_msg, 75),
                 'created_at' => $n['created_at'],
                 'time_ago' => date('g:i A', strtotime($n['created_at']))
@@ -145,8 +195,12 @@ try {
 
     echo json_encode([
         'status' => 'success',
+        'scope' => $scope,
         'sessions' => $sessions,
         'total_unread' => $total_unread,
+        'active_scope_unread' => $active_scope_unread,
+        'requests_unread_count' => $requests_unread_total,
+        'feedback_unread_count' => $feedback_unread_total,
         'notifications' => $notifications,
         'latest_message' => $latest_message
     ]);
