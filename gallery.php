@@ -32,58 +32,6 @@ if ($media_res) {
         }
     }
 }
-
-// Fetch Map Page uploaded images (Purok 1, 2, 3 locations & Landmarks)
-$map_photos_count = 0;
-foreach ([1, 2, 3] as $pNum) {
-    $tbl = "purok{$pNum}_locations";
-    $pQuery = "SELECT id, house_number, husband_name, house_image, created_at FROM `{$tbl}` WHERE house_image IS NOT NULL AND house_image != '' ORDER BY id DESC";
-    $pRes = $conn->query($pQuery);
-    if ($pRes) {
-        while ($pRow = $pRes->fetch_assoc()) {
-            $img = $pRow['house_image'];
-            $cleanPath = (strpos($img, 'Admin/') === 0) ? $img : 'Admin/' . ltrim($img, '/');
-            if (file_exists($cleanPath)) {
-                $media_items[] = [
-                    'id' => 'map_p' . $pNum . '_' . $pRow['id'],
-                    'folder_id' => 'map',
-                    'file_path' => $cleanPath,
-                    'web_path' => $cleanPath,
-                    'caption' => 'House #' . $pRow['house_number'] . ' (' . ($pRow['husband_name'] ?: 'Resident') . ')',
-                    'file_name' => basename($cleanPath),
-                    'folder_name' => "Purok {$pNum} Map",
-                    'created_at' => $pRow['created_at'] ?? date('Y-m-d H:i:s'),
-                    'is_map' => true
-                ];
-                $map_photos_count++;
-            }
-        }
-    }
-}
-
-// Fetch Landmark images from sm_legends
-$legendQuery = "SELECT id, name, image_path, created_at FROM sm_legends WHERE image_path IS NOT NULL AND image_path != '' ORDER BY id DESC";
-$legendRes = $conn->query($legendQuery);
-if ($legendRes) {
-    while ($lRow = $legendRes->fetch_assoc()) {
-        $rawPath = $lRow['image_path'];
-        $cleanPath = (strpos($rawPath, 'Admin/') === 0) ? $rawPath : 'Admin/' . ltrim($rawPath, '/');
-        if (file_exists($cleanPath)) {
-            $media_items[] = [
-                'id' => 'legend_' . $lRow['id'],
-                'folder_id' => 'map',
-                'file_path' => $cleanPath,
-                'web_path' => $cleanPath,
-                'caption' => $lRow['name'],
-                'file_name' => basename($cleanPath),
-                'folder_name' => 'Spot Map Landmark',
-                'created_at' => $lRow['created_at'] ?? date('Y-m-d H:i:s'),
-                'is_map' => true
-            ];
-            $map_photos_count++;
-        }
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -189,9 +137,6 @@ if ($legendRes) {
                     <i class="bi bi-folder2"></i> <?= htmlspecialchars($folder['name']) ?> (<?= $folder['media_count'] ?>)
                 </button>
             <?php endforeach; ?>
-            <button type="button" class="filter-chip-btn" onclick="filterGallery('folder-map', this)">
-                <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Spot Map Locations (<span id="galleryMapCount"><?= $map_photos_count ?></span>)
-            </button>
         </div>
 
         <!-- Photos Grid -->

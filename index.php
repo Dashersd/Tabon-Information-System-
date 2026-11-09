@@ -29,63 +29,6 @@ try {
             }
         }
     }
-
-    // 2. Fetch Map Page Uploaded Photos (Purok 1, 2, 3 locations)
-    $purok_queries = [
-        ['table' => 'purok1_locations', 'name' => 'Purok Mesaya (Purok 1)'],
-        ['table' => 'purok2_locations', 'name' => 'Purok Metamed (Purok 2)'],
-        ['table' => 'purok3_locations', 'name' => 'Purok Melitebangay (Purok 3)']
-    ];
-
-    foreach ($purok_queries as $pq) {
-        $q = "SELECT id, house_number, husband_name, house_image, created_at FROM `{$pq['table']}` WHERE house_image IS NOT NULL AND house_image != '' ORDER BY id DESC";
-        $p_res = $conn->query($q);
-        if ($p_res) {
-            while ($p_row = $p_res->fetch_assoc()) {
-                $img = $p_row['house_image'];
-                $checkP = (strpos($img, 'Admin/') === 0) ? $img : 'Admin/' . ltrim($img, '/');
-                if (file_exists($checkP)) {
-                    $item = [
-                        'id' => 'map_' . $pq['table'] . '_' . $p_row['id'],
-                        'web_src' => $checkP,
-                        'title' => 'House #' . $p_row['house_number'] . ' (' . $p_row['husband_name'] . ')',
-                        'folder_name' => $pq['name'],
-                        'created_at' => $p_row['created_at'],
-                        'source_type' => 'map'
-                    ];
-                    $all_gallery_images[] = $item;
-
-                    // If carousel has fewer than 6 photos, supplement with map photos
-                    if (count($carousel_images) < 6) {
-                        $carousel_images[] = $item;
-                    }
-                }
-            }
-        }
-    }
-
-    // 3. Landmarks from sm_legends with photos
-    $leg_res = $conn->query("SELECT id, name, image_path, created_at FROM sm_legends WHERE image_path IS NOT NULL AND image_path != ''");
-    if ($leg_res) {
-        while ($l_row = $leg_res->fetch_assoc()) {
-            $limg = $l_row['image_path'];
-            $checkL = (strpos($limg, 'Admin/') === 0) ? $limg : 'Admin/' . ltrim($limg, '/');
-            if (file_exists($checkL)) {
-                $item = [
-                    'id' => 'landmark_' . $l_row['id'],
-                    'web_src' => $checkL,
-                    'title' => $l_row['name'],
-                    'folder_name' => 'Spot Map - Landmark',
-                    'created_at' => $l_row['created_at'] ?? date('Y-m-d H:i:s'),
-                    'source_type' => 'map'
-                ];
-                $all_gallery_images[] = $item;
-                if (count($carousel_images) < 6) {
-                    $carousel_images[] = $item;
-                }
-            }
-        }
-    }
 } catch (Exception $e) {}
 
 // If gallery has uploaded photos, ensure at least 8 cards for a seamless 3D curved loop
@@ -473,8 +416,6 @@ function get_home_announcement_date($when_date, $created_at) {
             <!-- Category Filter Tabs -->
             <div style="padding: 14px 30px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                 <button type="button" class="gallery-modal-filter-btn active" data-filter="all">All Photos (<span id="modalTotalCount"><?= count($all_gallery_images) ?></span>)</button>
-                <button type="button" class="gallery-modal-filter-btn" data-filter="gallery">Media Library</button>
-                <button type="button" class="gallery-modal-filter-btn" data-filter="map">Spot Map Locations</button>
             </div>
 
             <!-- Full Gallery Items Grid -->
