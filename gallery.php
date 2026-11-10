@@ -1,5 +1,5 @@
 <?php
-// gallery.php
+// gallery.php - Community Media Gallery (Folder & Album Viewer)
 require_once 'db_connect.php';
 
 // Fetch Folders with photo counts
@@ -8,11 +8,11 @@ $folders_query = "SELECT f.*, COUNT(m.id) as media_count
                   FROM gallery_folders f 
                   LEFT JOIN gallery_media m ON f.id = m.folder_id 
                   GROUP BY f.id 
-                  ORDER BY f.name ASC";
+                  ORDER BY f.created_at DESC, f.id DESC";
 $folders_res = $conn->query($folders_query);
 if ($folders_res) {
     while ($row = $folders_res->fetch_assoc()) {
-        $folders[] = $row;
+        $folders[$row['id']] = $row;
     }
 }
 
@@ -32,6 +32,10 @@ if ($media_res) {
         }
     }
 }
+
+// Check if a specific folder was requested via URL (e.g. gallery.php?folder_id=1)
+$requested_folder_id = isset($_GET['folder_id']) ? (int)$_GET['folder_id'] : 0;
+$initial_folder = ($requested_folder_id > 0 && isset($folders[$requested_folder_id])) ? $folders[$requested_folder_id] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,78 +126,160 @@ if ($media_res) {
 
     <!-- Main Content -->
     <main class="gallery-main-wrapper">
-        <div class="title-section">
-            <h1>Community Media Gallery</h1>
-            <p>Explore the moments, gatherings, community programs, and activities across Barangay Tabon.</p>
-        </div>
 
-        <!-- Category Filter Tabs -->
-        <div class="filter-tabs-wrapper">
-            <button type="button" class="filter-chip-btn active" onclick="filterGallery('all', this)">
-                <i class="bi bi-images"></i> All Photos (<span id="galleryAllCount"><?= count($media_items) ?></span>)
-            </button>
-            <?php foreach ($folders as $folder): ?>
-                <button type="button" class="filter-chip-btn" onclick="filterGallery('folder-<?= $folder['id'] ?>', this)">
-                    <i class="bi bi-folder2"></i> <?= htmlspecialchars($folder['name']) ?> (<?= $folder['media_count'] ?>)
-                </button>
-            <?php endforeach; ?>
-        </div>
+        <!-- ======================================================== -->
+        <!-- VIEW 1: ALBUMS & FOLDER CARDS (ROOT VIEW)               -->
+        <!-- ======================================================== -->
+        <div id="galleryFoldersView" style="<?= $initial_folder ? 'display: none;' : 'display: block;' ?>">
+            <div class="title-section">
+                <h1>Community Media Albums</h1>
+                <p>Explore the official event highlights, community programs, and photo collections across Barangay Tabon.</p>
+            </div>
 
-        <!-- Photos Grid -->
-        <div class="public-grid" id="publicGalleryGrid">
-            <?php if (count($media_items) > 0): ?>
-                <?php foreach ($media_items as $media): 
-                    $m_title = !empty($media['caption']) ? $media['caption'] : (!empty($media['file_name']) ? pathinfo($media['file_name'], PATHINFO_FILENAME) : 'Gallery Photo');
-                    $m_folder = !empty($media['folder_name']) ? $media['folder_name'] : 'General';
-                    $m_date = !empty($media['created_at']) ? date('M d, Y • h:i A', strtotime($media['created_at'])) : date('M d, Y • h:i A');
-                ?>
-                    <div class="grid-item folder-<?= $media['folder_id'] ?> <?= !empty($media['is_map']) ? 'is-map-item' : '' ?>" 
-                         data-img="<?= htmlspecialchars($media['web_path']) ?>" 
-                         data-title="<?= htmlspecialchars($m_title) ?>" 
-                         data-folder="<?= htmlspecialchars($m_folder) ?>" 
-                         data-date="<?= htmlspecialchars($m_date) ?>" 
-                         onclick="openItemLightbox(this)">
-                        <div class="grid-thumb-box">
-                            <img src="<?= htmlspecialchars($media['web_path']) ?>" alt="<?= htmlspecialchars($m_title) ?>" loading="lazy">
-                            <div class="card-overlay">
-                                <div class="card-overlay-btn" title="View Fullscreen">
-                                    <i class="fa-solid fa-expand"></i>
+            <?php if (!empty($folders)): ?>
+                <div class="category-cards-grid">
+                    <?php foreach ($folders as $f_id => $f): 
+                        $f_name = $f['name'];
+                        $f_desc = !empty($f['description']) ? $f['description'] : 'Official community photo collection of Barangay Tabon.';
+                        $f_count = (int)$f['media_count'];
+                        $f_date = !empty($f['created_at']) ? date('M d, Y', strtotime($f['created_at'])) : date('M d, Y');
+                    ?>
+                        <div class="category-folder-card" onclick="openGalleryFolder(<?= $f_id ?>)" role="button" tabindex="0">
+                            <div class="folder-card-top">
+                                <div class="folder-icon-badge">
+                                    <i class="bi bi-folder-fill"></i>
                                 </div>
-                                <div class="card-overlay-title"><?= htmlspecialchars($m_title) ?></div>
-                                <div class="card-overlay-folder">
-                                    <i class="fa-solid fa-folder"></i> <?= strtoupper(htmlspecialchars($m_folder)) ?>
-                                </div>
-                                <div class="card-overlay-date">
-                                    <i class="fa-regular fa-clock"></i> <?= htmlspecialchars($m_date) ?>
-                                </div>
+                                <span class="photo-count-pill">
+                                    <i class="bi bi-image"></i> <?= $f_count ?> <?= ($f_count === 1) ? 'Photo' : 'Photos' ?>
+                                </span>
+                            </div>
+
+                            <h3 class="folder-card-title"><?= htmlspecialchars($f_name) ?></h3>
+                            <p class="folder-card-desc"><?= htmlspecialchars($f_desc) ?></p>
+
+                            <div class="card-dashed-divider"></div>
+
+                            <div class="folder-card-footer">
+                                <span class="folder-created-date">
+                                    <i class="fa-regular fa-calendar"></i> <?= $f_date ?>
+                                </span>
+                                <span class="btn-open-album">
+                                    Open Album <i class="bi bi-chevron-right"></i>
+                                </span>
                             </div>
                         </div>
-                        <div class="item-info">
-                            <span class="item-tag">
-                                <?php if (!empty($media['is_map'])): ?>
-                                    <i class="fa-solid fa-location-dot" style="color:#10b981; margin-right:3px;"></i>
-                                <?php else: ?>
-                                    <i class="bi bi-folder-fill" style="color:#d97706; margin-right:3px;"></i>
-                                <?php endif; ?>
-                                <?= htmlspecialchars($m_folder) ?>
-                            </span>
-                            <div class="item-caption" title="<?= htmlspecialchars($m_title) ?>">
-                                <?= htmlspecialchars($m_title) ?>
-                            </div>
-                            <div class="item-date">
-                                <i class="fa-regular fa-clock" style="margin-right: 4px; color:#f59e0b;"></i> <?= htmlspecialchars($m_date) ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             <?php else: ?>
                 <div class="empty-gallery-state">
-                    <i class="bi bi-images"></i>
-                    <h3>No photos published yet</h3>
-                    <p>Check back soon for new updates, event highlights, and community photo albums.</p>
+                    <i class="bi bi-folder2-open"></i>
+                    <h3>No photo albums available yet</h3>
+                    <p>Check back soon for new community updates and published photo albums.</p>
                 </div>
             <?php endif; ?>
         </div>
+
+        <!-- ======================================================== -->
+        <!-- VIEW 2: ALBUM PHOTOS (REVEALED IMAGES VIEW)             -->
+        <!-- ======================================================== -->
+        <div id="galleryAlbumView" style="<?= $initial_folder ? 'display: block;' : 'display: none;' ?>">
+            
+            <!-- Breadcrumb Navigation Bar -->
+            <div class="gallery-nav-bar">
+                <div class="breadcrumbs">
+                    <a href="gallery.php" class="breadcrumb-item" onclick="closeFolderView(event)">
+                        <i class="bi bi-folder-fill"></i> Media Albums
+                    </a>
+                    <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+                    <span class="breadcrumb-current" id="activeFolderBreadcrumbName">
+                        <?= $initial_folder ? htmlspecialchars($initial_folder['name']) : 'Album' ?>
+                    </span>
+                </div>
+                <a href="gallery.php" class="btn-back-folders" onclick="closeFolderView(event)">
+                    <i class="bi bi-arrow-left"></i> Back to Albums
+                </a>
+            </div>
+
+            <!-- Folder Header Card -->
+            <div class="category-header-card folder-detail-header-card">
+                <div class="category-header-info">
+                    <div class="folder-title-wrap">
+                        <h2 class="category-main-title">
+                            <i class="bi bi-folder2-open folder-title-icon"></i> 
+                            <span id="activeFolderTitle"><?= $initial_folder ? htmlspecialchars($initial_folder['name']) : 'Album' ?></span>
+                        </h2>
+                        <span class="badge-count" id="activeFolderBadgeCount">
+                            <?= $initial_folder ? (int)$initial_folder['media_count'] . ' Photos' : '0 Photos' ?>
+                        </span>
+                    </div>
+                    <p class="category-sub-title" id="activeFolderDescription">
+                        <?= $initial_folder ? htmlspecialchars($initial_folder['description'] ?: 'Official community photo collection of Barangay Tabon.') : '' ?>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Media Photos Grid -->
+            <div class="media-container-white">
+                <div class="public-grid" id="albumPhotosGrid">
+                    <?php 
+                    $matching_photos_count = 0;
+                    foreach ($media_items as $media): 
+                        $m_title = !empty($media['caption']) ? $media['caption'] : (!empty($media['file_name']) ? pathinfo($media['file_name'], PATHINFO_FILENAME) : 'Gallery Photo');
+                        $m_folder = !empty($media['folder_name']) ? $media['folder_name'] : 'General';
+                        $m_date = !empty($media['created_at']) ? date('M d, Y • h:i A', strtotime($media['created_at'])) : date('M d, Y • h:i A');
+                        $m_folder_id = (int)$media['folder_id'];
+                        $is_initially_visible = ($initial_folder && $m_folder_id === (int)$initial_folder['id']);
+                        if ($is_initially_visible) $matching_photos_count++;
+                    ?>
+                        <div class="grid-item album-item album-folder-<?= $m_folder_id ?>" 
+                             data-folder-id="<?= $m_folder_id ?>"
+                             data-img="<?= htmlspecialchars($media['web_path']) ?>" 
+                             data-title="<?= htmlspecialchars($m_title) ?>" 
+                             data-folder="<?= htmlspecialchars($m_folder) ?>" 
+                             data-date="<?= htmlspecialchars($m_date) ?>" 
+                             style="<?= $is_initially_visible ? 'display: flex;' : 'display: none;' ?>"
+                             onclick="openItemLightbox(this)">
+                            <div class="grid-thumb-box">
+                                <img src="<?= htmlspecialchars($media['web_path']) ?>" alt="<?= htmlspecialchars($m_title) ?>" loading="lazy">
+                                <div class="card-overlay">
+                                    <div class="card-overlay-btn" title="View Fullscreen">
+                                        <i class="fa-solid fa-expand"></i>
+                                    </div>
+                                    <div class="card-overlay-title"><?= htmlspecialchars($m_title) ?></div>
+                                    <div class="card-overlay-folder">
+                                        <i class="fa-solid fa-folder"></i> <?= strtoupper(htmlspecialchars($m_folder)) ?>
+                                    </div>
+                                    <div class="card-overlay-date">
+                                        <i class="fa-regular fa-clock"></i> <?= htmlspecialchars($m_date) ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item-info">
+                                <span class="item-tag">
+                                    <i class="bi bi-folder-fill" style="color:#d97706; margin-right:3px;"></i>
+                                    <?= htmlspecialchars($m_folder) ?>
+                                </span>
+                                <div class="item-caption" title="<?= htmlspecialchars($m_title) ?>">
+                                    <?= htmlspecialchars($m_title) ?>
+                                </div>
+                                <div class="item-date">
+                                    <i class="fa-regular fa-clock" style="margin-right: 4px; color:#f59e0b;"></i> <?= htmlspecialchars($m_date) ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <!-- Dynamic Empty State inside Album -->
+                    <div id="albumEmptyState" class="empty-gallery-state" style="<?= ($initial_folder && $matching_photos_count === 0) ? 'display: block;' : 'display: none;' ?>">
+                        <i class="bi bi-images"></i>
+                        <h3>No photos in this album yet</h3>
+                        <p>Photos for this album will appear here once published.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </main>
 
     <!-- Fullscreen Lightbox Modal -->
@@ -213,7 +299,7 @@ if ($media_res) {
     </div>
 
     <!-- Footer -->
-        <footer class="site-footer">
+    <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="footer-logo">
@@ -261,7 +347,9 @@ if ($media_res) {
 
     <!-- Interactive Scripts -->
     <script>
-    let activeCategory = 'all';
+    const foldersData = <?= json_encode($folders, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    let activeFolderId = <?= $initial_folder ? (int)$initial_folder['id'] : 'null' ?>;
+
     let activeLightboxList = [];
     let activeLightboxIndex = 0;
 
@@ -273,23 +361,76 @@ if ($media_res) {
     const lightboxPrev = document.getElementById('galleryLbPrev');
     const lightboxNext = document.getElementById('galleryLbNext');
 
-    function filterGallery(category, btn) {
-        activeCategory = category;
-        document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+    // 1. Open a Folder / Album
+    function openGalleryFolder(folderId) {
+        const folder = foldersData[folderId];
+        if (!folder) return;
 
-        const items = document.querySelectorAll('.public-grid .grid-item');
+        activeFolderId = folderId;
+
+        // Update Folder Header and Breadcrumb
+        document.getElementById('activeFolderBreadcrumbName').textContent = folder.name || 'Album';
+        document.getElementById('activeFolderTitle').textContent = folder.name || 'Album';
+        
+        const count = parseInt(folder.media_count || '0', 10);
+        document.getElementById('activeFolderBadgeCount').textContent = count + (count === 1 ? ' Photo' : ' Photos');
+        document.getElementById('activeFolderDescription').textContent = folder.description || 'Official community photo collection of Barangay Tabon.';
+
+        // Filter Grid Photos
+        const allItems = document.querySelectorAll('#albumPhotosGrid .album-item');
         let visibleCount = 0;
-        items.forEach(item => {
-            if (category === 'all' || item.classList.contains(category)) {
+        allItems.forEach(item => {
+            if (parseInt(item.getAttribute('data-folder-id'), 10) === parseInt(folderId, 10)) {
                 item.style.display = 'flex';
                 visibleCount++;
             } else {
                 item.style.display = 'none';
             }
         });
+
+        // Show/hide empty state
+        const emptyBox = document.getElementById('albumEmptyState');
+        if (emptyBox) {
+            emptyBox.style.display = (visibleCount === 0) ? 'block' : 'none';
+        }
+
+        // Switch View
+        document.getElementById('galleryFoldersView').style.display = 'none';
+        document.getElementById('galleryAlbumView').style.display = 'block';
+
+        // Update URL state (pushState allows browser Back button to work)
+        const newUrl = window.location.pathname + '?folder_id=' + encodeURIComponent(folderId);
+        window.history.pushState({ folder_id: folderId }, '', newUrl);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 2. Close Folder View & Return to Folders Grid
+    function closeFolderView(e) {
+        if (e) e.preventDefault();
+
+        activeFolderId = null;
+        document.getElementById('galleryAlbumView').style.display = 'none';
+        document.getElementById('galleryFoldersView').style.display = 'block';
+
+        const rootUrl = window.location.pathname;
+        window.history.pushState({}, '', rootUrl);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Handle Browser Back / Forward Buttons
+    window.addEventListener('popstate', function (e) {
+        if (e.state && e.state.folder_id) {
+            openGalleryFolder(e.state.folder_id);
+        } else {
+            activeFolderId = null;
+            document.getElementById('galleryAlbumView').style.display = 'none';
+            document.getElementById('galleryFoldersView').style.display = 'block';
+        }
+    });
+
+    // 3. Fullscreen Lightbox Logic
     function renderLightboxContent() {
         if (!activeLightboxList.length) return;
         const item = activeLightboxList[activeLightboxIndex];
@@ -317,8 +458,8 @@ if ($media_res) {
     }
 
     function openItemLightbox(el) {
-        // Collect all currently visible grid items
-        const visibleItems = Array.from(document.querySelectorAll('.public-grid .grid-item')).filter(it => it.style.display !== 'none');
+        // Collect all currently visible grid items in active album
+        const visibleItems = Array.from(document.querySelectorAll('#albumPhotosGrid .album-item')).filter(it => it.style.display !== 'none');
         activeLightboxList = visibleItems.map(it => ({
             img: it.getAttribute('data-img') || (it.querySelector('img') ? it.querySelector('img').src : ''),
             title: it.getAttribute('data-title') || '',
@@ -379,60 +520,8 @@ if ($media_res) {
         else if (e.key === 'ArrowRight') stepGalleryLightbox(1);
         else if (e.key === 'Escape') closeLightbox();
     });
-
-    // Sync any custom dropped pins from localStorage into the gallery
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const rawCustom = localStorage.getItem('brgy_tabon_custom_pins');
-            if (!rawCustom) return;
-            const pins = JSON.parse(rawCustom);
-            if (!Array.isArray(pins) || !pins.length) return;
-
-            const grid = document.getElementById('publicGalleryGrid');
-            if (!grid) return;
-
-            let addedCount = 0;
-            pins.forEach((p, idx) => {
-                if (!p || !p.image_path) return;
-                const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Dropped Pin';
-                const div = document.createElement('div');
-                div.className = 'grid-item folder-map is-map-item custom-pin-item';
-                div.setAttribute('data-img', p.image_path);
-                div.setAttribute('data-title', p.title || `Custom Pin #${idx + 1}`);
-                div.setAttribute('data-folder', 'Spot Map Pin');
-                div.setAttribute('data-date', dateStr);
-                div.onclick = function() { openItemLightbox(this); };
-                div.innerHTML = `
-                    <div class="grid-thumb-box">
-                        <img src="${p.image_path}" alt="${p.title || 'Custom Pin'}" loading="lazy">
-                        <div class="card-overlay">
-                            <div class="card-overlay-btn" title="View Fullscreen"><i class="fa-solid fa-expand"></i></div>
-                            <div class="card-overlay-title">${p.title || 'Custom Pin'}</div>
-                            <div class="card-overlay-folder"><i class="fa-solid fa-folder"></i> SPOT MAP PIN</div>
-                            <div class="card-overlay-date"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
-                        </div>
-                    </div>
-                    <div class="item-info">
-                        <span class="item-tag"><i class="fa-solid fa-location-dot" style="color:#10b981; margin-right:3px;"></i> Spot Map Pin</span>
-                        <div class="item-caption" title="${p.title || 'Custom Pin'}">${p.title || 'Custom Pin'}</div>
-                        <div class="item-date"><i class="fa-regular fa-clock" style="margin-right: 4px; color:#f59e0b;"></i> ${dateStr}</div>
-                    </div>
-                `;
-                grid.prepend(div);
-                addedCount++;
-            });
-
-            if (addedCount > 0) {
-                const allSpan = document.getElementById('galleryAllCount');
-                if (allSpan) allSpan.textContent = parseInt(allSpan.textContent || '0', 10) + addedCount;
-                const mapSpan = document.getElementById('galleryMapCount');
-                if (mapSpan) mapSpan.textContent = parseInt(mapSpan.textContent || '0', 10) + addedCount;
-            }
-        } catch (e) {
-            console.warn('Could not inject custom pins into gallery:', e);
-        }
-    });
     </script>
+    
     <!-- Preloader Script -->
     <script src="js/preloader.js?v=<?php echo time(); ?>"></script>
     <script src="js/main.js?v=<?= time() ?>"></script>
