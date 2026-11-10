@@ -156,14 +156,9 @@
     font-weight: 500;
     padding: 8px 12px;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.legend-item:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
-    transform: translateX(4px);
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
 }
 
 /* Toast Modal Styles */

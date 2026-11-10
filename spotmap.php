@@ -199,7 +199,7 @@ if (empty($public_legends)) {
                                         $icon_color = !empty($leg['color_hex']) ? $leg['color_hex'] : '#4f46e5';
                                         $leg_photo = get_public_legend_photo($leg['image_path'] ?? '');
                                     ?>
-                                        <div class="legend-item" data-id="<?= (int)$leg['id'] ?>" title="Click to view & locate on aerial map" onclick="focusPublicLandmark(<?= (int)$leg['id'] ?>, '<?= htmlspecialchars(addslashes($leg['name'])) ?>', '<?= htmlspecialchars(addslashes($leg_photo)) ?>', '<?= htmlspecialchars(addslashes($leg['icon_path'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($icon_color)) ?>')">
+                                        <div class="legend-item" data-id="<?= (int)$leg['id'] ?>">
                                             <?php if ($is_custom): ?>
                                                 <img src="Admin/<?= htmlspecialchars($leg['icon_path']) ?>" style="width:18px; height:18px; object-fit:contain; vertical-align:middle; margin-right:6px;">
                                             <?php else: ?>
