@@ -321,9 +321,6 @@ function get_home_announcement_date($when_date, $created_at) {
                     Learn how our programs and services uplift families, empower the youth, and create lasting opportunities for everyone.
                 </p>
                 <?php endif; ?>
-                <div class="about-actions fade-in-left animate-on-scroll delay-3">
-                    <a href="about.php" class="btn-read-more">Read More</a>
-                </div>
             </div>
             <div class="about-image fade-in-right animate-on-scroll delay-2">
                 <img src="<?= htmlspecialchars($home_about_img) ?>?v=<?= $home_about_cache ?>" alt="About Barangay Tabon" onerror="this.src='Images/Tabon Barangay hall.jpg';">
